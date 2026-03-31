@@ -1,0 +1,127 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  body {
+    font-family: 'Inter', sans-serif;
+    background: linear-gradient(180deg, #0a0a0f 0%, #1a1a2e 100%);
+    min-height: 100vh;
+  }
+  
+  .font-orbitron {
+    font-family: 'Orbitron', monospace;
+  }
+  
+  * {
+    scrollbar-width: thin;
+    scrollbar-color: #8b5cf6 #1a1a2e;
+  }
+  
+  *::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+  }
+  
+  *::-webkit-scrollbar-track {
+    background: #1a1a2e;
+    border-radius: 4px;
+  }
+  
+  *::-webkit-scrollbar-thumb {
+    background: #8b5cf6;
+    border-radius: 4px;
+  }
+  
+  *::-webkit-scrollbar-thumb:hover {
+    background: #a855f7;
+  }
+}
+
+@layer components {
+  .gaming-card {
+    @apply bg-gaming-card border border-gaming-border rounded-lg p-6 shadow-lg;
+  }
+  
+  .neon-button {
+    @apply bg-neon-purple text-white px-6 py-3 rounded-lg font-semibold hover:bg-purple-600 transition-all duration-200 shadow-neon hover:shadow-lg transform hover:scale-105;
+  }
+  
+  .neon-button-pink {
+    @apply bg-neon-pink text-white px-6 py-3 rounded-lg font-semibold hover:bg-pink-600 transition-all duration-200 shadow-neon-pink hover:shadow-lg transform hover:scale-105;
+  }
+  
+  .neon-button-blue {
+    @apply bg-neon-blue text-white px-6 py-3 rounded-lg font-semibold hover:bg-blue-600 transition-all duration-200 shadow-neon-blue hover:shadow-lg transform hover:scale-105;
+  }
+  
+  .stat-card {
+    @apply bg-gradient-to-br from-gaming-card to-gaming-border border border-gaming-border rounded-lg p-4 shadow-card-glow hover:shadow-neon transition-all duration-300;
+  }
+  
+  .quest-card {
+    @apply bg-gaming-card border border-gaming-border rounded-lg p-4 hover:border-neon-purple transition-all duration-300 hover:shadow-card-glow;
+  }
+  
+  .xp-bar {
+    @apply w-full bg-gaming-darker rounded-full h-6 overflow-hidden;
+  }
+  
+  .xp-fill {
+    @apply bg-gradient-to-r from-xp-gold to-yellow-400 h-full rounded-full transition-all duration-500 ease-out;
+  }
+  
+  .level-badge {
+    @apply bg-level-purple text-white px-3 py-1 rounded-full text-sm font-bold shadow-neon;
+  }
+}
+
+@layer utilities {
+  .text-glow {
+    text-shadow: 0 0 10px currentColor, 0 0 20px currentColor;
+  }
+  
+  .border-glow {
+    box-shadow: 0 0 10px currentColor, inset 0 0 10px currentColor;
+  }
+  
+  .animated-bg {
+    background: linear-gradient(-45deg, #0a0a0f, #1a1a2e, #16213e, #0f3460);
+    background-size: 400% 400%;
+    animation: gradientShift 15s ease infinite;
+  }
+  
+  @keyframes gradientShift {
+    0% { background-position: 0% 50%; }
+    50% { background-position: 100% 50%; }
+    100% { background-position: 0% 50%; }
+  }
+  
+  .particle {
+    position: absolute;
+    background: #8b5cf6;
+    border-radius: 50%;
+    pointer-events: none;
+    opacity: 0.6;
+    animation: floatParticle 10s infinite ease-in-out;
+  }
+  
+  @keyframes floatParticle {
+    0%, 100% { 
+      transform: translateY(0px) translateX(0px) scale(1);
+      opacity: 0.6;
+    }
+    25% { 
+      transform: translateY(-20px) translateX(10px) scale(1.2);
+      opacity: 0.8;
+    }
+    50% { 
+      transform: translateY(-10px) translateX(-10px) scale(0.8);
+      opacity: 0.4;
+    }
+    75% { 
+      transform: translateY(-30px) translateX(5px) scale(1.1);
+      opacity: 0.7;
+    }
+  }
+}
