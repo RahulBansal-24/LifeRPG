@@ -142,6 +142,7 @@ npm run dev
 - `GET /api/user/profile` - 👤 Get user profile
 - `PUT /api/user/stats` - 📊 Update user stats
 - `PUT /api/user/avatar` - 🎭 Update avatar
+- `DELETE /api/user/delete-account` - 🗑️ Delete user account and all data
 
 ### 📋 Quest Management
 - `GET /api/quests` - 📋 Get user quests

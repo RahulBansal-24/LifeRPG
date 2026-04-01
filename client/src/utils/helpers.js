@@ -143,7 +143,7 @@ export const formatRelativeTime = (date) => {
 
 // Generate random avatar options
 export const avatarOptions = [
-  '🎮', '🎯', '🎲', '🎪', '🎨', '🎭', '',
+  '🎮', '🎯', '🎲', '🎪', '🎨', '🎭', '🎰',
   '🦸', '🦹', '🧙', '🧚', '🧞', '🧜', '🧝', '🧟',
   '🗡️', '⚔️', '🛡️', '🏹', '🪄', '🔮', '💎', '👑',
   '🌟', '⭐', '✨', '💫', '🌙', '☀️', '🔥', '⚡',

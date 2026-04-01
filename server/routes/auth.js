@@ -29,7 +29,11 @@ router.post('/signup', [
     .withMessage('Please provide a valid email'),
   body('password')
     .isLength({ min: 6 })
-    .withMessage('Password must be at least 6 characters long')
+    .withMessage('Password must be at least 6 characters long'),
+  body('avatar')
+    .optional()
+    .isLength({ min: 1, max: 2 })
+    .withMessage('Avatar must be a valid emoji')
 ], async (req, res) => {
   try {
     // Check for validation errors
@@ -42,7 +46,7 @@ router.post('/signup', [
       });
     }
 
-    const { username, email, password } = req.body;
+    const { username, email, password, avatar } = req.body;
 
     // Check if user already exists
     const existingUser = await User.findOne({
@@ -60,7 +64,8 @@ router.post('/signup', [
     const user = await User.create({
       username,
       email,
-      password
+      password,
+      avatar: avatar || '🎮'
     });
 
     // Create default daily quests for new user

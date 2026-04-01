@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import { useAuth } from '../context/AuthContext';
-import { questAPI } from '../services/api';
+import { questAPI, userAPI } from '../services/api';
 import XPBar from '../components/XPBar';
 import StatCard from '../components/StatCard';
 import LoadingSpinner from '../components/LoadingSpinner';
@@ -13,12 +13,14 @@ import {
   Award,
   Activity,
   Gamepad2,
-  Star
+  Star,
+  Edit3
 } from 'lucide-react';
-import { formatRelativeTime, getLevelTitle } from '../utils/helpers';
+import { formatRelativeTime, getLevelTitle, avatarOptions } from '../utils/helpers';
+import toast from 'react-hot-toast';
 
 const DashboardPage = () => {
-  const { user, updateUser } = useAuth();
+  const { user, updateUser, deleteAccount } = useAuth();
   const [recentQuests, setRecentQuests] = useState([]);
   const [stats, setStats] = useState({
     totalQuests: 0,
@@ -28,10 +30,28 @@ const DashboardPage = () => {
   });
   const [isLoading, setIsLoading] = useState(true);
   const [showLevelUpAnimation, setShowLevelUpAnimation] = useState(false);
+  const [showAvatarModal, setShowAvatarModal] = useState(false);
+  const [selectedAvatar, setSelectedAvatar] = useState(user?.avatar || '🎮');
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
 
   useEffect(() => {
-    fetchDashboardData();
+    // Fetch dashboard data when user is available
+    if (user) {
+      fetchDashboardData();
+    }
   }, []);
+
+  // Update stats when user data changes (from quest completion)
+  useEffect(() => {
+    if (user) {
+      setStats({
+        totalQuests: user.totalQuests || 0,
+        completedQuests: user.completedQuests || 0,
+        dailyQuestsCompleted: user.dailyQuestsCompleted || 0,
+        totalXP: user.xp || 0,
+      });
+    }
+  }, [user?.totalQuests, user?.completedQuests, user?.dailyQuestsCompleted, user?.xp]);
 
   const fetchDashboardData = async () => {
     try {
@@ -57,6 +77,29 @@ const DashboardPage = () => {
       console.error('Failed to fetch dashboard data:', error);
     } finally {
       setIsLoading(false);
+    }
+  };
+
+  const handleAvatarChange = async (newAvatar) => {
+    try {
+      const response = await userAPI.updateAvatar(newAvatar);
+      if (response.data.success) {
+        updateUser({ ...user, avatar: newAvatar });
+        setSelectedAvatar(newAvatar);
+        setShowAvatarModal(false);
+        toast.success('Avatar updated successfully! 🎭');
+      }
+    } catch (error) {
+      console.error('Failed to update avatar:', error);
+      toast.error('Failed to update avatar');
+    }
+  };
+
+  const handleDeleteAccount = async () => {
+    const result = await deleteAccount();
+    if (result.success) {
+      // Navigate to home page after successful deletion
+      window.location.href = '/';
     }
   };
 
@@ -124,8 +167,23 @@ const DashboardPage = () => {
           <div className="flex flex-col md:flex-row items-center md:items-start space-y-4 md:space-y-0 md:space-x-6">
             {/* Avatar and Basic Info */}
             <div className="flex items-center space-x-4">
-              <div className="text-6xl animate-float">
-                {user?.avatar || '🎮'}
+              <div className="relative group">
+                <motion.div
+                  className="text-6xl animate-float cursor-pointer"
+                  whileHover={{ scale: 1.1 }}
+                  whileTap={{ scale: 0.95 }}
+                  onClick={() => setShowAvatarModal(true)}
+                >
+                  {user?.avatar || '🎮'}
+                </motion.div>
+                <motion.div
+                  initial={{ opacity: 0 }}
+                  whileHover={{ opacity: 1 }}
+                  className="absolute -top-2 -right-2 bg-neon-purple rounded-full p-1 cursor-pointer"
+                  onClick={() => setShowAvatarModal(true)}
+                >
+                  <Edit3 size={12} className="text-white" />
+                </motion.div>
               </div>
               <div>
                 <h2 className="text-2xl font-bold text-white">{user?.username}</h2>
@@ -133,7 +191,7 @@ const DashboardPage = () => {
                   {getLevelTitle(user?.level)}
                 </p>
                 <p className="text-gray-400 text-sm">
-                  Member since {new Date(user?.createdAt).toLocaleDateString()}
+                  Member since {user?.createdAt ? new Date(user.createdAt).toLocaleDateString() : 'Loading...'}
                 </p>
               </div>
             </div>
@@ -318,6 +376,117 @@ const DashboardPage = () => {
           </div>
         </motion.div>
       </div>
+
+      {/* Delete Account Button */}
+      <div className="text-center mt-8">
+        <button
+          onClick={() => setShowDeleteModal(true)}
+          className="text-red-400 hover:text-red-300 transition-colors underline text-sm"
+        >
+          Delete Account
+        </button>
+      </div>
+
+      {/* Avatar Selection Modal */}
+      <AnimatePresence>
+        {showAvatarModal && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-75 p-4"
+            onClick={() => setShowAvatarModal(false)}
+          >
+            <motion.div
+              initial={{ scale: 0.8, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.8, opacity: 0 }}
+              className="gaming-card border-2 border-neon-purple max-w-md w-full p-6"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <div className="text-center mb-6">
+                <h3 className="text-2xl font-bold text-white mb-2">Change Your Avatar</h3>
+                <p className="text-gray-400">Choose your new character avatar</p>
+              </div>
+
+              <div className="grid grid-cols-8 gap-2 mb-6">
+                {avatarOptions.map((avatar) => (
+                  <motion.button
+                    key={avatar}
+                    type="button"
+                    onClick={() => handleAvatarChange(avatar)}
+                    className={`p-3 rounded-lg border-2 transition-all duration-200 ${
+                      selectedAvatar === avatar
+                        ? 'border-neon-pink bg-neon-pink bg-opacity-20'
+                        : 'border-gaming-border hover:border-neon-purple'
+                    }`}
+                    whileHover={{ scale: 1.1 }}
+                    whileTap={{ scale: 0.9 }}
+                  >
+                    <span className="text-2xl">{avatar}</span>
+                  </motion.button>
+                ))}
+              </div>
+
+              <div className="flex justify-end">
+                <button
+                  onClick={() => setShowAvatarModal(false)}
+                  className="px-4 py-2 bg-gaming-darker text-gray-300 rounded-lg hover:bg-gaming-border transition-colors"
+                >
+                  Cancel
+                </button>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* Delete Account Confirmation Modal */}
+      <AnimatePresence>
+        {showDeleteModal && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-75 p-4"
+            onClick={() => setShowDeleteModal(false)}
+          >
+            <motion.div
+              initial={{ scale: 0.8, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.8, opacity: 0 }}
+              className="gaming-card border-2 border-red-500 max-w-md w-full p-6"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <div className="text-center mb-6">
+                <div className="text-5xl mb-4">⚠️</div>
+                <h3 className="text-2xl font-bold text-red-400 mb-2">Delete Account</h3>
+                <p className="text-gray-300 mb-4">
+                  Are you sure you want to delete your account? This action cannot be undone.
+                </p>
+                <p className="text-gray-400 text-sm">
+                  All your data including quests, stats, and progress will be permanently deleted.
+                </p>
+              </div>
+
+              <div className="flex space-x-3">
+                <button
+                  onClick={() => setShowDeleteModal(false)}
+                  className="flex-1 px-4 py-2 bg-gaming-darker text-gray-300 rounded-lg hover:bg-gaming-border transition-colors"
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={handleDeleteAccount}
+                  className="flex-1 px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors"
+                >
+                  Delete Forever
+                </button>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 };

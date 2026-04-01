@@ -1,5 +1,7 @@
 const express = require('express');
 const { protect } = require('../middleware/auth');
+const User = require('../models/User');
+const Quest = require('../models/Quest');
 
 const router = express.Router();
 
@@ -105,6 +107,40 @@ router.put('/avatar', async (req, res) => {
     res.status(500).json({
       success: false,
       message: 'Server error while updating avatar',
+      error: process.env.NODE_ENV === 'development' ? error.message : undefined
+    });
+  }
+});
+
+// @route   DELETE /api/user/delete-account
+// @desc    Delete user account and all associated data
+// @access  Private
+router.delete('/delete-account', async (req, res) => {
+  try {
+    const userId = req.user._id;
+    
+    // Find and delete user
+    const user = await User.findByIdAndDelete(userId);
+    
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        message: 'User not found'
+      });
+    }
+    
+    // Delete all quests associated with this user
+    await Quest.deleteMany({ userId: userId });
+    
+    res.status(200).json({
+      success: true,
+      message: 'Account and all associated data deleted successfully'
+    });
+  } catch (error) {
+    console.error('Delete account error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Server error while deleting account',
       error: process.env.NODE_ENV === 'development' ? error.message : undefined
     });
   }

@@ -199,6 +199,22 @@ export const AuthProvider = ({ children }) => {
     toast.success('Logged out successfully');
   };
 
+  // Delete account function
+  const deleteAccount = async () => {
+    try {
+      await userAPI.deleteAccount();
+      localStorage.removeItem('token');
+      localStorage.removeItem('user');
+      dispatch({ type: AUTH_ACTIONS.LOGOUT });
+      toast.success('Account deleted successfully. All your data has been removed.');
+      return { success: true };
+    } catch (error) {
+      const errorMessage = error.response?.data?.message || 'Failed to delete account';
+      toast.error(errorMessage);
+      return { success: false, error: errorMessage };
+    }
+  };
+
   // Update user function
   const updateUser = (userData) => {
     dispatch({
@@ -218,6 +234,7 @@ export const AuthProvider = ({ children }) => {
     login,
     signup,
     logout,
+    deleteAccount,
     updateUser,
     clearError,
   };

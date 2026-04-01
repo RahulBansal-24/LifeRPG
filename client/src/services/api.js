@@ -57,6 +57,7 @@ export const userAPI = {
   getProfile: () => api.get('/user/profile'),
   updateStats: (stats) => api.put('/user/stats', { statUpdates: stats }),
   updateAvatar: (avatar) => api.put('/user/avatar', { avatar }),
+  deleteAccount: () => api.delete('/user/delete-account'),
 };
 
 // Quest API calls
