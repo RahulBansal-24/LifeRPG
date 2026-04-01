@@ -118,6 +118,7 @@ Thumbs.db
 
 # Deployment files to ignore
 DEPLOYMENT.md
+PPT_Prompt.md
 
 # Test files
 test/
