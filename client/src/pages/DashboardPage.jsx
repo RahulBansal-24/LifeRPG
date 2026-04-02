@@ -51,7 +51,7 @@ const DashboardPage = () => {
         totalXP: user.xp || 0,
       });
     }
-  }, [user?.totalQuests, user?.completedQuests, user?.dailyQuestsCompleted, user?.xp]);
+  }, [user?.totalQuests, user?.completedQuests, user?.dailyQuestsCompleted, user?.xp, user?.stars, user?.stats]);
 
   const fetchDashboardData = async () => {
     try {
@@ -204,6 +204,11 @@ const DashboardPage = () => {
                 showDetails={true}
                 animated={true}
               />
+              <div className="mt-3 flex items-center justify-center space-x-2">
+                <span className="text-2xl">⭐</span>
+                <span className="text-xl font-bold text-xp-gold">{user?.stars || 0}</span>
+                <span className="text-sm text-gray-400">Stars</span>
+              </div>
             </div>
           </div>
         </motion.div>

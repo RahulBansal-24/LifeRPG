@@ -62,6 +62,11 @@ const userSchema = new mongoose.Schema({
   avatar: {
     type: String,
     default: '🎮'
+  },
+  stars: {
+    type: Number,
+    default: 0,
+    min: 0
   }
 }, {
   timestamps: true

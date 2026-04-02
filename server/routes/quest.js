@@ -51,15 +51,12 @@ router.get('/', async (req, res) => {
 router.post('/', [
   body('title')
     .trim()
-    .isLength({ min: 1, max: 100 })
-    .withMessage('Quest title must be between 1 and 100 characters'),
+    .isLength({ min: 3, max: 100 })
+    .withMessage('Title must be between 3 and 100 characters'),
   body('description')
     .trim()
-    .isLength({ min: 1, max: 500 })
-    .withMessage('Quest description must be between 1 and 500 characters'),
-  body('xpReward')
-    .isInt({ min: 10, max: 500 })
-    .withMessage('XP reward must be between 10 and 500'),
+    .isLength({ min: 10, max: 500 })
+    .withMessage('Description must be between 10 and 500 characters'),
   body('type')
     .optional()
     .isIn(['daily', 'main'])
@@ -80,8 +77,40 @@ router.post('/', [
       });
     }
 
-    const { title, description, xpReward, type = 'main', difficulty = 'medium' } = req.body;
+    const { title, description, type = 'main', difficulty = 'medium', selectedSkills = [] } = req.body;
     const userId = req.user._id;
+
+    // Auto-calculate XP based on difficulty and number of selected skills
+    const skillCount = Array.isArray(selectedSkills) ? selectedSkills.length : 0;
+    let xpReward;
+    
+    if (difficulty === 'easy') {
+      xpReward = skillCount === 1 ? 20 : 25;
+    } else if (difficulty === 'medium') {
+      xpReward = skillCount === 1 ? 25 : 30;
+    } else if (difficulty === 'hard') {
+      xpReward = skillCount === 1 ? 35 : 40;
+    } else {
+      xpReward = 25; // default
+    }
+
+    // Calculate stats reward based on difficulty
+    const statsReward = {
+      strength: 0,
+      intelligence: 0,
+      discipline: 0,
+      charisma: 0
+    };
+    
+    const skillPoints = difficulty === 'easy' ? 1 : difficulty === 'medium' ? 2 : 3;
+    
+    if (Array.isArray(selectedSkills)) {
+      selectedSkills.forEach(skill => {
+        if (statsReward[skill] !== undefined) {
+          statsReward[skill] = skillPoints;
+        }
+      });
+    }
 
     // Create quest
     const quest = await Quest.create({
@@ -90,7 +119,9 @@ router.post('/', [
       description,
       xpReward,
       type,
-      difficulty
+      difficulty,
+      statsReward,
+      selectedSkills
     });
 
     res.status(201).json({
@@ -155,21 +186,61 @@ router.put('/:id', [
 
     // If completing quest, award XP and stats
     if (status === 'completed' && quest.status === 'pending') {
-      // Complete the quest
-      await quest.complete();
-      
-      // Get user and award XP
-      const user = await User.findById(userId);
-      const result = user.addXP(quest.xpReward);
-      userUpdate = result;
-      leveledUp = result.leveledUp;
-      
-      // Award stats if they exist
-      if (quest.statsReward) {
-        user.updateStats(quest.statsReward);
+      try {
+        // Complete the quest
+        quest.status = 'completed';
+        quest.completedAt = new Date();
+        await quest.save();
+        console.log('Quest saved with status:', quest.status);
+        
+        // Get user and award XP
+        const user = await User.findById(userId);
+        if (!user) {
+          return res.status(404).json({
+            success: false,
+            message: 'User not found'
+          });
+        }
+        
+        console.log('User before update:', { stars: user.stars, xp: user.xp, stats: user.stats });
+        
+        const result = user.addXP(quest.xpReward);
+        userUpdate = result;
+        leveledUp = result.leveledUp;
+        
+        // Award stats if they exist
+        if (quest.statsReward) {
+          console.log('Awarding stats:', quest.statsReward);
+          user.updateStats(quest.statsReward);
+        }
+        
+        // Award star for main quests only
+        if (quest.type === 'main') {
+          console.log('Awarding star for main quest');
+          user.stars += 1;
+        }
+        
+        console.log('User before save:', { stars: user.stars, xp: user.xp, stats: user.stats });
+        
+        await user.save();
+        console.log('User saved with new stats:', user.stars, user.xp);
+        
+        // Update userUpdate with latest user data
+        userUpdate = {
+          ...userUpdate,
+          stars: user.stars,
+          stats: user.stats
+        };
+        
+        console.log('Final userUpdate object:', userUpdate);
+      } catch (error) {
+        console.error('Error during quest completion:', error);
+        return res.status(500).json({
+          success: false,
+          message: 'Error completing quest',
+          error: process.env.NODE_ENV === 'development' ? error.message : undefined
+        });
       }
-      
-      await user.save();
     } else {
       // Just update status
       quest.status = status || quest.status;
@@ -183,12 +254,7 @@ router.put('/:id', [
         : 'Quest updated successfully',
       data: {
         quest,
-        userUpdate: userUpdate ? {
-          xp: userUpdate.xp,
-          level: userUpdate.level,
-          leveledUp: userUpdate.leveledUp,
-          xpToNextLevel: userUpdate.xpToNextLevel
-        } : null
+        userUpdate: userUpdate || null
       }
     });
   } catch (error) {

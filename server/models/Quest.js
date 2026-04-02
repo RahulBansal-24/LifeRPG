@@ -49,7 +49,11 @@ const questSchema = new mongoose.Schema({
     intelligence: { type: Number, default: 0 },
     discipline: { type: Number, default: 0 },
     charisma: { type: Number, default: 0 }
-  }
+  },
+  selectedSkills: [{
+    type: String,
+    enum: ['strength', 'intelligence', 'discipline', 'charisma']
+  }]
 }, {
   timestamps: true
 });
@@ -58,7 +62,6 @@ const questSchema = new mongoose.Schema({
 questSchema.methods.complete = function() {
   this.status = 'completed';
   this.completedAt = new Date();
-  return this.save();
 };
 
 // Static method to get daily quests for user

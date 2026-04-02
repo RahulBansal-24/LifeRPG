@@ -93,7 +93,14 @@ const Navbar = () => {
                 <span className="text-2xl">{user?.avatar || '🎮'}</span>
                 <div className="hidden sm:block">
                   <p className="text-sm font-semibold text-white">{user?.username}</p>
-                  <p className="text-xs text-xp-gold">Level {user?.level}</p>
+                  <div className="flex items-center space-x-2">
+                    <p className="text-xs text-xp-gold">XP: {user?.xp || 0}</p>
+                    <span className="text-xs text-gray-400">|</span>
+                    <div className="flex items-center space-x-1">
+                      <span className="text-lg">⭐</span>
+                      <span className="text-xs text-xp-gold font-bold">{user?.stars || 0}</span>
+                    </div>
+                  </div>
                 </div>
               </div>
               
@@ -153,7 +160,14 @@ const Navbar = () => {
                   <span className="text-2xl">{user?.avatar || '🎮'}</span>
                   <div>
                     <p className="text-sm font-semibold text-white">{user?.username}</p>
-                    <p className="text-xs text-xp-gold">Level {user?.level}</p>
+                    <div className="flex items-center space-x-2">
+                      <p className="text-xs text-xp-gold">XP: {user?.xp || 0}</p>
+                      <span className="text-xs text-gray-400">|</span>
+                      <div className="flex items-center space-x-1">
+                        <span className="text-lg">⭐</span>
+                        <span className="text-xs text-xp-gold font-bold">{user?.stars || 0}</span>
+                      </div>
+                    </div>
                   </div>
                 </div>
                 

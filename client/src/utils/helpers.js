@@ -77,7 +77,7 @@ export const getStatIcon = (stat) => {
     case 'intelligence':
       return '🧠';
     case 'discipline':
-      return '⚡';
+      return '🎯';
     case 'charisma':
       return '✨';
     default:

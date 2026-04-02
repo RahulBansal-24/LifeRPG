@@ -22,7 +22,8 @@ import {
   getQuestTypeColor, 
   formatRelativeTime,
   generateQuestSuggestions,
-  avatarOptions 
+  avatarOptions,
+  getStatIcon
 } from '../utils/helpers';
 import toast from 'react-hot-toast';
 
@@ -32,7 +33,6 @@ const QuestsPage = () => {
   const [filteredQuests, setFilteredQuests] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [showCreateForm, setShowCreateForm] = useState(false);
-  const [editingQuest, setEditingQuest] = useState(null);
   const [filters, setFilters] = useState({
     type: 'all',
     status: 'all',
@@ -40,9 +40,15 @@ const QuestsPage = () => {
   const [formData, setFormData] = useState({
     title: '',
     description: '',
-    xpReward: 25,
     type: 'main',
     difficulty: 'medium',
+    selectedSkills: [],
+    statsReward: {
+      strength: 0,
+      intelligence: 0,
+      discipline: 0,
+      charisma: 0
+    }
   });
 
   useEffect(() => {
@@ -100,8 +106,13 @@ const QuestsPage = () => {
 
   const handleCompleteQuest = async (questId) => {
     try {
+      console.log('Attempting to complete quest:', questId);
       const response = await questAPI.updateQuest(questId, { status: 'completed' });
+      console.log('Quest completion response:', response.data);
+      
       const { quest, userUpdate } = response.data.data;
+      console.log('Quest data:', quest);
+      console.log('User update data:', userUpdate);
       
       // Update quest in local state
       setQuests(prev => prev.map(q => 
@@ -110,16 +121,23 @@ const QuestsPage = () => {
       
       // Update user if XP was awarded
       if (userUpdate) {
+        console.log('Updating user context with:', userUpdate);
         updateUser(userUpdate);
         
         if (userUpdate.leveledUp) {
           toast.success(`🎉 LEVEL UP! You are now level ${userUpdate.level}!`);
         } else {
-          toast.success(`Quest completed! +${quest.xpReward} XP earned! ⭐`);
+          const message = quest.type === 'main' 
+            ? `Main quest completed! +${quest.xpReward} XP +1 Star! ⭐`
+            : `Daily quest completed! +${quest.xpReward} XP! ⭐`;
+          toast.success(message);
         }
+      } else {
+        toast.success('Quest completed!');
       }
     } catch (error) {
       console.error('Failed to complete quest:', error);
+      console.error('Error response:', error.response);
       toast.error(error.response?.data?.message || 'Failed to complete quest');
     }
   };
@@ -135,6 +153,22 @@ const QuestsPage = () => {
       console.error('Failed to delete quest:', error);
       toast.error('Failed to delete quest');
     }
+  };
+
+  const resetForm = () => {
+    setFormData({
+      title: '',
+      description: '',
+      type: 'main',
+      difficulty: 'medium',
+      selectedSkills: [],
+      statsReward: {
+        strength: 0,
+        intelligence: 0,
+        discipline: 0,
+        charisma: 0
+      }
+    });
   };
 
   // Check if daily quests already exist for today
@@ -160,19 +194,20 @@ const QuestsPage = () => {
     }
   };
 
-  const resetForm = () => {
-    setFormData({
-      title: '',
-      description: '',
-      xpReward: 25,
-      type: 'main',
-      difficulty: 'medium',
-    });
-    setEditingQuest(null);
-  };
-
   const useSuggestion = (suggestion) => {
-    setFormData(suggestion);
+    setFormData({
+      title: suggestion.title,
+      description: suggestion.description,
+      type: 'main',
+      difficulty: suggestion.difficulty,
+      selectedSkills: [],
+      statsReward: {
+        strength: 0,
+        intelligence: 0,
+        discipline: 0,
+        charisma: 0
+      }
+    });
   };
 
   const getDifficultyIcon = (difficulty) => {
@@ -181,6 +216,15 @@ const QuestsPage = () => {
       case 'medium': return '⚡';
       case 'hard': return '🔥';
       default: return '⭐';
+    }
+  };
+
+  const getSkillPoints = (difficulty) => {
+    switch (difficulty) {
+      case 'easy': return 1;
+      case 'medium': return 2;
+      case 'hard': return 3;
+      default: return 2;
     }
   };
 
@@ -329,18 +373,27 @@ const QuestsPage = () => {
 
                 <div>
                   <label className="block text-sm font-medium text-gray-300 mb-2">
-                    XP Reward
+                    XP Reward (Auto-calculated)
                   </label>
-                  <input
-                    type="number"
-                    required
-                    min="10"
-                    max="500"
-                    value={formData.xpReward}
-                    onChange={(e) => setFormData(prev => ({ ...prev, xpReward: parseInt(e.target.value) }))}
-                    className="w-full px-4 py-3 bg-gaming-darker border border-gaming-border rounded-lg text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-neon-pink"
-                    placeholder="XP reward"
-                  />
+                  <div className="w-full px-4 py-3 bg-gaming-darker border border-gaming-border rounded-lg text-xp-gold font-bold">
+                    {getSkillPoints(formData.difficulty) * formData.selectedSkills.length > 0 
+                      ? (() => {
+                          const skillCount = formData.selectedSkills.length;
+                          if (formData.difficulty === 'easy') {
+                            return skillCount === 1 ? 20 : 25;
+                          } else if (formData.difficulty === 'medium') {
+                            return skillCount === 1 ? 25 : 30;
+                          } else if (formData.difficulty === 'hard') {
+                            return skillCount === 1 ? 35 : 40;
+                          }
+                          return 25;
+                        })()
+                      : 25
+                    } XP
+                  </div>
+                  <p className="text-xs text-gray-400 mt-1">
+                    Based on difficulty ({formData.difficulty}) and skills selected ({formData.selectedSkills.length})
+                  </p>
                 </div>
               </div>
 
@@ -386,6 +439,55 @@ const QuestsPage = () => {
                     <option value="medium">Medium</option>
                     <option value="hard">Hard</option>
                   </select>
+                </div>
+              </div>
+
+              {/* Skill Selection for All Quests */}
+              <div className="bg-gaming-card border border-gaming-border rounded-lg p-4 mb-4">
+                <h3 className="text-lg font-semibold text-white mb-3">Skill Assignment</h3>
+                <p className="text-gray-400 text-sm mb-4">
+                  Choose which skills this quest will improve when completed:
+                </p>
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+                  {[
+                    { name: 'intelligence', icon: '🧠', label: 'Intelligence' },
+                    { name: 'strength', icon: '💪', label: 'Strength' },
+                    { name: 'discipline', icon: '📘', label: 'Discipline' },
+                    { name: 'charisma', icon: '🎭', label: 'Charisma' }
+                  ].map(skill => (
+                    <button
+                      key={skill.name}
+                      type="button"
+                      onClick={() => {
+                        const isSelected = formData.selectedSkills.includes(skill.name);
+                        setFormData(prev => ({
+                          ...prev,
+                          selectedSkills: isSelected 
+                            ? prev.selectedSkills.filter(s => s !== skill.name)
+                            : [...prev.selectedSkills, skill.name],
+                          statsReward: {
+                            ...prev.statsReward,
+                            [skill.name]: isSelected ? 0 : getSkillPoints(prev.difficulty)
+                          }
+                        }));
+                      }}
+                      className={`p-3 rounded-lg border-2 transition-all duration-200 ${
+                        formData.selectedSkills.includes(skill.name)
+                          ? 'border-neon-purple bg-neon-purple bg-opacity-20 text-neon-purple'
+                          : 'border-gaming-border bg-gaming-darker text-gray-400 hover:border-neon-purple hover:text-neon-purple'
+                      }`}
+                    >
+                      <div className="flex flex-col items-center space-y-2">
+                        <span className="text-2xl">{skill.icon}</span>
+                        <span className="text-sm font-medium">{skill.label}</span>
+                        {formData.selectedSkills.includes(skill.name) && (
+                          <span className="text-xs text-neon-purple">
+                            +{getSkillPoints(formData.difficulty)}
+                          </span>
+                        )}
+                      </div>
+                    </button>
+                  ))}
                 </div>
               </div>
 
