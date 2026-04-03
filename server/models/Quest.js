@@ -82,42 +82,47 @@ questSchema.statics.createDefaultDailyQuests = function(userId) {
     {
       title: 'Morning Exercise',
       description: 'Complete 15 minutes of exercise to start your day right!',
-      xpReward: 25,
+      xpReward: 25, // Easy + 2 skills = 25 XP
       type: 'daily',
       difficulty: 'easy',
-      statsReward: { strength: 2, discipline: 1 }
+      statsReward: { strength: 2, discipline: 1 },
+      selectedSkills: ['strength', 'discipline']
     },
     {
       title: 'Read for 30 Minutes',
       description: 'Expand your knowledge by reading for at least 30 minutes.',
-      xpReward: 30,
+      xpReward: 30, // Medium + 2 skills = 30 XP
       type: 'daily',
       difficulty: 'medium',
-      statsReward: { intelligence: 3, discipline: 2 }
+      statsReward: { intelligence: 3, discipline: 2 },
+      selectedSkills: ['intelligence', 'discipline']
     },
     {
       title: 'Meditate/Relax',
       description: 'Take 10 minutes to meditate or practice mindfulness.',
-      xpReward: 20,
+      xpReward: 25, // Easy + 2 skills = 25 XP
       type: 'daily',
       difficulty: 'easy',
-      statsReward: { discipline: 2, charisma: 1 }
+      statsReward: { discipline: 2, charisma: 1 },
+      selectedSkills: ['discipline', 'charisma']
     },
     {
       title: 'Learn Something New',
       description: 'Watch an educational video or learn a new skill.',
-      xpReward: 35,
+      xpReward: 30, // Medium + 2 skills = 30 XP
       type: 'daily',
       difficulty: 'medium',
-      statsReward: { intelligence: 4, discipline: 1 }
+      statsReward: { intelligence: 4, discipline: 1 },
+      selectedSkills: ['intelligence', 'discipline']
     },
     {
       title: 'Social Connection',
       description: 'Reach out to a friend or family member.',
-      xpReward: 25,
+      xpReward: 25, // Easy + 2 skills = 25 XP
       type: 'daily',
       difficulty: 'easy',
-      statsReward: { charisma: 3, discipline: 1 }
+      statsReward: { charisma: 3, discipline: 1 },
+      selectedSkills: ['charisma', 'discipline']
     }
   ];
 

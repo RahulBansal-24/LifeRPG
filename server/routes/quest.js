@@ -84,14 +84,39 @@ router.post('/', [
     const skillCount = Array.isArray(selectedSkills) ? selectedSkills.length : 0;
     let xpReward;
     
-    if (difficulty === 'easy') {
-      xpReward = skillCount === 1 ? 20 : 25;
-    } else if (difficulty === 'medium') {
-      xpReward = skillCount === 1 ? 25 : 30;
-    } else if (difficulty === 'hard') {
-      xpReward = skillCount === 1 ? 35 : 40;
+    if (skillCount === 0) {
+      // No skills selected
+      if (difficulty === 'easy') {
+        xpReward = 15;
+      } else if (difficulty === 'medium') {
+        xpReward = 20;
+      } else if (difficulty === 'hard') {
+        xpReward = 25;
+      } else {
+        xpReward = 20; // default
+      }
+    } else if (skillCount === 1) {
+      // One skill selected
+      if (difficulty === 'easy') {
+        xpReward = 20;
+      } else if (difficulty === 'medium') {
+        xpReward = 25;
+      } else if (difficulty === 'hard') {
+        xpReward = 35;
+      } else {
+        xpReward = 25; // default
+      }
     } else {
-      xpReward = 25; // default
+      // Two or more skills selected
+      if (difficulty === 'easy') {
+        xpReward = 25;
+      } else if (difficulty === 'medium') {
+        xpReward = 30;
+      } else if (difficulty === 'hard') {
+        xpReward = 40;
+      } else {
+        xpReward = 30; // default
+      }
     }
 
     // Calculate stats reward based on difficulty
