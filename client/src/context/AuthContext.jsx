@@ -127,20 +127,23 @@ export const AuthProvider = ({ children }) => {
           console.log('Loading user from localStorage immediately:', userData);
           
           // Ensure user has required fields
+          const completedMainQuests = userData.quests ? userData.quests.filter(q => q.type === 'main' && q.status === 'completed') : [];
+          const earnedStars = completedMainQuests.length; // 1 star per main quest
+          
           const completeUserData = {
             ...userData,
             createdAt: userData.createdAt || new Date().toISOString(), // Ensure createdAt exists
-            stars: userData.stars || 0, // Ensure stars exists
+            stars: userData.stars || earnedStars, // Use earned stars if current is 0
           };
+          
+          // Update localStorage with complete data
+          localStorage.setItem('user', JSON.stringify(completeUserData));
           
           // Set user from localStorage immediately
           dispatch({
             type: AUTH_ACTIONS.LOAD_USER_SUCCESS,
             payload: completeUserData,
           });
-          
-          // Update localStorage with complete data
-          localStorage.setItem('user', JSON.stringify(completeUserData));
           
           // Don't call API - localStorage is our source of truth
           // This prevents API from overwriting localStorage data

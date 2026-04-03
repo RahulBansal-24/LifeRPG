@@ -95,6 +95,16 @@ const QuestsPage = () => {
       filtered = filtered.filter(quest => quest.status === filters.status);
     }
 
+    // Sort quests: uncompleted first, then completed
+    filtered.sort((a, b) => {
+      // If status is different, uncompleted comes first
+      if (a.status !== b.status) {
+        return a.status === 'pending' ? -1 : 1;
+      }
+      // If same status, maintain original order
+      return 0;
+    });
+
     setFilteredQuests(filtered);
   };
 
