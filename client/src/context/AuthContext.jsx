@@ -4,10 +4,19 @@ import toast from 'react-hot-toast';
 
 // Initial state
 const initialState = {
-  user: null,
+  user: (() => {
+    try {
+      const storedUser = localStorage.getItem('user');
+      return storedUser ? JSON.parse(storedUser) : null;
+    } catch (error) {
+      console.error('Failed to parse stored user on init:', error);
+      localStorage.removeItem('user');
+      return null;
+    }
+  })(),
   token: localStorage.getItem('token'),
   isAuthenticated: false,
-  isLoading: true,
+  isLoading: false,
   error: null,
 };
 
@@ -108,22 +117,60 @@ export const AuthProvider = ({ children }) => {
   // Load user from token on mount
   useEffect(() => {
     const loadUser = async () => {
-      if (state.token) {
+      // Always prioritize localStorage first
+      const storedUser = localStorage.getItem('user');
+      const storedToken = localStorage.getItem('token');
+      
+      if (storedUser && storedToken) {
+        try {
+          const userData = JSON.parse(storedUser);
+          console.log('Loading user from localStorage immediately:', userData);
+          
+          // Ensure user has required fields
+          const completeUserData = {
+            ...userData,
+            createdAt: userData.createdAt || new Date().toISOString(), // Ensure createdAt exists
+            stars: userData.stars || 0, // Ensure stars exists
+          };
+          
+          // Set user from localStorage immediately
+          dispatch({
+            type: AUTH_ACTIONS.LOAD_USER_SUCCESS,
+            payload: completeUserData,
+          });
+          
+          // Update localStorage with complete data
+          localStorage.setItem('user', JSON.stringify(completeUserData));
+          
+          // Don't call API - localStorage is our source of truth
+          // This prevents API from overwriting localStorage data
+          return;
+        } catch (parseError) {
+          console.error('Failed to parse stored user:', parseError);
+          localStorage.removeItem('user');
+          localStorage.removeItem('token');
+        }
+      } else if (storedToken) {
+        // Token exists but no user data, try API
         try {
           dispatch({ type: AUTH_ACTIONS.LOAD_USER_START });
           const response = await userAPI.getProfile();
+          const userData = response.data.data;
+          
+          // Save to localStorage for persistence
+          localStorage.setItem('user', JSON.stringify(userData));
+          
           dispatch({
             type: AUTH_ACTIONS.LOAD_USER_SUCCESS,
-            payload: response.data.data,
+            payload: userData,
           });
         } catch (error) {
-          console.error('Failed to load user:', error);
+          console.error('Failed to load user from API:', error);
           dispatch({
             type: AUTH_ACTIONS.LOAD_USER_FAILURE,
             payload: 'Failed to load user',
           });
           localStorage.removeItem('token');
-          localStorage.removeItem('user');
         }
       } else {
         dispatch({ type: AUTH_ACTIONS.LOAD_USER_FAILURE, payload: 'No token found' });

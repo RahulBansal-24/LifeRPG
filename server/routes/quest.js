@@ -333,12 +333,60 @@ router.post('/generate-daily', async (req, res) => {
 
     // Check if daily quests already exist for today
     const existingDailyQuests = await Quest.getDailyQuests(userId);
+    console.log('Existing daily quests:', existingDailyQuests.map(q => ({ 
+      id: q._id, 
+      title: q.title, 
+      selectedSkills: q.selectedSkills,
+      statsReward: q.statsReward 
+    })));
     
     if (existingDailyQuests.length > 0) {
-      return res.status(400).json({
-        success: false,
-        message: 'Daily quests already exist for today'
-      });
+      console.log(`Found ${existingDailyQuests.length} existing daily quests, checking if they need fixing...`);
+      let needsRegeneration = false;
+      
+      // Check if any quests have incorrect statsReward (all zeros) or missing selectedSkills
+      for (const quest of existingDailyQuests) {
+        console.log(`Quest "${quest.title}" - selectedSkills:`, quest.selectedSkills);
+        console.log(`Quest "${quest.title}" - statsReward:`, quest.statsReward);
+        
+        const hasValidStatsReward = quest.statsReward && 
+          Object.values(quest.statsReward).some(value => value > 0);
+        
+        const hasValidSelectedSkills = quest.selectedSkills && 
+          quest.selectedSkills.length > 0;
+        
+        if (!hasValidStatsReward || !hasValidSelectedSkills) {
+          console.log(`Quest "${quest.title}" has invalid data, needs regeneration`);
+          needsRegeneration = true;
+          break;
+        }
+      }
+      
+      if (needsRegeneration) {
+        console.log('Regenerating all daily quests with correct data...');
+        // Delete existing daily quests
+        await Quest.deleteMany({ 
+          userId: userId, 
+          type: 'daily',
+          createdAt: { $gte: new Date(new Date().setHours(0, 0, 0, 0)) }
+        });
+        
+        // Create new daily quests with correct data
+        const dailyQuests = await Quest.createDefaultDailyQuests(userId);
+        
+        return res.status(201).json({
+          success: true,
+          message: 'Daily quests regenerated with correct data!',
+          data: dailyQuests
+        });
+      } else {
+        console.log('All daily quests have valid data');
+        return res.status(200).json({
+          success: true,
+          message: 'Daily quests already exist with correct data',
+          data: existingDailyQuests
+        });
+      }
     }
 
     // Create default daily quests

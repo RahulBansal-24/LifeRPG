@@ -13,11 +13,12 @@ import {
   Circle,
   Trash2,
   Edit,
+  Edit3,
   Filter,
   X,
   Sparkles
 } from 'lucide-react';
-import { 
+  import { 
   getDifficultyColor, 
   getQuestTypeColor, 
   formatRelativeTime,
@@ -35,6 +36,7 @@ const QuestsPage = () => {
   const [showCreateForm, setShowCreateForm] = useState(false);
   const [filters, setFilters] = useState({
     type: 'all',
+    difficulty: 'all',
     status: 'all',
   });
   const [formData, setFormData] = useState({
@@ -63,6 +65,12 @@ const QuestsPage = () => {
     try {
       setIsLoading(true);
       const response = await questAPI.getQuests();
+      console.log('Fetched quests:', response.data.data?.map(q => ({
+        id: q._id,
+        title: q.title,
+        selectedSkills: q.selectedSkills,
+        statsReward: q.statsReward
+      })));
       setQuests(response.data.data || []);
     } catch (error) {
       console.error('Failed to fetch quests:', error);
@@ -77,6 +85,10 @@ const QuestsPage = () => {
 
     if (filters.type !== 'all') {
       filtered = filtered.filter(quest => quest.type === filters.type);
+    }
+
+    if (filters.difficulty !== 'all') {
+      filtered = filtered.filter(quest => quest.difficulty === filters.difficulty);
     }
 
     if (filters.status !== 'all') {
@@ -274,13 +286,14 @@ const QuestsPage = () => {
             </select>
             
             <select
-              value={filters.status}
-              onChange={(e) => setFilters(prev => ({ ...prev, status: e.target.value }))}
+              value={filters.difficulty}
+              onChange={(e) => setFilters(prev => ({ ...prev, difficulty: e.target.value }))}
               className="bg-gaming-card border border-gaming-border rounded-lg px-3 py-2 text-white focus:outline-none focus:ring-2 focus:ring-neon-purple"
             >
-              <option value="all">All Status</option>
-              <option value="pending">Pending</option>
-              <option value="completed">Completed</option>
+              <option value="all">All Difficulties</option>
+              <option value="easy">Easy</option>
+              <option value="medium">Medium</option>
+              <option value="hard">Hard</option>
             </select>
           </div>
 
@@ -376,20 +389,28 @@ const QuestsPage = () => {
                     XP Reward (Auto-calculated)
                   </label>
                   <div className="w-full px-4 py-3 bg-gaming-darker border border-gaming-border rounded-lg text-xp-gold font-bold">
-                    {getSkillPoints(formData.difficulty) * formData.selectedSkills.length > 0 
-                      ? (() => {
-                          const skillCount = formData.selectedSkills.length;
-                          if (formData.difficulty === 'easy') {
-                            return skillCount === 1 ? 20 : 25;
-                          } else if (formData.difficulty === 'medium') {
-                            return skillCount === 1 ? 25 : 30;
-                          } else if (formData.difficulty === 'hard') {
-                            return skillCount === 1 ? 35 : 40;
-                          }
-                          return 25;
-                        })()
-                      : 25
-                    } XP
+                    {(() => {
+                      const skillCount = formData.selectedSkills.length;
+                      if (skillCount === 0) {
+                        // No skills selected
+                        if (formData.difficulty === 'easy') return 15;
+                        if (formData.difficulty === 'medium') return 20;
+                        if (formData.difficulty === 'hard') return 25;
+                        return 20;
+                      } else if (skillCount === 1) {
+                        // One skill selected
+                        if (formData.difficulty === 'easy') return 20;
+                        if (formData.difficulty === 'medium') return 25;
+                        if (formData.difficulty === 'hard') return 35;
+                        return 25;
+                      } else {
+                        // Two or more skills selected
+                        if (formData.difficulty === 'easy') return 25;
+                        if (formData.difficulty === 'medium') return 30;
+                        if (formData.difficulty === 'hard') return 40;
+                        return 30;
+                      }
+                    })()} XP
                   </div>
                   <p className="text-xs text-gray-400 mt-1">
                     Based on difficulty ({formData.difficulty}) and skills selected ({formData.selectedSkills.length})
@@ -549,6 +570,24 @@ const QuestsPage = () => {
                     </div>
                     
                     <p className="text-gray-400 mb-3">{quest.description}</p>
+                    
+                    {/* Skill Graphics */}
+                    {quest.selectedSkills && quest.selectedSkills.length > 0 && (
+                      <div className="flex items-center space-x-2 mb-3">
+                        <span className="text-xs text-gray-500">Skills:</span>
+                        <div className="flex items-center space-x-1">
+                          {quest.selectedSkills.map((skill, index) => (
+                            <span 
+                              key={index} 
+                              className="text-lg"
+                              title={skill.charAt(0).toUpperCase() + skill.slice(1)}
+                            >
+                              {getStatIcon(skill)}
+                            </span>
+                          ))}
+                        </div>
+                      </div>
+                    )}
                     
                     <div className="flex items-center justify-between">
                       <div className="flex items-center space-x-4 text-sm text-gray-400">

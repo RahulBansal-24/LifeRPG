@@ -86,7 +86,9 @@ router.post('/signup', [
           level: user.level,
           xp: user.xp,
           stats: user.stats,
-          avatar: user.avatar
+          avatar: avatar || '🎮',
+          stars: user.stars,
+          createdAt: user.createdAt
         }
       }
     });
@@ -152,6 +154,27 @@ router.post('/login', [
     const existingDailyQuests = await Quest.getDailyQuests(user._id);
     if (existingDailyQuests.length === 0) {
       await Quest.createDefaultDailyQuests(user._id);
+    } else {
+      // Update existing daily quests to include selectedSkills if missing or empty
+      for (const quest of existingDailyQuests) {
+        if (!quest.selectedSkills || quest.selectedSkills.length === 0) {
+          // Derive selectedSkills from statsReward
+          const selectedSkills = [];
+          if (quest.statsReward) {
+            Object.keys(quest.statsReward).forEach(stat => {
+              if (quest.statsReward[stat] > 0) {
+                selectedSkills.push(stat);
+              }
+            });
+          }
+          
+          if (selectedSkills.length > 0) {
+            await Quest.findByIdAndUpdate(quest._id, { 
+              selectedSkills: selectedSkills 
+            });
+          }
+        }
+      }
     }
 
     res.status(200).json({
@@ -165,8 +188,10 @@ router.post('/login', [
           email: user.email,
           level: user.level,
           xp: user.xp,
+          stars: user.stars,
           stats: user.stats,
-          avatar: user.avatar
+          avatar: user.avatar,
+          createdAt: user.createdAt
         }
       }
     });

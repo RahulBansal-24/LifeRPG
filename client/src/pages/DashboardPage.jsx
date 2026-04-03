@@ -64,7 +64,7 @@ const DashboardPage = () => {
       // Calculate stats
       const completedQuests = quests.filter(q => q.status === 'completed');
       const dailyCompleted = quests.filter(q => q.type === 'daily' && q.status === 'completed');
-      const totalXP = completedQuests.reduce((sum, quest) => sum + quest.xpReward, 0);
+      const totalXP = user?.xp || 0;
 
       setRecentQuests(quests.slice(0, 5));
       setStats({
@@ -190,8 +190,13 @@ const DashboardPage = () => {
                 <p className="text-neon-green font-semibold">
                   {getLevelTitle(user?.level)}
                 </p>
+                <div className="flex items-center space-x-2">
+                  <span className="text-lg">⭐</span>
+                  <span className="text-xp-gold font-bold">{user?.stars || 0}</span>
+                  <span className="text-gray-400 text-sm">Stars</span>
+                </div>
                 <p className="text-gray-400 text-sm">
-                  Member since {user?.createdAt ? new Date(user.createdAt).toLocaleDateString() : 'Loading...'}
+                  Member since {user?.createdAt && user.createdAt !== 'undefined' ? new Date(user.createdAt).toLocaleDateString() : 'Unknown'}
                 </p>
               </div>
             </div>
@@ -204,11 +209,6 @@ const DashboardPage = () => {
                 showDetails={true}
                 animated={true}
               />
-              <div className="mt-3 flex items-center justify-center space-x-2">
-                <span className="text-2xl">⭐</span>
-                <span className="text-xl font-bold text-xp-gold">{user?.stars || 0}</span>
-                <span className="text-sm text-gray-400">Stars</span>
-              </div>
             </div>
           </div>
         </motion.div>
