@@ -13,6 +13,11 @@ const LoginPage = () => {
   });
   const [showPassword, setShowPassword] = useState(false);
   const [errors, setErrors] = useState({});
+  const [showForgotPassword, setShowForgotPassword] = useState(false);
+  const [forgotEmail, setForgotEmail] = useState('');
+  const [forgotSuccess, setForgotSuccess] = useState('');
+  const [forgotError, setForgotError] = useState('');
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const { login, isLoading } = useAuth();
   const navigate = useNavigate();
 
@@ -57,6 +62,42 @@ const LoginPage = () => {
 
   const togglePasswordVisibility = () => {
     setShowPassword(!showPassword);
+  };
+
+  const handleForgotPassword = async (e) => {
+    e.preventDefault();
+    
+    if (!forgotEmail || !validateEmail(forgotEmail)) {
+      setForgotError('Please enter a valid email address');
+      return;
+    }
+
+    setIsSubmitting(true);
+    setForgotError('');
+    setForgotSuccess('');
+
+    try {
+      const response = await fetch('http://localhost:5000/api/auth/forgot-password', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ email: forgotEmail }),
+      });
+
+      const data = await response.json();
+
+      if (data.success) {
+        setForgotSuccess('Password reset instructions have been sent to your email!');
+        setForgotEmail('');
+      } else {
+        setForgotError(data.message || 'Failed to send reset instructions');
+      }
+    } catch (error) {
+      setForgotError('Network error. Please try again later.');
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -203,7 +244,80 @@ const LoginPage = () => {
                 Sign Up Now
               </Link>
             </p>
+            <p className="text-gray-400 mt-2">
+              <button
+                type="button"
+                onClick={() => setShowForgotPassword(!showForgotPassword)}
+                className="text-neon-purple hover:text-neon-pink transition-colors duration-200 font-semibold"
+              >
+                Forgot your password?
+              </button>
+            </p>
           </div>
+
+          {/* Forgot Password Form */}
+          {showForgotPassword && (
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.3 }}
+              className="mt-6 p-4 bg-gaming-darker border border-gaming-border rounded-lg"
+            >
+              <h3 className="text-lg font-semibold text-white mb-4">
+                Reset Password
+              </h3>
+              
+              {forgotSuccess ? (
+                <div className="mb-4 p-3 bg-green-900 border border-green-700 rounded-lg">
+                  <p className="text-green-300 text-sm">{forgotSuccess}</p>
+                </div>
+              ) : (
+                <form onSubmit={handleForgotPassword} className="space-y-4">
+                  <div>
+                    <label htmlFor="forgotEmail" className="block text-sm font-medium text-gray-300 mb-2">
+                      Email Address
+                    </label>
+                    <div className="relative">
+                      <input
+                        type="email"
+                        id="forgotEmail"
+                        value={forgotEmail}
+                        onChange={(e) => setForgotEmail(e.target.value)}
+                        className={`w-full px-4 py-3 bg-gaming-darker border rounded-lg text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-neon-purple focus:border-transparent transition-all duration-200 ${
+                          forgotError ? 'border-red-500' : 'border-gaming-border'
+                        }`}
+                        placeholder="Enter your email address"
+                        disabled={isSubmitting}
+                      />
+                      {forgotError && (
+                        <motion.p
+                          initial={{ opacity: 0 }}
+                          animate={{ opacity: 1 }}
+                          className="absolute -bottom-5 left-0 text-red-400 text-xs"
+                        >
+                          {forgotError}
+                        </motion.p>
+                      )}
+                    </div>
+                  </div>
+
+                  <motion.button
+                    type="submit"
+                    disabled={isSubmitting}
+                    whileHover={{ scale: isSubmitting ? 1 : 1.02 }}
+                    whileTap={{ scale: isSubmitting ? 1 : 0.98 }}
+                    className="w-full bg-neon-purple hover:bg-neon-pink text-white font-semibold py-3 px-4 rounded-lg transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    {isSubmitting ? (
+                      <LoadingSpinner size="sm" text="" />
+                    ) : (
+                      'Send Reset Instructions'
+                    )}
+                  </motion.button>
+                </form>
+              )}
+            </motion.div>
+          )}
         </div>
 
         {/* Decorative elements */}

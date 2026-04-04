@@ -11,6 +11,7 @@ import SignupPage from './pages/SignupPage';
 import DashboardPage from './pages/DashboardPage';
 import QuestsPage from './pages/QuestsPage';
 import LeaderboardPage from './pages/LeaderboardPage';
+import ResetPasswordPage from './pages/ResetPasswordPage';
 
 // Page transition animation
 const pageVariants = {
@@ -126,6 +127,22 @@ function App() {
                   transition={pageTransition}
                 >
                   <SignupPage />
+                </motion.div>
+              </PublicRoute>
+            } 
+          />
+          <Route 
+            path="/reset-password" 
+            element={
+              <PublicRoute>
+                <motion.div
+                  initial="initial"
+                  animate="in"
+                  exit="out"
+                  variants={pageVariants}
+                  transition={pageTransition}
+                >
+                  <ResetPasswordPage />
                 </motion.div>
               </PublicRoute>
             } 
