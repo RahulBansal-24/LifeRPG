@@ -296,6 +296,7 @@ const DashboardPage = () => {
                 key={stat}
                 stat={stat}
                 value={value}
+                maxValue={100000}
                 level={user?.level || 1}
               />
             ))}

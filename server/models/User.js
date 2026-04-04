@@ -38,25 +38,25 @@ const userSchema = new mongoose.Schema({
       type: Number,
       default: 10,
       min: 1,
-      max: 100
+      max: 100000
     },
     intelligence: {
       type: Number,
       default: 10,
       min: 1,
-      max: 100
+      max: 100000
     },
     discipline: {
       type: Number,
       default: 10,
       min: 1,
-      max: 100
+      max: 100000
     },
     charisma: {
       type: Number,
       default: 10,
       min: 1,
-      max: 100
+      max: 100000
     }
   },
   avatar: {
@@ -136,16 +136,56 @@ userSchema.methods.addXP = function(xpAmount) {
 // Method to get XP needed for next level
 userSchema.methods.getXPToNextLevel = function() {
   const xpThresholds = [
-    0,    // Level 1
-    100,  // Level 2
-    250,  // Level 3
-    500,  // Level 4
-    1000, // Level 5
-    1750, // Level 6
-    3000, // Level 7
-    5000, // Level 8
-    8000, // Level 9
-    12000 // Level 10
+    0,      // Level 1
+    100,    // Level 2
+    250,    // Level 3
+    500,    // Level 4
+    1000,   // Level 5
+    1750,   // Level 6
+    3000,   // Level 7
+    5000,   // Level 8
+    8000,   // Level 9
+    12000,  // Level 10
+    17500,  // Level 11
+    25000,  // Level 12
+    35000,  // Level 13
+    50000,  // Level 14
+    70000,  // Level 15
+    100000, // Level 16
+    140000, // Level 17
+    190000, // Level 18
+    250000, // Level 19
+    330000, // Level 20
+    430000, // Level 21
+    550000, // Level 22
+    700000, // Level 23
+    880000, // Level 24
+    1100000,// Level 25
+    1350000,// Level 26
+    1650000,// Level 27
+    2000000,// Level 28
+    2400000,// Level 29
+    2850000,// Level 30
+    3350000,// Level 31
+    3900000,// Level 32
+    4500000,// Level 33
+    5150000,// Level 34
+    5850000,// Level 35
+    6600000,// Level 36
+    7400000,// Level 37
+    8250000,// Level 38
+    9150000,// Level 39
+    10100000,// Level 40
+    11100000,// Level 41
+    12150000,// Level 42
+    13250000,// Level 43
+    14400000,// Level 44
+    15600000,// Level 45
+    16850000,// Level 46
+    18150000,// Level 47
+    19500000,// Level 48
+    20900000,// Level 49
+    22500000 // Level 50
   ];
   
   if (this.level >= xpThresholds.length) {
@@ -166,7 +206,7 @@ userSchema.methods.getXPToNextLevel = function() {
 userSchema.methods.updateStats = function(statUpdates) {
   Object.keys(statUpdates).forEach(stat => {
     if (this.stats[stat] !== undefined) {
-      this.stats[stat] = Math.max(1, Math.min(100, this.stats[stat] + statUpdates[stat]));
+      this.stats[stat] = Math.max(1, Math.min(100000, this.stats[stat] + statUpdates[stat]));
     }
   });
 };

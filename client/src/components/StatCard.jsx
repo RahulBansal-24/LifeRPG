@@ -57,7 +57,7 @@ const StatCard = ({ stat, value, maxValue = 100, showBonus = true, level = 1 }) 
         
         <div className="text-right">
           <span className="text-xs text-gray-400">
-            {percentage.toFixed(0)}%
+            {percentage.toFixed(3)}%
           </span>
         </div>
       </div>

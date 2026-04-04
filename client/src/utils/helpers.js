@@ -1,16 +1,56 @@
 // XP calculation utilities
 export const calculateXPProgress = (currentXP, level) => {
   const xpThresholds = [
-    0,    // Level 1
-    100,  // Level 2
-    250,  // Level 3
-    500,  // Level 4
-    1000, // Level 5
-    1750, // Level 6
-    3000, // Level 7
-    5000, // Level 8
-    8000, // Level 9
-    12000 // Level 10
+    0,      // Level 1
+    100,    // Level 2
+    250,    // Level 3
+    500,    // Level 4
+    1000,   // Level 5
+    1750,   // Level 6
+    3000,   // Level 7
+    5000,   // Level 8
+    8000,   // Level 9
+    12000,  // Level 10
+    17500,  // Level 11
+    25000,  // Level 12
+    35000,  // Level 13
+    50000,  // Level 14
+    70000,  // Level 15
+    100000, // Level 16
+    140000, // Level 17
+    190000, // Level 18
+    250000, // Level 19
+    330000, // Level 20
+    430000, // Level 21
+    550000, // Level 22
+    700000, // Level 23
+    880000, // Level 24
+    1100000,// Level 25
+    1350000,// Level 26
+    1650000,// Level 27
+    2000000,// Level 28
+    2400000,// Level 29
+    2850000,// Level 30
+    3350000,// Level 31
+    3900000,// Level 32
+    4500000,// Level 33
+    5150000,// Level 34
+    5850000,// Level 35
+    6600000,// Level 36
+    7400000,// Level 37
+    8250000,// Level 38
+    9150000,// Level 39
+    10100000,// Level 40
+    11100000,// Level 41
+    12150000,// Level 42
+    13250000,// Level 43
+    14400000,// Level 44
+    15600000,// Level 45
+    16850000,// Level 46
+    18150000,// Level 47
+    19500000,// Level 48
+    20900000,// Level 49
+    22500000 // Level 50
   ];
 
   if (level >= xpThresholds.length) {
@@ -169,27 +209,86 @@ export const validateUsername = (username) => {
 // Get level title
 export const getLevelTitle = (level) => {
   const titles = [
-    'Novice',     // Level 1
-    'Apprentice', // Level 2
-    'Adventurer', // Level 3
-    'Warrior',    // Level 4
-    'Hero',       // Level 5
-    'Champion',   // Level 6
-    'Legend',     // Level 7
-    'Master',     // Level 8
-    'Grandmaster', // Level 9
-    'Immortal',   // Level 10+
+    'Novice',        // Level 1
+    'Apprentice',    // Level 2
+    'Adventurer',    // Level 3
+    'Warrior',       // Level 4
+    'Hero',          // Level 5
+    'Champion',      // Level 6
+    'Legend',        // Level 7
+    'Master',        // Level 8
+    'Grandmaster',   // Level 9
+    'Immortal',      // Level 10
+    'Demigod',       // Level 11
+    'Ascendant',     // Level 12
+    'Celestial',     // Level 13
+    'Divine',        // Level 14
+    'Ethereal',      // Level 15
+    'Transcendent',  // Level 16
+    'Cosmic',        // Level 17
+    'Stellar',       // Level 18
+    'Galactic',      // Level 19
+    'Universal',     // Level 20
+    'Omnipotent',    // Level 21
+    'Eternal',       // Level 22
+    'Infinite',      // Level 23
+    'Boundless',     // Level 24
+    'Limitless',     // Level 25
+    'Supreme',       // Level 26
+    'Ultimate',      // Level 27
+    'Absolute',      // Level 28
+    'Perfected',     // Level 29
+    'Enlightened',   // Level 30
+    'Awakened',      // Level 31
+    'Ascended',      // Level 32
+    'Exalted',       // Level 33
+    'Venerated',     // Level 34
+    'Revered',       // Level 35
+    'Worshipped',     // Level 36
+    'Deified',       // Level 37
+    'Glorified',     // Level 38
+    'Sanctified',    // Level 39
+    'Consecrated',   // Level 40
+    'Anointed',      // Level 41
+    'Blessed',       // Level 42
+    'Favored',       // Level 43
+    'Chosen',        // Level 44
+    'Destined',      // Level 45
+    'Foretold',      // Level 46
+    'Prophesied',     // Level 47
+    'Legendary',     // Level 48
+    'Mythical',      // Level 49
+    'Godlike'        // Level 50
   ];
 
   if (level <= 0) return 'Novice';
-  if (level >= titles.length) return 'Immortal';
+  if (level >= titles.length) return 'Godlike';
   return titles[level - 1];
 };
 
-// Calculate stat bonus based on level
+// Calculate stat bonus based on level with tiered system
 export const calculateStatBonus = (baseStat, level) => {
-  const bonusMultiplier = 1 + (level - 1) * 0.05; // 5% bonus per level
-  return Math.floor(baseStat * bonusMultiplier);
+  let boostPercentage = 0;
+  
+  if (level >= 1 && level <= 5) {
+    boostPercentage = 0;
+  } else if (level >= 6 && level <= 15) {
+    boostPercentage = 5;
+  } else if (level >= 16 && level <= 25) {
+    boostPercentage = 10;
+  } else if (level >= 26 && level <= 35) {
+    boostPercentage = 15;
+  } else if (level >= 36 && level <= 45) {
+    boostPercentage = 20;
+  } else if (level >= 46 && level <= 50) {
+    boostPercentage = 25;
+  } else if (level > 50) {
+    boostPercentage = 25; // Cap at 25% after level 50
+  }
+  
+  // Formula: skill stat value = original + original * level boost
+  const bonusMultiplier = 1 + (boostPercentage / 100);
+  return Math.floor(baseStat * bonusMultiplier); // Return integer only
 };
 
 // Generate random quest suggestions
