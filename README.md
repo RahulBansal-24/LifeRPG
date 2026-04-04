@@ -22,6 +22,7 @@ Turn boring routines into epic quests, track your progress with XP and levels, a
 
 ### 🎮 Core Gameplay
 - 🔐 **Secure Authentication** - Sign up with custom avatars and personalized profiles
+- 📧 **Password Recovery** - Forgot password feature with email-based password recovery system
 - ⭐ **50-Level Progression System** - Epic journey from Novice to Godlike with exponential XP requirements
 - 📋 **Quest Management** - Create and complete Daily & Main quests with skill rewards
 - 💪 **Advanced Character Stats** - Develop Strength, Intelligence, Discipline, and Charisma up to 100,000
@@ -36,6 +37,31 @@ Turn boring routines into epic quests, track your progress with XP and levels, a
 
 ---
 
+## 🔐 Authentication & Security
+
+### 📧 Password Recovery System
+LifeRPG includes a comprehensive password recovery feature:
+
+#### **Forgot Password Flow**
+- **Email Verification**: Users enter their registered email address
+- **Secure Delivery**: Original password sent via encrypted email
+- **Immediate Access**: No complex reset tokens or waiting periods
+- **User-Friendly**: Simple, one-step password recovery process
+
+#### **Email Service Integration**
+- **Gmail Integration**: Secure SMTP delivery via Gmail App Passwords
+- **Professional Templates**: Beautiful, themed email templates
+- **Error Handling**: Comprehensive validation and error feedback
+- **Security**: Email validation and user existence verification
+
+#### **Security Features**
+- **Hashed Passwords**: All passwords stored with bcrypt encryption
+- **Dual Storage**: Both hashed and original passwords for recovery
+- **Access Control**: Password fields excluded from default queries
+- **Secure Transport**: HTTPS-ready email delivery
+
+---
+
 ## � Leveling & Stats System
 
 ### 🏆 50-Level Progression
@@ -43,13 +69,13 @@ LifeRPG features an extensive 50-level progression system with unique titles:
 
 | Level Range | Title | XP Required | Boost |
 |-------------|--------|-------------|--------|
-| 1-5 | Novice → Hero | 0% |
-| 6-15 | Champion → Ethereal | 5% |
-| 16-25 | Transcendent → Limitless | 10% |
-| 26-35 | Supreme → Revered | 15% |
-| 36-45 | Worshipped → Consecrated | 20% |
-| 46-50 | Anointed → Godlike | 25% |
-| 50+ | Godlike (Max) | 25% (capped) |
+| 1-5 | Novice → Hero | 0 - 1,000 XP | 0% |
+| 6-15 | Champion → Ethereal | 1,750 - 70,000 XP | 5% |
+| 16-25 | Transcendent → Limitless | 100,000 - 1,100,000 XP | 10% |
+| 26-35 | Supreme → Revered | 1,350,000 - 5,850,000 XP | 15% |
+| 36-45 | Worshipped → Consecrated | 6,600,000 - 15,600,000 XP | 20% |
+| 46-50 | Anointed → Godlike | 16,850,000 - 22,500,000 XP | 25% |
+| 50+ | Godlike (Max) | 22,500,000+ XP | 25% (capped) |
 
 ### 💪 Character Development
 - **Starting Stats**: 10 points in each skill (Strength, Intelligence, Discipline, Charisma)
@@ -167,6 +193,7 @@ npm run dev
 ### 🔐 Authentication
 - `POST /api/auth/signup` - 📝 User registration
 - `POST /api/auth/login` - 🔑 User login
+- `POST /api/auth/forgot-password` - 📧 Send password recovery email
 
 ### 👤 User Management
 - `GET /api/user/profile` - 👤 Get user profile
@@ -226,12 +253,13 @@ LifeRPG/
 ## 🎮 How to Play
 
 1. **🔐 Create Account** - Sign up with username, email, and choose your avatar
-2. **📊 Set Your Goals** - Create quests for daily tasks and main objectives with skill rewards
-3. **⚔️ Complete Quests** - Mark tasks as complete to earn XP, stat points, and stars
-4. **📈 Level Up** - Progress through 50 levels from Novice to Godlike with tiered stat boosts
-5. **🏆 Climb Leaderboard** - Compete with players worldwide using your accumulated XP
-6. **🔄 Daily Routine** - Generate new daily quests each day to build consistent habits
-7. **💪 Master Skills** - Develop your character stats to 100,000 with strategic level bonuses
+2. **📧 Password Recovery** - Use forgot password feature if you lose access to your account
+3. **📊 Set Your Goals** - Create quests for daily tasks and main objectives with skill rewards
+4. **⚔️ Complete Quests** - Mark tasks as complete to earn XP, stat points, and stars
+5. **📈 Level Up** - Progress through 50 levels from Novice to Godlike with tiered stat boosts
+6. **🏆 Climb Leaderboard** - Compete with players worldwide using your accumulated XP
+7. **🔄 Daily Routine** - Generate new daily quests each day to build consistent habits
+8. **💪 Master Skills** - Develop your character stats to 100,000 with strategic level bonuses
 
 ---
 
