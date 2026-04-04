@@ -22,10 +22,11 @@ Turn boring routines into epic quests, track your progress with XP and levels, a
 
 ### 🎮 Core Gameplay
 - 🔐 **Secure Authentication** - Sign up with custom avatars and personalized profiles
-- ⭐ **XP & Leveling System** - Earn experience points and level up with animated progress bars
-- 📋 **Quest Management** - Create and complete Daily & Main quests with rewards
-- 💪 **Character Stats** - Develop Strength, Intelligence, Discipline, and Charisma
+- ⭐ **50-Level Progression System** - Epic journey from Novice to Godlike with exponential XP requirements
+- 📋 **Quest Management** - Create and complete Daily & Main quests with skill rewards
+- 💪 **Advanced Character Stats** - Develop Strength, Intelligence, Discipline, and Charisma up to 100,000
 - 🏆 **Real-time Leaderboard** - Compete with players globally and climb the ranks
+- ⚡ **Tiered Level Boosts** - Strategic stat bonuses based on level ranges (0% to 25%)
 
 ### 🎨 User Experience
 - 🌙 **Dark Gaming Theme** - Immersive neon/cyberpunk inspired design
@@ -35,7 +36,37 @@ Turn boring routines into epic quests, track your progress with XP and levels, a
 
 ---
 
-## 🛠️ Technology Stack
+## � Leveling & Stats System
+
+### 🏆 50-Level Progression
+LifeRPG features an extensive 50-level progression system with unique titles:
+
+| Level Range | Title | XP Required | Boost |
+|-------------|--------|-------------|--------|
+| 1-5 | Novice → Hero | 0% |
+| 6-15 | Champion → Ethereal | 5% |
+| 16-25 | Transcendent → Limitless | 10% |
+| 26-35 | Supreme → Revered | 15% |
+| 36-45 | Worshipped → Consecrated | 20% |
+| 46-50 | Anointed → Godlike | 25% |
+| 50+ | Godlike (Max) | 25% (capped) |
+
+### 💪 Character Development
+- **Starting Stats**: 10 points in each skill (Strength, Intelligence, Discipline, Charisma)
+- **Maximum Stats**: 100,000 points per skill
+- **Level Boosts**: Tiered percentage bonuses applied to effective stat values
+- **Progress Display**: Precise 3-decimal percentage tracking
+
+### ⚡ XP Progression
+- **Level 1**: 0 XP (Novice)
+- **Level 10**: 12,000 XP (Immortal)
+- **Level 25**: 1,100,000 XP (Limitless)
+- **Level 50**: 22,500,000 XP (Godlike) - Final Level!
+- **Beyond 50**: XP continues accumulating, title remains "Godlike"
+
+---
+
+## �️ Technology Stack
 
 ### Frontend 🎨
 <div align="center">
@@ -62,11 +93,10 @@ Turn boring routines into epic quests, track your progress with XP and levels, a
 
 ### 📱 User Journey
 ```
-🏠 Landing → 🔐 Login/Signup → 🎮 Dashboard → 📋 Quests → 🏆 Leaderboard
+🔐 Login/Signup → 🎮 Dashboard → 📋 Quests → 🏆 Leaderboard
 ```
 
 ### 📄 Page Structure
-- **🏠 Landing Page** - Welcome screen with game overview
 - **🔐 Authentication Pages** - Login & Signup with avatar selection
 - **🎮 Dashboard** - Main hub with stats, XP, and recent quests
 - **📋 Quests Page** - Create, manage, and complete quests
@@ -196,11 +226,12 @@ LifeRPG/
 ## 🎮 How to Play
 
 1. **🔐 Create Account** - Sign up with username, email, and choose your avatar
-2. **📊 Set Your Goals** - Create quests for daily tasks and main objectives
-3. **⚔️ Complete Quests** - Mark tasks as complete to earn XP rewards
-4. **📈 Level Up** - Watch your stats grow and unlock new achievements
-5. **🏆 Climb Leaderboard** - Compete with players worldwide
-6. **🔄 Daily Routine** - Generate new daily quests each day
+2. **📊 Set Your Goals** - Create quests for daily tasks and main objectives with skill rewards
+3. **⚔️ Complete Quests** - Mark tasks as complete to earn XP, stat points, and stars
+4. **📈 Level Up** - Progress through 50 levels from Novice to Godlike with tiered stat boosts
+5. **🏆 Climb Leaderboard** - Compete with players worldwide using your accumulated XP
+6. **🔄 Daily Routine** - Generate new daily quests each day to build consistent habits
+7. **💪 Master Skills** - Develop your character stats to 100,000 with strategic level bonuses
 
 ---
 
