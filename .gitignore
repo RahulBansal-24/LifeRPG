@@ -10,9 +10,8 @@ pnpm-debug.log*
 /client/build/
 /server/dist/
 
-# Environment variables (keeping for local setup)
-# Uncomment the line below if you want to ignore .env in production
-# .env
+# Environment variables
+.env
 
 # Logs
 logs
@@ -119,6 +118,7 @@ Thumbs.db
 # Deployment files to ignore
 DEPLOYMENT.md
 PPT_Prompt.md
+Hackathon_PPT_Prompt.md
 
 # Test files
 test/
