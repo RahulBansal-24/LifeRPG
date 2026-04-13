@@ -4,11 +4,13 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { useAuth } from './context/AuthContext';
 import Navbar from './components/Navbar';
 import LoadingSpinner from './components/LoadingSpinner';
+import MageGuide from './components/MageGuide';
 
 // Page Components
 import LoginPage from './pages/LoginPage';
 import SignupPage from './pages/SignupPage';
 import DashboardPage from './pages/DashboardPage';
+import Journey from './pages/Journey';
 import QuestsPage from './pages/QuestsPage';
 import LeaderboardPage from './pages/LeaderboardPage';
 import ResetPasswordPage from './pages/ResetPasswordPage';
@@ -182,6 +184,22 @@ function App() {
             } 
           />
           <Route 
+            path="/journey" 
+            element={
+              <ProtectedRoute>
+                <motion.div
+                  initial="initial"
+                  animate="in"
+                  exit="out"
+                  variants={pageVariants}
+                  transition={pageTransition}
+                >
+                  <Journey />
+                </motion.div>
+              </ProtectedRoute>
+            } 
+          />
+          <Route 
             path="/quests" 
             element={
               <ProtectedRoute>
@@ -242,6 +260,9 @@ function App() {
           />
         </Routes>
       </AnimatePresence>
+      
+      {/* Global Mage Guide Assistant */}
+      <MageGuide />
     </div>
   );
 }

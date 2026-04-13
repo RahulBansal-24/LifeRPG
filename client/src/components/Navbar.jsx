@@ -11,7 +11,8 @@ import {
   Menu, 
   X,
   Home,
-  Sparkles
+  Sparkles,
+  Map
 } from 'lucide-react';
 
 const Navbar = () => {
@@ -28,6 +29,7 @@ const Navbar = () => {
 
   const navItems = [
     { path: '/', label: 'Dashboard', icon: Home },
+    { path: '/journey', label: 'Journey', icon: Map },
     { path: '/quests', label: 'Quests', icon: Target },
     { path: '/leaderboard', label: 'Leaderboard', icon: Trophy },
   ];
