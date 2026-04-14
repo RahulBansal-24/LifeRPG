@@ -1,4 +1,5 @@
 const mongoose = require('mongoose');
+const { prepareDailyQuests } = require('../utils/dailyQuestPool');
 
 const questSchema = new mongoose.Schema({
   userId: {
@@ -76,7 +77,13 @@ questSchema.statics.getDailyQuests = function(userId) {
   });
 };
 
-// Static method to create default daily quests
+// Static method to create daily quests from pool (NEW SYSTEM)
+questSchema.statics.createDailyQuestsFromPool = function(userId) {
+  const dailyQuests = prepareDailyQuests(userId);
+  return this.insertMany(dailyQuests);
+};
+
+// Static method to create default daily quests (LEGACY - for backward compatibility)
 questSchema.statics.createDefaultDailyQuests = function(userId) {
   const defaultDailyQuests = [
     {

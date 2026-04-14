@@ -325,7 +325,7 @@ router.delete('/:id', async (req, res) => {
 });
 
 // @route   POST /api/quests/generate-daily
-// @desc    Generate daily quests for the user
+// @desc    Generate daily quests for the user using quest pool system
 // @access  Private
 router.post('/generate-daily', async (req, res) => {
   try {
@@ -371,12 +371,12 @@ router.post('/generate-daily', async (req, res) => {
           createdAt: { $gte: new Date(new Date().setHours(0, 0, 0, 0)) }
         });
         
-        // Create new daily quests with correct data
-        const dailyQuests = await Quest.createDefaultDailyQuests(userId);
+        // Create new daily quests using quest pool system
+        const dailyQuests = await Quest.createDailyQuestsFromPool(userId);
         
         return res.status(201).json({
           success: true,
-          message: 'Daily quests regenerated with correct data!',
+          message: 'Daily quests regenerated from quest pool!',
           data: dailyQuests
         });
       } else {
@@ -389,12 +389,13 @@ router.post('/generate-daily', async (req, res) => {
       }
     }
 
-    // Create default daily quests
-    const dailyQuests = await Quest.createDefaultDailyQuests(userId);
+    // Create daily quests using new quest pool system
+    console.log('Creating new daily quests from quest pool...');
+    const dailyQuests = await Quest.createDailyQuestsFromPool(userId);
 
     res.status(201).json({
       success: true,
-      message: 'Daily quests generated successfully!',
+      message: 'Daily quests generated from quest pool successfully!',
       data: dailyQuests
     });
   } catch (error) {
