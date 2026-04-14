@@ -2,6 +2,7 @@ import React from 'react';
 import { Routes, Route, Navigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useAuth } from './context/AuthContext';
+import { MageProvider } from './context/MageContext';
 import Navbar from './components/Navbar';
 import LoadingSpinner from './components/LoadingSpinner';
 import MageGuide from './components/MageGuide';
@@ -39,7 +40,9 @@ const pageTransition = {
 
 // Protected Route Component
 const ProtectedRoute = ({ children }) => {
-  const { isAuthenticated, isLoading } = useAuth();
+  const { isAuthenticated, isLoading, user } = useAuth();
+
+  console.log('ProtectedRoute - Auth state:', { isAuthenticated, isLoading, user });
 
   if (isLoading) {
     return (
@@ -50,9 +53,11 @@ const ProtectedRoute = ({ children }) => {
   }
 
   if (!isAuthenticated) {
+    console.log('ProtectedRoute - Redirecting to login, user not authenticated');
     return <Navigate to="/login" replace />;
   }
 
+  console.log('ProtectedRoute - User authenticated, rendering children');
   return children;
 };
 

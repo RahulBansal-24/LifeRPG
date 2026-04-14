@@ -1,4 +1,5 @@
 import React, { createContext, useContext, useReducer, useEffect } from 'react';
+import { useMage } from './MageContext';
 import { authAPI, userAPI } from '../services/api';
 import toast from 'react-hot-toast';
 
@@ -113,6 +114,7 @@ const AuthContext = createContext();
 // Provider component
 export const AuthProvider = ({ children }) => {
   const [state, dispatch] = useReducer(authReducer, initialState);
+  const { resetMageOnLogin } = useMage();
 
   // Load user from token on mount
   useEffect(() => {
@@ -120,6 +122,8 @@ export const AuthProvider = ({ children }) => {
       // Always prioritize localStorage first
       const storedUser = localStorage.getItem('user');
       const storedToken = localStorage.getItem('token');
+      
+      console.log('AuthContext - Loading user:', { storedUser: storedUser ? 'exists' : 'none', storedToken: storedToken ? 'exists' : 'none' });
       
       if (storedUser && storedToken) {
         try {
@@ -160,6 +164,8 @@ export const AuthProvider = ({ children }) => {
           const response = await userAPI.getProfile();
           const userData = response.data.data;
           
+          console.log('Loading user from API:', userData);
+          
           // Save to localStorage for persistence
           localStorage.setItem('user', JSON.stringify(userData));
           
@@ -176,6 +182,7 @@ export const AuthProvider = ({ children }) => {
           localStorage.removeItem('token');
         }
       } else {
+        console.log('No token found, setting isAuthenticated to false');
         dispatch({ type: AUTH_ACTIONS.LOAD_USER_FAILURE, payload: 'No token found' });
       }
     };
@@ -199,7 +206,10 @@ export const AuthProvider = ({ children }) => {
         payload: { token, user },
       });
 
-      toast.success('Welcome back to LifeRPG! 🎮');
+      // Reset mage to visible on login
+      resetMageOnLogin();
+
+      toast.success('Welcome back to LifeRPG! ðŸŽ');
       return { success: true };
     } catch (error) {
       const errorMessage = error.response?.data?.message || 'Login failed';
@@ -228,7 +238,10 @@ export const AuthProvider = ({ children }) => {
         payload: { token, user },
       });
 
-      toast.success('Welcome to LifeRPG! 🎮');
+      // Reset mage to visible on signup
+      resetMageOnLogin();
+
+      toast.success('Welcome to LifeRPG! ðŸŽ');
       return { success: true };
     } catch (error) {
       const errorMessage = error.response?.data?.message || 'Signup failed';

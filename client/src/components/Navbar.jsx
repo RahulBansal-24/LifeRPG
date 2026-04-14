@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+import MageToggle from './MageToggle';
 import { 
   Sword, 
   Trophy, 
@@ -85,6 +86,9 @@ const Navbar = () => {
                   </Link>
                 );
               })}
+              
+              {/* Mage Toggle */}
+              <MageToggle />
             </div>
           )}
 
@@ -156,6 +160,12 @@ const Navbar = () => {
                   </Link>
                 );
               })}
+              
+              {/* Mage Toggle in Mobile Menu */}
+              <div className="flex items-center justify-between px-3 py-2 bg-gaming-darker rounded-lg border border-gaming-border">
+                <span className="text-sm font-medium text-gray-300">Mage Guide</span>
+                <MageToggle />
+              </div>
               
               <div className="pt-4 border-t border-gaming-border">
                 <div className="flex items-center space-x-3 px-3 py-2 bg-gaming-darker rounded-lg border border-gaming-border mb-3">
