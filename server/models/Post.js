@@ -23,9 +23,17 @@ const postSchema = new mongoose.Schema({
     trim: true,
     maxlength: [500, 'Post description cannot exceed 500 characters']
   },
+  imageData: {
+    type: Buffer,
+    required: false // Make optional to support both old and new posts
+  },
+  imageContentType: {
+    type: String,
+    required: false // Make optional to support both old and new posts
+  },
   imageUrl: {
     type: String,
-    required: [true, 'Post image is required']
+    required: false // Keep for backward compatibility with old posts
   },
   caption: {
     type: String,

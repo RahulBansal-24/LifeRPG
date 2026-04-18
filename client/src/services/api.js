@@ -84,6 +84,7 @@ export const postAPI = {
   checkPostEligibility: (questId) => api.get(`/posts/check/${questId}`),
   toggleLike: (postId) => api.post(`/posts/${postId}/like`),
   addComment: (postId, text) => api.post(`/posts/${postId}/comment`, { text }),
+  deleteComment: (postId, commentId) => api.delete(`/posts/${postId}/comment/${commentId}`),
   deletePost: (postId) => api.delete(`/posts/${postId}`),
 };
 

@@ -26,6 +26,28 @@ const Chronicles = () => {
   const [refreshing, setRefreshing] = useState(false);
   const [hasMore, setHasMore] = useState(true);
   const [skip, setSkip] = useState(0);
+  const [userStats, setUserStats] = useState({
+    chronicles: 0,
+    likes: 0,
+    comments: 0
+  });
+
+  // Load user stats from all posts
+  const loadUserStats = async () => {
+    try {
+      // Get all user posts to calculate accurate stats
+      const response = await postAPI.getMyPosts(1000, 0); // Get up to 1000 posts to ensure we get all
+      const userPosts = response.data.data;
+      
+      const chronicles = userPosts.length;
+      const likes = userPosts.reduce((total, post) => total + post.likes.length, 0);
+      const comments = userPosts.reduce((total, post) => total + post.comments.length, 0);
+      
+      setUserStats({ chronicles, likes, comments });
+    } catch (error) {
+      console.error('Failed to load user stats:', error);
+    }
+  };
 
   // Load posts
   const loadPosts = async (reset = false) => {
@@ -54,6 +76,10 @@ const Chronicles = () => {
     } finally {
       setIsLoading(false);
       setRefreshing(false);
+      // Load user stats after posts are loaded
+      if (reset) {
+        loadUserStats();
+      }
     }
   };
 
@@ -81,12 +107,16 @@ const Chronicles = () => {
     setShowCreateModal(false);
     setSelectedQuest(null);
     toast.success('Post created successfully! Chronicle added! ');
+    // Refresh user stats
+    loadUserStats();
   };
 
   // Handle post deleted
   const handlePostDeleted = (postId) => {
     setPosts(prev => prev.filter(post => post._id !== postId));
     toast.success('Post deleted successfully');
+    // Refresh user stats
+    loadUserStats();
   };
 
   // Handle post liked
@@ -96,6 +126,11 @@ const Chronicles = () => {
         ? { ...post, likes: likeData.liked ? [...post.likes, user._id] : post.likes.filter(id => id !== user._id) }
         : post
     ));
+    // Refresh user stats if it's user's post
+    const post = posts.find(p => p._id === postId);
+    if (post && post.userId._id === user._id) {
+      loadUserStats();
+    }
   };
 
   // Handle comment added
@@ -105,6 +140,25 @@ const Chronicles = () => {
         ? { ...post, comments: [...post.comments, comment] }
         : post
     ));
+    // Refresh user stats if it's user's post
+    const post = posts.find(p => p._id === postId);
+    if (post && post.userId._id === user._id) {
+      loadUserStats();
+    }
+  };
+
+  // Handle comment deleted
+  const handleCommentDeleted = (postId, commentId) => {
+    setPosts(prev => prev.map(post => 
+      post._id === postId 
+        ? { ...post, comments: post.comments.filter(c => c._id !== commentId) }
+        : post
+    ));
+    // Refresh user stats if it's user's post
+    const post = posts.find(p => p._id === postId);
+    if (post && post.userId._id === user._id) {
+      loadUserStats();
+    }
   };
 
   // Initial load
@@ -147,7 +201,7 @@ const Chronicles = () => {
             <div className="flex items-center space-x-3">
               <BookOpen className="w-8 h-8 text-neon-purple" />
               <div>
-                <h1 className="text-2xl font-bold text-white">Chronicles</h1>
+                <h1 className="font-orbitron text-4xl font-bold bg-gradient-to-r from-neon-purple to-neon-pink bg-clip-text text-transparent">Chronicles</h1>
                 <p className="text-gray-400 text-sm">Share your quest achievements with fellow adventurers</p>
               </div>
             </div>
@@ -184,8 +238,8 @@ const Chronicles = () => {
             <div className="flex items-center space-x-3">
               <Users className="w-5 h-5 text-neon-blue" />
               <div>
-                <p className="text-gray-400 text-sm">Total Chronicles</p>
-                <p className="text-xl font-bold text-white">{posts.length}</p>
+                <p className="text-gray-400 text-sm">My Chronicles</p>
+                <p className="text-xl font-bold text-white">{userStats.chronicles}</p>
               </div>
             </div>
           </div>
@@ -193,10 +247,8 @@ const Chronicles = () => {
             <div className="flex items-center space-x-3">
               <Heart className="w-5 h-5 text-red-500" />
               <div>
-                <p className="text-gray-400 text-sm">Total Likes</p>
-                <p className="text-xl font-bold text-white">
-                  {posts.reduce((total, post) => total + post.likes.length, 0)}
-                </p>
+                <p className="text-gray-400 text-sm">My Likes</p>
+                <p className="text-xl font-bold text-white">{userStats.likes}</p>
               </div>
             </div>
           </div>
@@ -204,10 +256,8 @@ const Chronicles = () => {
             <div className="flex items-center space-x-3">
               <MessageCircle className="w-5 h-5 text-neon-green" />
               <div>
-                <p className="text-gray-400 text-sm">Total Comments</p>
-                <p className="text-xl font-bold text-white">
-                  {posts.reduce((total, post) => total + post.comments.length, 0)}
-                </p>
+                <p className="text-gray-400 text-sm">My Comments</p>
+                <p className="text-xl font-bold text-white">{userStats.comments}</p>
               </div>
             </div>
           </div>
@@ -240,6 +290,7 @@ const Chronicles = () => {
                 currentUser={user}
                 onLike={handlePostLiked}
                 onComment={handleCommentAdded}
+                onCommentDeleted={handleCommentDeleted}
                 onDelete={handlePostDeleted}
                 onPostQuest={handleCreatePost}
               />

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { postAPI } from '../services/api';
 import { 
@@ -10,14 +10,39 @@ import {
   Star,
   Target,
   Calendar,
-  User
+  User,
+  Image as ImageIcon
 } from 'lucide-react';
 import toast from 'react-hot-toast';
 
-const PostCard = ({ post, currentUser, onLike, onComment, onDelete, onPostQuest }) => {
+const PostCard = ({ post, currentUser, onLike, onComment, onCommentDeleted, onDelete, onPostQuest }) => {
   const [isLiked, setIsLiked] = useState(post.likes.includes(currentUser._id));
   const [likeCount, setLikeCount] = useState(post.likes.length);
   const [showComments, setShowComments] = useState(false);
+
+  // Simple check if user is post owner
+  const isPostOwner = currentUser && post.userId && (
+    post.userId === currentUser._id || 
+    post.userId === currentUser.id ||
+    (post.userId._id && post.userId._id === currentUser._id) ||
+    (post.userId._id && post.userId._id === currentUser.id)
+  );
+
+  // Simple check if user can delete comment
+  const canDeleteComment = (comment) => {
+    if (!currentUser) return false;
+    const isCommentAuthor = comment.userId === currentUser._id || 
+                           comment.userId === currentUser.id ||
+                           (comment.userId._id && comment.userId._id === currentUser._id) ||
+                           (comment.userId._id && comment.userId._id === currentUser.id);
+    return isCommentAuthor || isPostOwner;
+  };
+
+  // Sync like state with post data
+  useEffect(() => {
+    setIsLiked(post.likes.includes(currentUser._id));
+    setLikeCount(post.likes.length);
+  }, [post.likes, currentUser._id]);
   const [commentText, setCommentText] = useState('');
   const [isSubmittingComment, setIsSubmittingComment] = useState(false);
   const [isSubmittingLike, setIsSubmittingLike] = useState(false);
@@ -78,6 +103,21 @@ const PostCard = ({ post, currentUser, onLike, onComment, onDelete, onPostQuest 
     }
   };
 
+  // Handle delete comment
+  const handleDeleteComment = async (commentId) => {
+    if (!confirm('Are you sure you want to delete this comment?')) return;
+
+    try {
+      await postAPI.deleteComment(post._id, commentId);
+      // Update parent component to remove the comment
+      onCommentDeleted && onCommentDeleted(post._id, commentId);
+      toast.success('Comment deleted successfully');
+    } catch (error) {
+      console.error('Failed to delete comment:', error);
+      toast.error('Failed to delete comment');
+    }
+  };
+
   // Format time
   const formatTimeAgo = (date) => {
     const now = new Date();
@@ -105,14 +145,29 @@ const PostCard = ({ post, currentUser, onLike, onComment, onDelete, onPostQuest 
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.3 }}
-      className="bg-gaming-card border border-gaming-border rounded-xl overflow-hidden shadow-lg hover:shadow-xl transition-shadow"
+      className="bg-gaming-card border border-gaming-border rounded-xl overflow-hidden shadow-lg hover:shadow-xl transition-shadow max-w-md mx-auto"
     >
       {/* Header */}
       <div className="p-4 border-b border-gaming-border">
         <div className="flex items-start justify-between">
           <div className="flex items-center space-x-3">
-            <div className="w-10 h-10 bg-gradient-to-br from-neon-purple to-neon-blue rounded-full flex items-center justify-center">
-              <User className="w-5 h-5 text-white" />
+            {post.userId.avatar && (post.userId.avatar.startsWith('http') || post.userId.avatar.startsWith('/uploads/')) ? (
+              <img 
+                src={post.userId.avatar} 
+                alt={post.userId.username}
+                className="w-10 h-10 rounded-full object-cover"
+                onError={(e) => {
+                  e.target.style.display = 'none';
+                  e.target.nextElementSibling.style.display = 'flex';
+                }}
+              />
+            ) : null}
+            <div className="w-10 h-10 flex items-center justify-center" style={{display: (post.userId.avatar && (post.userId.avatar.startsWith('http') || post.userId.avatar.startsWith('/uploads/'))) ? 'none' : 'flex'}}>
+              {post.userId.avatar && !post.userId.avatar.startsWith('http') && !post.userId.avatar.startsWith('/uploads/') ? (
+                <span className="text-2xl">{post.userId.avatar}</span>
+              ) : (
+                <User className="w-5 h-5 text-white" />
+              )}
             </div>
             <div className="flex-1">
               <div className="flex items-center space-x-2">
@@ -130,16 +185,6 @@ const PostCard = ({ post, currentUser, onLike, onComment, onDelete, onPostQuest 
               </div>
             </div>
           </div>
-          <div className="flex items-center space-x-2">
-            {post.userId._id === currentUser._id && (
-              <button
-                onClick={handleDelete}
-                className="p-1 text-gray-400 hover:text-red-500 transition-colors"
-              >
-                <Trash2 className="w-4 h-4" />
-              </button>
-            )}
-          </div>
         </div>
       </div>
 
@@ -154,13 +199,34 @@ const PostCard = ({ post, currentUser, onLike, onComment, onDelete, onPostQuest 
         {/* Image */}
         <div className="mb-4 rounded-lg overflow-hidden bg-gaming-darker">
           <img
-            src={post.imageUrl}
+            src={`/api/posts/${post._id}/image`}
             alt={post.title}
-            className="w-full h-64 object-cover"
+            className="w-full"
+            style={{ 
+              aspectRatio: '1/1', 
+              maxHeight: '400px',
+              objectFit: 'cover',
+              objectPosition: 'center'
+            }}
             onError={(e) => {
-              e.target.src = 'https://via.placeholder.com/400x300/1a1a1a/ffffff?text=Image+Not+Available';
+              console.error('Image load error:', e);
+              // Create a simple fallback instead of external placeholder
+              e.target.style.display = 'none';
+              e.target.nextElementSibling.style.display = 'flex';
+            }}
+            onLoad={(e) => {
+              console.log('Image loaded successfully for post:', post._id);
+              e.target.nextElementSibling.style.display = 'none';
             }}
           />
+          <div className="w-full bg-gaming-darker flex items-center justify-center" style={{ aspectRatio: '1/1', minHeight: '300px', display: 'none' }}>
+            <div className="text-center">
+              <div className="w-16 h-16 bg-gray-700 rounded-full flex items-center justify-center mx-auto mb-2">
+                <ImageIcon className="w-8 h-8 text-gray-500" />
+              </div>
+              <p className="text-gray-400 text-sm">Image not available</p>
+            </div>
+          </div>
         </div>
 
         {/* Caption */}
@@ -169,13 +235,15 @@ const PostCard = ({ post, currentUser, onLike, onComment, onDelete, onPostQuest 
         </div>
 
         {/* Actions */}
-        <div className="flex items-center justify-between py-2 border-t border-gaming-border">
+        <div className="flex items-center justify-between">
           <div className="flex items-center space-x-4">
             <button
               onClick={handleLike}
               disabled={isSubmittingLike}
               className={`flex items-center space-x-1 transition-colors ${
-                isLiked ? 'text-red-500' : 'text-gray-400 hover:text-red-500'
+                isLiked 
+                  ? 'text-red-500 hover:text-red-400' 
+                  : 'text-gray-400 hover:text-red-500'
               } ${isSubmittingLike ? 'opacity-50 cursor-not-allowed' : ''}`}
             >
               <Heart className={`w-5 h-5 ${isLiked ? 'fill-current' : ''}`} />
@@ -189,12 +257,15 @@ const PostCard = ({ post, currentUser, onLike, onComment, onDelete, onPostQuest 
               <span className="text-sm">{post.comments.length}</span>
             </button>
           </div>
-          <button
-            onClick={() => onPostQuest(post.questId)}
-            className="text-xs text-neon-purple hover:text-neon-purple/80 transition-colors"
-          >
-            Complete similar quest
-          </button>
+          {isPostOwner && (
+            <button
+              onClick={handleDelete}
+              className="p-2 text-gray-400 hover:text-red-500 hover:bg-red-500/10 rounded-lg transition-all duration-200 group"
+              title="Delete post"
+            >
+              <Trash2 className="w-4 h-4 group-hover:scale-110 transition-transform" />
+            </button>
+          )}
         </div>
 
         {/* Comments Section */}
@@ -206,12 +277,27 @@ const PostCard = ({ post, currentUser, onLike, onComment, onDelete, onPostQuest 
                 {post.comments.map((comment) => (
                   <div key={comment._id} className="flex items-start space-x-2">
                     <div className="w-6 h-6 bg-gradient-to-br from-neon-blue to-neon-green rounded-full flex items-center justify-center flex-shrink-0">
-                      <User className="w-3 h-3 text-white" />
+                      {comment.userId.avatar && !comment.userId.avatar.startsWith('http') && !comment.userId.avatar.startsWith('/uploads/') ? (
+                        <span className="text-sm">{comment.userId.avatar}</span>
+                      ) : (
+                        <User className="w-3 h-3 text-white" />
+                      )}
                     </div>
                     <div className="flex-1">
-                      <div className="flex items-center space-x-2">
-                        <span className="font-medium text-white text-sm">{comment.userId.username}</span>
-                        <span className="text-gray-400 text-xs">{formatTimeAgo(comment.createdAt)}</span>
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center space-x-2">
+                          <span className="font-medium text-white text-sm">{comment.userId.username}</span>
+                          <span className="text-gray-400 text-xs">{formatTimeAgo(comment.createdAt)}</span>
+                        </div>
+                        {canDeleteComment(comment) && (
+                          <button
+                            onClick={() => handleDeleteComment(comment._id)}
+                            className="p-1 text-gray-400 hover:text-red-500 hover:bg-red-500/10 rounded transition-all duration-200 group"
+                            title="Delete comment"
+                          >
+                            <Trash2 className="w-3 h-3 group-hover:scale-110 transition-transform" />
+                          </button>
+                        )}
                       </div>
                       <p className="text-gray-300 text-sm mt-1">{comment.text}</p>
                     </div>

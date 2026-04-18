@@ -270,11 +270,21 @@ const CreatePostModal = ({ onClose, onPostCreated, selectedQuest }) => {
                   <div className="border-2 border-dashed border-gaming-border rounded-lg p-8 text-center hover:border-neon-purple/50 transition-colors">
                     {imagePreview ? (
                       <div className="space-y-4">
-                        <img
-                          src={imagePreview}
-                          alt="Preview"
-                          className="w-full h-48 object-cover rounded-lg"
-                        />
+                        <div className="max-w-md mx-auto">
+                          <div className="rounded-lg overflow-hidden bg-gaming-darker">
+                            <img
+                              src={imagePreview}
+                              alt="Preview"
+                              className="w-full"
+                              style={{ 
+                                aspectRatio: '1/1', 
+                                maxHeight: '400px',
+                                objectFit: 'cover',
+                                objectPosition: 'center'
+                              }}
+                            />
+                          </div>
+                        </div>
                         <button
                           onClick={() => {
                             setImageFile(null);

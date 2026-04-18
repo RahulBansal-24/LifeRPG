@@ -6,36 +6,13 @@ const Quest = require('../models/Quest');
 const multer = require('multer');
 const path = require('path');
 const fs = require('fs');
+const sharp = require('sharp');
 
 const router = express.Router();
 
-// Configure multer for image uploads
-const storage = multer.diskStorage({
-  destination: function (req, file, cb) {
-    const uploadDir = 'uploads/posts';
-    if (!fs.existsSync(uploadDir)) {
-      fs.mkdirSync(uploadDir, { recursive: true });
-    }
-    cb(null, uploadDir);
-  },
-  filename: function (req, file, cb) {
-    const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
-    cb(null, file.fieldname + '-' + uniqueSuffix + path.extname(file.originalname));
-  }
-});
-
-const fileFilter = (req, file, cb) => {
-  // Accept only image files
-  if (file.mimetype.startsWith('image/')) {
-    cb(null, true);
-  } else {
-    cb(new Error('Only image files are allowed'), false);
-  }
-};
-
+// Configure multer for image uploads (memory storage for database)
 const upload = multer({
-  storage: storage,
-  fileFilter: fileFilter,
+  storage: multer.memoryStorage(),
   limits: {
     fileSize: 5 * 1024 * 1024 // 5MB limit
   }
@@ -96,13 +73,49 @@ router.post('/create', upload.single('image'), [
       });
     }
 
-    // Create post
+    // Debug: Check if file exists and has buffer
+    console.log('File received:', req.file ? 'Yes' : 'No');
+    if (req.file) {
+      console.log('File details:', {
+        originalname: req.file.originalname,
+        mimetype: req.file.mimetype,
+        size: req.file.size,
+        buffer: req.file.buffer ? 'Yes' : 'No'
+      });
+    }
+
+    // Resize image and convert to buffer
+    let resizedImageBuffer;
+    try {
+      if (req.file.buffer) {
+        resizedImageBuffer = await sharp(req.file.buffer)
+          .resize(800, 800, { 
+            fit: 'cover',
+            position: 'center',
+            withoutEnlargement: true
+          })
+          .jpeg({ quality: 80 })
+          .toBuffer();
+      } else {
+        throw new Error('No file buffer available');
+      }
+      console.log('Image processed successfully, buffer size:', resizedImageBuffer.length);
+    } catch (error) {
+      console.error('Image processing error:', error);
+      return res.status(400).json({
+        success: false,
+        message: 'Failed to process image: ' + error.message
+      });
+    }
+
+    // Create post with image data in database
     const post = await Post.create({
       userId,
       questId,
       title: quest.title,
       description: quest.description,
-      imageUrl: `/uploads/posts/${req.file.filename}`,
+      imageData: resizedImageBuffer,
+      imageContentType: 'image/jpeg',
       caption
     });
 
@@ -121,6 +134,52 @@ router.post('/create', upload.single('image'), [
       success: false,
       message: 'Server error while creating post',
       error: process.env.NODE_ENV === 'development' ? error.message : undefined
+    });
+  }
+});
+
+// @route   GET /api/posts/:id/image
+// @desc    Get post image from database
+// @access  Public (images should be accessible without auth)
+router.get('/:id/image', async (req, res) => {
+  try {
+    const post = await Post.findById(req.params.id);
+    if (!post) {
+      return res.status(404).json({
+        success: false,
+        message: 'Post not found'
+      });
+    }
+
+    // Handle new database storage
+    if (post.imageData && post.imageContentType) {
+      res.set('Content-Type', post.imageContentType);
+      res.send(post.imageData);
+    }
+    // Handle old file system storage
+    else if (post.imageUrl) {
+      const imagePath = path.join(__dirname, '..', post.imageUrl);
+      if (fs.existsSync(imagePath)) {
+        res.sendFile(imagePath);
+      } else {
+        return res.status(404).json({
+          success: false,
+          message: 'Image file not found'
+        });
+      }
+    }
+    // No image found
+    else {
+      return res.status(404).json({
+        success: false,
+        message: 'Post has no image'
+      });
+    }
+  } catch (error) {
+    console.error('Get image error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Server error while fetching image'
     });
   }
 });
@@ -266,6 +325,57 @@ router.post('/:id/comment', [
   }
 });
 
+// @route   DELETE /api/posts/:id/comment/:commentId
+// @desc    Delete a comment (by comment author or post author)
+// @access  Private
+router.delete('/:id/comment/:commentId', async (req, res) => {
+  try {
+    const postId = req.params.id;
+    const commentId = req.params.commentId;
+    const userId = req.user._id;
+
+    const post = await Post.findById(postId);
+    if (!post) {
+      return res.status(404).json({
+        success: false,
+        message: 'Post not found'
+      });
+    }
+
+    const comment = post.comments.id(commentId);
+    if (!comment) {
+      return res.status(404).json({
+        success: false,
+        message: 'Comment not found'
+      });
+    }
+
+    // Check if user is the comment author or post author
+    if (comment.userId.toString() !== userId.toString() && post.userId.toString() !== userId.toString()) {
+      return res.status(403).json({
+        success: false,
+        message: 'You can only delete your own comments or comments on your posts'
+      });
+    }
+
+    // Remove the comment
+    post.comments.pull(commentId);
+    await post.save();
+
+    res.status(200).json({
+      success: true,
+      message: 'Comment deleted successfully!'
+    });
+  } catch (error) {
+    console.error('Delete comment error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Server error while deleting comment',
+      error: process.env.NODE_ENV === 'development' ? error.message : undefined
+    });
+  }
+});
+
 // @route   DELETE /api/posts/:id
 // @desc    Delete a post (only by owner)
 // @access  Private
@@ -290,13 +400,7 @@ router.delete('/:id', async (req, res) => {
       });
     }
 
-    // Delete image file
-    if (post.imageUrl) {
-      const imagePath = path.join(__dirname, '..', post.imageUrl);
-      if (fs.existsSync(imagePath)) {
-        fs.unlinkSync(imagePath);
-      }
-    }
+    // Image data is stored in database, no file cleanup needed
 
     await Post.findByIdAndDelete(postId);
 
