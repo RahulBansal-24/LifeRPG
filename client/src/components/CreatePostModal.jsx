@@ -23,6 +23,15 @@ const CreatePostModal = ({ onClose, onPostCreated, selectedQuest }) => {
   const [imagePreview, setImagePreview] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [step, setStep] = useState(selectedQuest ? 2 : 1); // Start from step 2 if quest is pre-selected
+  
+  // Image editing state
+  const [imageScale, setImageScale] = useState(1);
+  const [imagePosition, setImagePosition] = useState({ x: 0, y: 0 });
+  const [isEditingImage, setIsEditingImage] = useState(false);
+  const [isDragging, setIsDragging] = useState(false);
+  const [dragStart, setDragStart] = useState({ x: 0, y: 0 });
+  const [imageDimensions, setImageDimensions] = useState({ width: 0, height: 0 });
+  const [containerDimensions, setContainerDimensions] = useState({ width: 400, height: 400 });
 
   // Load completed quests
   useEffect(() => {
@@ -63,28 +72,92 @@ const CreatePostModal = ({ onClose, onPostCreated, selectedQuest }) => {
   // Handle image upload
   const handleImageUpload = (e) => {
     const file = e.target.files[0];
-    if (file) {
-      // Check file type
-      if (!file.type.startsWith('image/')) {
-        toast.error('Please select an image file');
-        return;
-      }
-      
-      // Check file size (5MB limit)
-      if (file.size > 5 * 1024 * 1024) {
-        toast.error('Image size should be less than 5MB');
-        return;
-      }
-      
-      setImageFile(file);
-      
-      // Create preview
-      const reader = new FileReader();
-      reader.onloadend = () => {
+    if (!file) {
+      return;
+    }
+    
+    // Check file type
+    if (!file.type.startsWith('image/')) {
+      toast.error('Please select an image file');
+      return;
+    }
+    
+    // Check file size (5MB limit)
+    if (file.size > 5 * 1024 * 1024) {
+      toast.error('Image size should be less than 5MB');
+      return;
+    }
+    
+    setImageFile(file);
+    setIsEditingImage(true);
+    setImageScale(1);
+    setImagePosition({ x: 0, y: 0 });
+    
+    // Create preview and get image dimensions
+    const reader = new FileReader();
+    reader.onloadend = () => {
+      const img = new Image();
+      img.onload = () => {
+        setImageDimensions({ width: img.width, height: img.height });
         setImagePreview(reader.result);
       };
-      reader.readAsDataURL(file);
-    }
+      img.src = reader.result;
+    };
+    reader.readAsDataURL(file);
+  };
+
+  // Handle zoom in
+  const handleZoomIn = () => {
+    setImageScale(prev => Math.min(prev + 0.1, 3));
+  };
+
+  // Handle zoom out
+  const handleZoomOut = () => {
+    setImageScale(prev => Math.max(prev - 0.1, 0.5));
+  };
+
+  // Handle mouse down for dragging
+  const handleMouseDown = (e) => {
+    setIsDragging(true);
+    setDragStart({ x: e.clientX - imagePosition.x, y: e.clientY - imagePosition.y });
+  };
+
+  // Handle mouse move for dragging with boundary constraints
+  const handleMouseMove = (e) => {
+    if (!isDragging) return;
+    
+    const newX = e.clientX - dragStart.x;
+    const newY = e.clientY - dragStart.y;
+    
+    // Calculate boundary constraints to prevent black areas
+    const scaledWidth = imageDimensions.width * imageScale;
+    const scaledHeight = imageDimensions.height * imageScale;
+    const containerWidth = containerDimensions.width;
+    const containerHeight = containerDimensions.height;
+    
+    // Calculate maximum allowed positions
+    const maxX = (scaledWidth - containerWidth) / 2;
+    const maxY = (scaledHeight - containerHeight) / 2;
+    
+    // Apply boundary constraints
+    const constrainedX = Math.max(-maxX, Math.min(maxX, newX));
+    const constrainedY = Math.max(-maxY, Math.min(maxY, newY));
+    
+    setImagePosition({
+      x: constrainedX,
+      y: constrainedY
+    });
+  };
+
+  // Handle mouse up
+  const handleMouseUp = () => {
+    setIsDragging(false);
+  };
+
+  // Reset image position
+  const handleResetImage = () => {
+    setImageScale(1);
+    setImagePosition({ x: 0, y: 0 });
   };
 
   // Get selected quest details
@@ -270,30 +343,103 @@ const CreatePostModal = ({ onClose, onPostCreated, selectedQuest }) => {
                   <div className="border-2 border-dashed border-gaming-border rounded-lg p-8 text-center hover:border-neon-purple/50 transition-colors">
                     {imagePreview ? (
                       <div className="space-y-4">
+                        {/* Image editing controls */}
+                        <div className="flex items-center justify-center space-x-4 mb-4">
+                          <button
+                            onClick={handleZoomOut}
+                            className="p-2 bg-gaming-darker border border-gaming-border rounded-lg hover:border-neon-purple transition-colors"
+                            title="Zoom out"
+                          >
+                            <span className="text-white text-sm">−</span>
+                          </button>
+                          <span className="text-gray-400 text-sm">
+                            {Math.round(imageScale * 100)}%
+                          </span>
+                          <button
+                            onClick={handleZoomIn}
+                            className="p-2 bg-gaming-darker border border-gaming-border rounded-lg hover:border-neon-purple transition-colors"
+                            title="Zoom in"
+                          >
+                            <span className="text-white text-sm">+</span>
+                          </button>
+                          <button
+                            onClick={handleResetImage}
+                            className="p-2 bg-gaming-darker border border-gaming-border rounded-lg hover:border-neon-purple transition-colors"
+                            title="Reset position"
+                          >
+                            <span className="text-white text-sm">⟲</span>
+                          </button>
+                        </div>
+                        
+                        {/* Image preview with editing */}
                         <div className="max-w-md mx-auto">
-                          <div className="rounded-lg overflow-hidden bg-gaming-darker">
+                          <div 
+                            className="relative rounded-lg overflow-hidden bg-gaming-darker cursor-move"
+                            style={{ 
+                              width: '400px', 
+                              height: '400px',
+                              margin: '0 auto'
+                            }}
+                            onMouseDown={handleMouseDown}
+                            onMouseMove={handleMouseMove}
+                            onMouseUp={handleMouseUp}
+                            onMouseLeave={handleMouseUp}
+                          >
+                            {/* Full image display */}
                             <img
                               src={imagePreview}
                               alt="Preview"
-                              className="w-full"
+                              className="absolute inset-0 w-full h-full"
                               style={{ 
-                                aspectRatio: '1/1', 
-                                maxHeight: '400px',
-                                objectFit: 'cover',
+                                transform: `scale(${imageScale}) translate(${imagePosition.x}px, ${imagePosition.y}px)`,
+                                transition: isDragging ? 'none' : 'transform 0.2s ease',
+                                transformOrigin: 'center',
+                                objectFit: 'contain',
                                 objectPosition: 'center'
                               }}
+                              draggable={false}
                             />
+                            
+                            {/* Cropping overlay */}
+                            <div 
+                              className="absolute inset-0 border-2 border-neon-purple pointer-events-none"
+                              style={{
+                                boxShadow: '0 0 0 9999px rgba(0, 0, 0, 0.5)'
+                              }}
+                            >
+                              {/* Corner indicators */}
+                              <div className="absolute top-0 left-0 w-4 h-4 border-t-2 border-l-2 border-neon-purple"></div>
+                              <div className="absolute top-0 right-0 w-4 h-4 border-t-2 border-r-2 border-neon-purple"></div>
+                              <div className="absolute bottom-0 left-0 w-4 h-4 border-b-2 border-l-2 border-neon-purple"></div>
+                              <div className="absolute bottom-0 right-0 w-4 h-4 border-b-2 border-r-2 border-neon-purple"></div>
+                            </div>
                           </div>
                         </div>
-                        <button
-                          onClick={() => {
-                            setImageFile(null);
-                            setImagePreview('');
-                          }}
-                          className="text-red-500 hover:text-red-400 text-sm"
-                        >
-                          Remove image
-                        </button>
+                        <div className="flex items-center justify-center space-x-4">
+                          <button
+                            onClick={() => {
+                              setImageFile(null);
+                              setImagePreview('');
+                              setIsEditingImage(false);
+                              setImageScale(1);
+                              setImagePosition({ x: 0, y: 0 });
+                            }}
+                            className="text-red-500 hover:text-red-400 text-sm"
+                          >
+                            Remove image
+                          </button>
+                          <label className="cursor-pointer">
+                            <span className="px-3 py-1 bg-gaming-darker border border-gaming-border rounded-lg hover:border-neon-purple transition-colors text-sm">
+                              Choose different image
+                            </span>
+                            <input
+                              type="file"
+                              accept="image/*"
+                              onChange={handleImageUpload}
+                              className="hidden"
+                            />
+                          </label>
+                        </div>
                       </div>
                     ) : (
                       <div>
@@ -350,11 +496,28 @@ const CreatePostModal = ({ onClose, onPostCreated, selectedQuest }) => {
                 {imagePreview && (
                   <div>
                     <h4 className="text-white font-medium mb-2">Image</h4>
-                    <img
-                      src={imagePreview}
-                      alt="Preview"
-                      className="w-full h-48 object-cover rounded-lg"
-                    />
+                    <div className="max-w-md mx-auto">
+                      <div 
+                        className="rounded-lg overflow-hidden bg-gaming-darker"
+                        style={{ 
+                          width: '100%', 
+                          aspectRatio: '1/1', 
+                          maxHeight: '400px'
+                        }}
+                      >
+                        <img
+                          src={imagePreview}
+                          alt="Preview"
+                          className="w-full h-full"
+                          style={{ 
+                            transform: `scale(${imageScale}) translate(${imagePosition.x}px, ${imagePosition.y}px)`,
+                            transformOrigin: 'center',
+                            objectFit: 'cover',
+                            objectPosition: 'center'
+                          }}
+                        />
+                      </div>
+                    </div>
                   </div>
                 )}
 

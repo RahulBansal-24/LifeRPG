@@ -121,14 +121,15 @@ const Chronicles = () => {
 
   // Handle post liked
   const handlePostLiked = (postId, likeData) => {
+    const currentUserId = user._id || user.id;
     setPosts(prev => prev.map(post => 
       post._id === postId 
-        ? { ...post, likes: likeData.liked ? [...post.likes, user._id] : post.likes.filter(id => id !== user._id) }
+        ? { ...post, likes: likeData.liked ? [...post.likes, currentUserId] : post.likes.filter(id => id !== currentUserId) }
         : post
     ));
     // Refresh user stats if it's user's post
     const post = posts.find(p => p._id === postId);
-    if (post && post.userId._id === user._id) {
+    if (post && (post.userId._id === currentUserId || post.userId === currentUserId)) {
       loadUserStats();
     }
   };
@@ -142,7 +143,8 @@ const Chronicles = () => {
     ));
     // Refresh user stats if it's user's post
     const post = posts.find(p => p._id === postId);
-    if (post && post.userId._id === user._id) {
+    const currentUserId = user._id || user.id;
+    if (post && (post.userId._id === currentUserId || post.userId === currentUserId)) {
       loadUserStats();
     }
   };
@@ -156,7 +158,8 @@ const Chronicles = () => {
     ));
     // Refresh user stats if it's user's post
     const post = posts.find(p => p._id === postId);
-    if (post && post.userId._id === user._id) {
+    const currentUserId = user._id || user.id;
+    if (post && (post.userId._id === currentUserId || post.userId === currentUserId)) {
       loadUserStats();
     }
   };

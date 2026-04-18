@@ -16,7 +16,7 @@ import {
 import toast from 'react-hot-toast';
 
 const PostCard = ({ post, currentUser, onLike, onComment, onCommentDeleted, onDelete, onPostQuest }) => {
-  const [isLiked, setIsLiked] = useState(post.likes.includes(currentUser._id));
+  const [isLiked, setIsLiked] = useState(post.likes.includes(currentUser._id) || post.likes.includes(currentUser.id));
   const [likeCount, setLikeCount] = useState(post.likes.length);
   const [showComments, setShowComments] = useState(false);
 
@@ -40,9 +40,10 @@ const PostCard = ({ post, currentUser, onLike, onComment, onCommentDeleted, onDe
 
   // Sync like state with post data
   useEffect(() => {
-    setIsLiked(post.likes.includes(currentUser._id));
+    const currentUserId = currentUser._id || currentUser.id;
+    setIsLiked(post.likes.includes(currentUserId));
     setLikeCount(post.likes.length);
-  }, [post.likes, currentUser._id]);
+  }, [post.likes, currentUser._id, currentUser.id]);
   const [commentText, setCommentText] = useState('');
   const [isSubmittingComment, setIsSubmittingComment] = useState(false);
   const [isSubmittingLike, setIsSubmittingLike] = useState(false);
@@ -274,13 +275,11 @@ const PostCard = ({ post, currentUser, onLike, onComment, onCommentDeleted, onDe
               <div className="space-y-3 mb-4 max-h-40 overflow-y-auto">
                 {post.comments.map((comment) => (
                   <div key={comment._id} className="flex items-start space-x-2">
-                    <div className="w-6 h-6 bg-gradient-to-br from-neon-blue to-neon-green rounded-full flex items-center justify-center flex-shrink-0">
-                      {comment.userId.avatar && !comment.userId.avatar.startsWith('http') && !comment.userId.avatar.startsWith('/uploads/') ? (
-                        <span className="text-sm">{comment.userId.avatar}</span>
-                      ) : (
-                        <User className="w-3 h-3 text-white" />
-                      )}
-                    </div>
+                    {comment.userId.avatar && !comment.userId.avatar.startsWith('http') && !comment.userId.avatar.startsWith('/uploads/') ? (
+                      <span className="text-sm">{comment.userId.avatar}</span>
+                    ) : (
+                      <User className="w-3 h-3 text-white" />
+                    )}
                     <div className="flex-1">
                       <div className="flex items-center justify-between">
                         <div className="flex items-center space-x-2">
