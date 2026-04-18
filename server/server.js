@@ -12,6 +12,7 @@ const authRoutes = require('./routes/auth');
 const userRoutes = require('./routes/user');
 const questRoutes = require('./routes/quest');
 const leaderboardRoutes = require('./routes/leaderboard');
+const postRoutes = require('./routes/post');
 
 // Initialize Express app
 const app = express();
@@ -33,6 +34,10 @@ app.use('/api/auth', authRoutes);
 app.use('/api/user', userRoutes);
 app.use('/api/quests', questRoutes);
 app.use('/api/leaderboard', leaderboardRoutes);
+app.use('/api/posts', postRoutes);
+
+// Serve uploaded files
+app.use('/uploads', express.static('uploads'));
 
 // Health check endpoint
 app.get('/api/health', (req, res) => {

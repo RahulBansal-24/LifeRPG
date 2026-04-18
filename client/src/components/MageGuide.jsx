@@ -5,130 +5,124 @@ import { useAuth } from '../context/AuthContext';
 import { useMage } from '../context/MageContext';
 
 // Message categories for the mage guide
+const CATEGORIES = {
+  questExamples: [
+    // Study / Intelligence
+    'Try a "Revise notes for 20 minutes" quest to strengthen your understanding',
+    'Complete a "Solve 5 DSA problems" quest to boost your intelligence',
+    'Start a "Watch an educational video" quest and learn something new',
+    'Take on a "Practice coding for 30 minutes" quest to sharpen your skills',
+    'Attempt a "Read 10 pages of a book" quest to gain knowledge',
+    'Complete a "Revise one subject/topic" quest to strengthen memory',
+    'Try a "Solve 3 logical puzzles" quest to sharpen your thinking',
+    'Start a "Learn a new concept online" quest today',
+    'Take a "Write notes for 20 minutes" quest to reinforce learning',
+    'Attempt a "Practice coding problem-solving" quest',
+    'Watch and summarize an educational video in a "Learning quest"',
+
+    // Discipline / Productivity
+    'Set a "No distractions for 25 minutes" quest and test your discipline',
+    'Try a "Complete pending task" quest and clear your backlog',
+    'Create a "Follow your routine strictly today" quest to build consistency',
+    'Take a "Wake up early and start your day strong" quest',
+    'Begin a "Pomodoro focus session (25 min)" quest',
+    'Complete a "Finish one important pending task" quest',
+    'Take a "No social media for 1 hour" challenge quest',
+    'Attempt a "Plan tomorrow in advance" quest',
+    'Do a "Clean your workspace" productivity quest',
+    'Start a "Stick to schedule for 3 hours" quest',
+
+    // Fitness / Strength
+    'Begin a "30-minute workout" quest and build your strength',
+    'Try a "10 push-ups × 3 sets" quest to stay active',
+    'Go for a "Morning walk or run" quest and energize yourself',
+    'Complete a "Stretching session" quest to improve flexibility',
+    'Take on a "15-minute cardio session" quest to boost stamina',
+    'Complete a "20 squats + 20 push-ups" quest challenge',
+    'Start a "Drink 2L water today" wellness quest',
+    'Try a "Evening walk for 20 minutes" quest',
+    'Do a "Core workout session" quest to build strength',
+    'Attempt a "No junk food today" discipline quest',
+
+    // Charisma / Social
+    'Start a "Talk to someone new" quest to boost your charisma',
+    'Try a "Help a friend or teammate" quest and build connections',
+    'Complete a "Practice public speaking for 10 minutes" quest',
+    'Take on an "Express gratitude to someone" quest today',
+    'Take a "Start a meaningful conversation" quest',
+    'Complete a "Help someone without expecting return" quest',
+    'Try a "Practice speaking confidently" quest',
+    'Attempt a "Give a genuine compliment" quest',
+    'Start a "Network or connect with someone new" quest',
+    'Take a "Listen actively in a conversation" quest'
+  ],
+  
+  featureTips: [
+    'Complete daily quests to earn XP faster',
+    'Check your stats to track your progress',
+    'Did you know? you can customize your avatar in dashboard',
+    'Explore new features in dashboard, traveller!',
+    'Discover hidden achievements and rare items, traveller!',
+    'Finding quests too difficult? Try easier ones first!',
+    'Your journey map reveals your true progress, check it often, traveller!',
+    'Each level you gain unlocks new potential, keep advancing!',
+    'Balance your skills to become a well-rounded adventurer',
+    'Track your XP and plan your next quest wisely',
+    'Your avatar represents you, choose one that matches your spirit',
+    'Revisit incomplete quests and finish what you started',
+    'Use journey map to visualize how far you\'ve come'
+  ],
+  
+  leaderboardReminders: [
+    'Climb the leaderboard to show your skills, traveller!',
+    'Visit the leaderboard to see how you rank against other players',
+    'Top travellers get special recognition',
+    'Challenge yourself to reach higher ranks',
+    'Compete in daily quests for glory',
+    'Tales of your adventure inspire other travellers',
+    'The leaderboard remembers only the consistent'
+  ],
+  
+  skillBoostingAdvice: [
+    'Complete brain quests to boost your intelligence stat, and become a genius',
+    'Physical activities enhance your strength skill, and get you in shape',
+    'Creative tasks improve your creativity stat, and inspire new ideas',
+    'Social quests boost your charisma skill, and make you a people person',
+    'Learning activities enhance your intelligence stat, and grant you insight',
+    'Physical training increases your strength skills, and makes you a warrior',
+    'Daily practice strengthens your discipline stat, and makes you a skilled traveller!',
+    'Intelligence grows with learning, feed your mind daily',
+    'Strength is built through action, not intention',
+    'Discipline is forged through consistency, not motivation',
+    'Charisma grows when you connect with others',
+    'Neglect no skill, balance creates true power',
+    'Focus on one skill today, master it step by step',
+    'Your weakest skill defines your next challenge'
+  ],
+  
+  motivation: [
+    'Every great journey starts with a single step, so take first step today, traveller!',
+    'Your dedication builds legendary status, so keep pushing yourself, traveller!',
+    'Keep going, greatness awaits, and don\'t give up on your dreams',
+    'Small steps create massive results, so don\'t underestimate power of small actions',
+    'Consistency is key to success, so stay focused and keep moving forward',
+    'Your courage inspires other adventurers, so be brave and take the lead, traveller!',
+    'The path of a true adventurer is never easy, but the rewards are worth it',
+    'Embrace challenges as opportunities to grow, and don\'t be afraid to take risks',
+    'Your legend grows with each completed quest, so keep questing and make your mark',
+    'Focus on your goals and you will achieve them, so stay focused and motivated',
+    'Believe in yourself and your abilities, and you will be unstoppable',
+    'The journey of a thousand miles begins with a single step, so take that first step today, traveller!'
+  ]
+};
+
+// Flatten all messages for backward compatibility
 const mageMessages = [
-  // Example quests
-  
-  // Study / Intelligence
-  'Try a "Revise notes for 20 minutes" quest to strengthen your understanding',
-  'Complete a "Solve 5 DSA problems" quest to boost your intelligence',
-  'Start a "Watch an educational video" quest and learn something new',
-  'Take on a "Practice coding for 30 minutes" quest to sharpen your skills',
-  'Attempt a "Read 10 pages of a book" quest to gain knowledge',
-  'Complete a "Revise one subject/topic" quest to strengthen memory',
-  'Try a "Solve 3 logical puzzles" quest to sharpen your thinking',
-  'Start a "Learn a new concept online" quest today',
-  'Take a "Write notes for 20 minutes" quest to reinforce learning',
-  'Attempt a "Practice coding problem-solving" quest',
-  'Watch and summarize an educational video in a "Learning quest"',
-
-  // Discipline / Productivity
-  'Set a "No distractions for 25 minutes" quest and test your discipline',
-  'Try a "Complete pending task" quest and clear your backlog',
-  'Create a "Follow your routine strictly today" quest to build consistency',
-  'Take a "Wake up early and start your day strong" quest',
-  'Begin a "Pomodoro focus session (25 min)" quest',
-  'Complete a "Finish one important pending task" quest',
-  'Take a "No social media for 1 hour" challenge quest',
-  'Attempt a "Plan tomorrow in advance" quest',
-  'Do a "Clean your workspace" productivity quest',
-  'Start a "Stick to schedule for 3 hours" quest',
-
-  // Fitness / Strength
-  'Begin a "30-minute workout" quest and build your strength',
-  'Try a "10 push-ups × 3 sets" quest to stay active',
-  'Go for a "Morning walk or run" quest and energize yourself',
-  'Complete a "Stretching session" quest to improve flexibility',
-  'Take on a "15-minute cardio session" quest to boost stamina',
-  'Complete a "20 squats + 20 push-ups" quest challenge',
-  'Start a "Drink 2L water today" wellness quest',
-  'Try a "Evening walk for 20 minutes" quest',
-  'Do a "Core workout session" quest to build strength',
-  'Attempt a "No junk food today" discipline quest',
-
-  // Charisma / Social
-  'Start a "Talk to someone new" quest to boost your charisma',
-  'Try a "Help a friend or teammate" quest and build connections',
-  'Complete a "Practice public speaking for 10 minutes" quest',
-  'Take on a "Express gratitude to someone" quest today',
-  'Take a "Start a meaningful conversation" quest',
-  'Complete a "Help someone without expecting return" quest',
-  'Try a "Practice speaking confidently" quest',
-  'Attempt a "Give a genuine compliment" quest',
-  'Start a "Network or connect with someone new" quest',
-  'Take a "Listen actively in a conversation" quest',
-
-  // Feature tips
-  'Complete daily quests to earn XP faster',
-  'Check your stats to track your progress',
-  'Did you know? you can customize your avatar in the dashboard',
-  'Explore new features in the dashboard, traveller!',
-  'Discover hidden achievements and rare items, traveller!',
-  'Finding quests too difficult? Try easier ones first!',
-  'Your journey map reveals your true progress, check it often, traveller!',
-  'Each level you gain unlocks new potential, keep advancing!',
-  'Balance your skills to become a well-rounded adventurer',
-  'Track your XP and plan your next quest wisely',
-  'Your avatar represents you, choose one that matches your spirit',
-  'Revisit incomplete quests and finish what you started',
-  'Use the journey map to visualize how far you’ve come',
-
-  // Leaderboard reminders
-  'Climb the leaderboard to show your skills, traveller!',
-  'Visit the leaderboard to see how you rank against other players',
-  'Top travellers get special recognition',
-  'Challenge yourself to reach higher ranks',
-  'Compete in daily quests for glory',
-  'Tales of your adventure inspire other travellers',
-  'The leaderboard remembers only the consistent',
-  
-  // Quest advice (specific examples)
-  'Hey traveller, try completing a "Study for 30 minutes" quest and boost your knowledge!',
-  'Harder quests yield greater rewards, choose your battles wisely',
-  'Learn a new language with daily practice quests, and become a polyglot',
-  'Go for a run and track your fitness journey, and get in shape, traveller!',
-  'Reading quests boost your knowledge skills, and expand your mind',
-  'Meditation quests enhance your focus skills, and calm your mind',
-  'Creative projects boost your problem-solving skills, and unleash your creativity',
-  'Social quests help you build connections, and make new friends',
-  'Complete main quests to earn stars',
-  'Daily quests offer valuable rewards, so don\'t miss out, traveller!',
-  'Hard quests test your true power, are you up for it, traveller?',
-  'Choose quests that align with your goals, not just convenience',
-  'Too many hard quests can slow you down, balance is key',
-  'Consistency in daily quests leads to long-term success',
-  'Break big goals into smaller quests to progress faster',
-  'A completed easy quest is better than an abandoned hard one',
-  'Plan your quests like a strategist, not a wanderer',
-  
-  // Skill boosting advice
-  'Complete brain quests to boost your intelligence stat, and become a genius',
-  'Physical activities enhance your strength skill, and get you in shape',
-  'Creative tasks improve your creativity stat, and inspire new ideas',
-  'Social quests boost your charisma skill, and make you a people person',
-  'Learning activities enhance your intelligence stat, and grant you insight',
-  'Physical training increases your strength skills, and makes you a warrior',
-  'Daily practice strengthens your discipline stat, and makes you a skilled traveller!',
-  'Intelligence grows with learning, feed your mind daily',
-  'Strength is built through action, not intention',
-  'Discipline is forged through consistency, not motivation',
-  'Charisma grows when you connect with others',
-  'Neglect no skill, balance creates true power',
-  'Focus on one skill today, master it step by step',
-  'Your weakest skill defines your next challenge',
-  
-  // Motivation
-  'Every great journey starts with a single step, so take the first step today, traveller!',
-  'Your dedication builds legendary status, so keep pushing yourself, traveller!',
-  'Keep going, greatness awaits, and don\'t give up on your dreams',
-  'Small steps create massive results, so don\'t underestimate the power of small actions',
-  'Consistency is the key to success, so stay focused and keep moving forward',
-  'Your courage inspires other adventurers, so be brave and take the lead, traveller!',
-  'The path of a true adventurer is never easy, but the rewards are worth it',
-  'Embrace challenges as opportunities to grow, and don\'t be afraid to take risks',
-  'Your legend grows with each completed quest, so keep questing and make your mark',
-  'Focus on your goals and you will achieve them, so stay focused and motivated',
-  'Believe in yourself and your abilities, and you will be unstoppable',
-  'The journey of a thousand miles begins with a single step, so take that first step today, traveller!'
+  ...CATEGORIES.questExamples,
+  ...CATEGORIES.featureTips,
+  ...CATEGORIES.leaderboardReminders,
+  ...CATEGORIES.skillBoostingAdvice,
+  ...CATEGORIES.motivation
 ];
 
 const MageGuide = () => {
@@ -144,15 +138,20 @@ const MageGuide = () => {
   const timeoutRef = useRef(null);
   const intervalRef = useRef(null);
 
-  // Get random message (avoiding repeats)
+  // Get random message with category chance-based selection
   const getRandomMessage = () => {
+    const categoryNames = Object.keys(CATEGORIES);
+    const randomCategory = categoryNames[Math.floor(Math.random() * categoryNames.length)];
+    const categoryMessages = CATEGORIES[randomCategory];
+    const randomMessage = categoryMessages[Math.floor(Math.random() * categoryMessages.length)];
+    
     let newIndex;
     do {
-      newIndex = Math.floor(Math.random() * mageMessages.length);
+      newIndex = mageMessages.indexOf(randomMessage);
     } while (newIndex === lastMessageIndex && mageMessages.length > 1);
     
     setLastMessageIndex(newIndex);
-    return mageMessages[newIndex];
+    return randomMessage;
   };
 
   // Show message function

@@ -13,7 +13,8 @@ import {
   X,
   Home,
   Sparkles,
-  Map
+  Map,
+  BookOpen
 } from 'lucide-react';
 
 const Navbar = () => {
@@ -32,6 +33,7 @@ const Navbar = () => {
     { path: '/', label: 'Dashboard', icon: Home },
     { path: '/journey', label: 'Journey', icon: Map },
     { path: '/quests', label: 'Quests', icon: Target },
+    { path: '/chronicles', label: 'Chronicles', icon: BookOpen },
     { path: '/leaderboard', label: 'Leaderboard', icon: Trophy },
   ];
 
@@ -44,29 +46,31 @@ const Navbar = () => {
 
   return (
     <nav className="bg-gaming-card border-b border-gaming-border sticky top-0 z-50 backdrop-blur-sm bg-opacity-90">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div className="max-w-full xl:max-w-8xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center h-16">
           {/* Logo */}
-          <Link 
-            to="/" 
-            className="flex items-center space-x-2 group"
-            onClick={() => setIsMobileMenuOpen(false)}
-          >
-            <motion.div
-              whileHover={{ rotate: 360, scale: 1.1 }}
-              transition={{ duration: 0.5 }}
-              className="text-2xl"
+          <div className="flex items-center">
+            <Link 
+              to="/" 
+              className="flex items-center space-x-2 group"
+              onClick={() => setIsMobileMenuOpen(false)}
             >
-              🎮
-            </motion.div>
-            <span className="font-orbitron text-xl font-bold bg-gradient-to-r from-neon-purple to-neon-pink bg-clip-text text-transparent group-hover:from-neon-pink group-hover:to-neon-purple transition-all duration-300">
-              LifeRPG
-            </span>
-          </Link>
+              <motion.div
+                whileHover={{ rotate: 360, scale: 1.1 }}
+                transition={{ duration: 0.5 }}
+                className="text-2xl"
+              >
+                🎮
+              </motion.div>
+              <span className="font-orbitron text-xl font-bold bg-gradient-to-r from-neon-purple to-neon-pink bg-clip-text text-transparent group-hover:from-neon-pink group-hover:to-neon-purple transition-all duration-300">
+                LifeRPG
+              </span>
+            </Link>
+          </div>
 
           {/* Desktop Navigation */}
           {isAuthenticated && (
-            <div className="hidden md:flex items-center space-x-8">
+            <div className="hidden md:flex items-center space-x-6 flex-1 justify-center">
               {navItems.map((item) => {
                 const Icon = item.icon;
                 const isActive = isActivePath(item.path);

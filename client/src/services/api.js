@@ -72,6 +72,21 @@ export const questAPI = {
   generateDailyQuests: () => api.post('/quests/generate-daily'),
 };
 
+// Post API calls
+export const postAPI = {
+  getAllPosts: (limit = 20, skip = 0) => api.get(`/posts/all?limit=${limit}&skip=${skip}`),
+  getMyPosts: (limit = 10, skip = 0) => api.get(`/posts/my?limit=${limit}&skip=${skip}`),
+  createPost: (formData) => api.post('/posts/create', formData, {
+    headers: {
+      'Content-Type': 'multipart/form-data',
+    },
+  }),
+  checkPostEligibility: (questId) => api.get(`/posts/check/${questId}`),
+  toggleLike: (postId) => api.post(`/posts/${postId}/like`),
+  addComment: (postId, text) => api.post(`/posts/${postId}/comment`, { text }),
+  deletePost: (postId) => api.delete(`/posts/${postId}`),
+};
+
 // Leaderboard API calls
 export const leaderboardAPI = {
   getLeaderboard: (params = {}) => {

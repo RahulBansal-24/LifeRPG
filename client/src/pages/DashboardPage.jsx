@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useAuth } from '../context/AuthContext';
-import { questAPI, userAPI } from '../services/api';
+import { questAPI, userAPI, postAPI } from '../services/api';
 import XPBar from '../components/XPBar';
 import StatCard from '../components/StatCard';
 import LoadingSpinner from '../components/LoadingSpinner';
@@ -14,7 +14,8 @@ import {
   Activity,
   Gamepad2,
   Star,
-  Edit3
+  Edit3,
+  BookOpen
 } from 'lucide-react';
 import { formatRelativeTime, getLevelTitle, avatarOptions } from '../utils/helpers';
 import toast from 'react-hot-toast';
@@ -27,6 +28,7 @@ const DashboardPage = () => {
     completedQuests: 0,
     dailyQuestsCompleted: 0,
     totalXP: 0,
+    chroniclesPosted: 0,
   });
   const [isLoading, setIsLoading] = useState(true);
   const [showLevelUpAnimation, setShowLevelUpAnimation] = useState(false);
@@ -38,8 +40,9 @@ const DashboardPage = () => {
     // Fetch dashboard data when user is available
     if (user) {
       fetchDashboardData();
+      fetchChroniclesCount();
     }
-  }, []);
+  }, [user]);
 
   // Update stats when user data changes (from quest completion)
   useEffect(() => {
@@ -49,9 +52,25 @@ const DashboardPage = () => {
         completedQuests: user.completedQuests || 0,
         dailyQuestsCompleted: user.dailyQuestsCompleted || 0,
         totalXP: user.xp || 0,
+        chroniclesPosted: user.chroniclesPosted || 0,
       });
     }
-  }, [user?.totalQuests, user?.completedQuests, user?.dailyQuestsCompleted, user?.xp, user?.stars, user?.stats]);
+  }, [user]);
+
+  // Fetch chronicles count
+  const fetchChroniclesCount = async () => {
+    try {
+      const response = await postAPI.getMyPosts(1, 0);
+      const chroniclesCount = response.data.count;
+      
+      setStats(prev => ({
+        ...prev,
+        chroniclesPosted: chroniclesCount
+      }));
+    } catch (error) {
+      console.error('Failed to fetch chronicles count:', error);
+    }
+  };
 
   const fetchDashboardData = async () => {
     try {
@@ -259,7 +278,7 @@ const DashboardPage = () => {
             </div>
             <h3 className="text-gray-400 text-sm font-medium">Daily Quests</h3>
             <div className="mt-2 text-xs text-neon-cyan">
-              Completed today
+              Overall completed
             </div>
           </motion.div>
 
@@ -270,12 +289,12 @@ const DashboardPage = () => {
             className="stat-card group"
           >
             <div className="flex items-center justify-between mb-3">
-              <Zap className="text-xp-gold" size={24} />
-              <span className="text-2xl font-bold text-white">{stats.totalXP}</span>
+              <BookOpen className="text-neon-purple" size={24} />
+              <span className="text-2xl font-bold text-white">{stats.chroniclesPosted}</span>
             </div>
-            <h3 className="text-gray-400 text-sm font-medium">Total XP Earned</h3>
-            <div className="mt-2 text-xs text-xp-gold">
-              From completed quests
+            <h3 className="text-gray-400 text-sm font-medium">Chronicles Posted</h3>
+            <div className="mt-2 text-xs text-neon-purple">
+              Share your quest achievements
             </div>
           </motion.div>
         </div>

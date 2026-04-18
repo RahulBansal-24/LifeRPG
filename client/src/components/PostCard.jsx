@@ -1,0 +1,252 @@
+import React, { useState } from 'react';
+import { motion } from 'framer-motion';
+import { postAPI } from '../services/api';
+import { 
+  Heart, 
+  MessageCircle, 
+  Trash2, 
+  Send, 
+  MoreHorizontal,
+  Star,
+  Target,
+  Calendar,
+  User
+} from 'lucide-react';
+import toast from 'react-hot-toast';
+
+const PostCard = ({ post, currentUser, onLike, onComment, onDelete, onPostQuest }) => {
+  const [isLiked, setIsLiked] = useState(post.likes.includes(currentUser._id));
+  const [likeCount, setLikeCount] = useState(post.likes.length);
+  const [showComments, setShowComments] = useState(false);
+  const [commentText, setCommentText] = useState('');
+  const [isSubmittingComment, setIsSubmittingComment] = useState(false);
+  const [isSubmittingLike, setIsSubmittingLike] = useState(false);
+
+  // Handle like/unlike
+  const handleLike = async () => {
+    if (isSubmittingLike) return;
+    
+    try {
+      setIsSubmittingLike(true);
+      const response = await postAPI.toggleLike(post._id);
+      const { liked, likeCount: newLikeCount } = response.data.data;
+      
+      setIsLiked(liked);
+      setLikeCount(newLikeCount);
+      onLike(post._id, { liked, likeCount: newLikeCount });
+      
+      toast.success(liked ? 'Post liked! ' : 'Post unliked');
+    } catch (error) {
+      console.error('Failed to toggle like:', error);
+      toast.error('Failed to like post');
+    } finally {
+      setIsSubmittingLike(false);
+    }
+  };
+
+  // Handle comment submission
+  const handleCommentSubmit = async (e) => {
+    e.preventDefault();
+    if (!commentText.trim() || isSubmittingComment) return;
+
+    try {
+      setIsSubmittingComment(true);
+      const response = await postAPI.addComment(post._id, commentText);
+      const newComment = response.data.data;
+      
+      setCommentText('');
+      onComment(post._id, newComment);
+      toast.success('Comment added!');
+    } catch (error) {
+      console.error('Failed to add comment:', error);
+      toast.error('Failed to add comment');
+    } finally {
+      setIsSubmittingComment(false);
+    }
+  };
+
+  // Handle delete post
+  const handleDelete = async () => {
+    if (!confirm('Are you sure you want to delete this chronicle?')) return;
+
+    try {
+      await postAPI.deletePost(post._id);
+      onDelete(post._id);
+    } catch (error) {
+      console.error('Failed to delete post:', error);
+      toast.error('Failed to delete post');
+    }
+  };
+
+  // Format time
+  const formatTimeAgo = (date) => {
+    const now = new Date();
+    const postDate = new Date(date);
+    const diffInMinutes = Math.floor((now - postDate) / (1000 * 60));
+    
+    if (diffInMinutes < 1) return 'Just now';
+    if (diffInMinutes < 60) return `${diffInMinutes}m ago`;
+    if (diffInMinutes < 1440) return `${Math.floor(diffInMinutes / 60)}h ago`;
+    return `${Math.floor(diffInMinutes / 1440)}d ago`;
+  };
+
+  // Get difficulty color
+  const getDifficultyColor = (difficulty) => {
+    switch (difficulty) {
+      case 'easy': return 'text-green-500';
+      case 'medium': return 'text-yellow-500';
+      case 'hard': return 'text-red-500';
+      default: return 'text-gray-500';
+    }
+  };
+
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.3 }}
+      className="bg-gaming-card border border-gaming-border rounded-xl overflow-hidden shadow-lg hover:shadow-xl transition-shadow"
+    >
+      {/* Header */}
+      <div className="p-4 border-b border-gaming-border">
+        <div className="flex items-start justify-between">
+          <div className="flex items-center space-x-3">
+            <div className="w-10 h-10 bg-gradient-to-br from-neon-purple to-neon-blue rounded-full flex items-center justify-center">
+              <User className="w-5 h-5 text-white" />
+            </div>
+            <div className="flex-1">
+              <div className="flex items-center space-x-2">
+                <h3 className="font-semibold text-white">{post.userId.username}</h3>
+                <span className="text-gray-400 text-sm">·</span>
+                <span className="text-gray-400 text-sm">{formatTimeAgo(post.createdAt)}</span>
+              </div>
+              <div className="flex items-center space-x-2 mt-1">
+                <Target className="w-3 h-3 text-neon-purple" />
+                <span className="text-sm text-gray-300">{post.questId.title}</span>
+                <span className={`text-xs font-semibold ${getDifficultyColor(post.questId.difficulty)}`}>
+                  {post.questId.difficulty}
+                </span>
+                <span className="text-xs text-neon-green">+{post.questId.xpReward} XP</span>
+              </div>
+            </div>
+          </div>
+          <div className="flex items-center space-x-2">
+            {post.userId._id === currentUser._id && (
+              <button
+                onClick={handleDelete}
+                className="p-1 text-gray-400 hover:text-red-500 transition-colors"
+              >
+                <Trash2 className="w-4 h-4" />
+              </button>
+            )}
+          </div>
+        </div>
+      </div>
+
+      {/* Content */}
+      <div className="p-4">
+        {/* Quest Info */}
+        <div className="mb-4">
+          <h4 className="font-semibold text-white mb-2">{post.title}</h4>
+          <p className="text-gray-400 text-sm mb-3">{post.description}</p>
+        </div>
+
+        {/* Image */}
+        <div className="mb-4 rounded-lg overflow-hidden bg-gaming-darker">
+          <img
+            src={post.imageUrl}
+            alt={post.title}
+            className="w-full h-64 object-cover"
+            onError={(e) => {
+              e.target.src = 'https://via.placeholder.com/400x300/1a1a1a/ffffff?text=Image+Not+Available';
+            }}
+          />
+        </div>
+
+        {/* Caption */}
+        <div className="mb-4">
+          <p className="text-gray-300 whitespace-pre-wrap">{post.caption}</p>
+        </div>
+
+        {/* Actions */}
+        <div className="flex items-center justify-between py-2 border-t border-gaming-border">
+          <div className="flex items-center space-x-4">
+            <button
+              onClick={handleLike}
+              disabled={isSubmittingLike}
+              className={`flex items-center space-x-1 transition-colors ${
+                isLiked ? 'text-red-500' : 'text-gray-400 hover:text-red-500'
+              } ${isSubmittingLike ? 'opacity-50 cursor-not-allowed' : ''}`}
+            >
+              <Heart className={`w-5 h-5 ${isLiked ? 'fill-current' : ''}`} />
+              <span className="text-sm">{likeCount}</span>
+            </button>
+            <button
+              onClick={() => setShowComments(!showComments)}
+              className="flex items-center space-x-1 text-gray-400 hover:text-neon-blue transition-colors"
+            >
+              <MessageCircle className="w-5 h-5" />
+              <span className="text-sm">{post.comments.length}</span>
+            </button>
+          </div>
+          <button
+            onClick={() => onPostQuest(post.questId)}
+            className="text-xs text-neon-purple hover:text-neon-purple/80 transition-colors"
+          >
+            Complete similar quest
+          </button>
+        </div>
+
+        {/* Comments Section */}
+        {showComments && (
+          <div className="mt-4 pt-4 border-t border-gaming-border">
+            {/* Comments List */}
+            {post.comments.length > 0 && (
+              <div className="space-y-3 mb-4 max-h-40 overflow-y-auto">
+                {post.comments.map((comment) => (
+                  <div key={comment._id} className="flex items-start space-x-2">
+                    <div className="w-6 h-6 bg-gradient-to-br from-neon-blue to-neon-green rounded-full flex items-center justify-center flex-shrink-0">
+                      <User className="w-3 h-3 text-white" />
+                    </div>
+                    <div className="flex-1">
+                      <div className="flex items-center space-x-2">
+                        <span className="font-medium text-white text-sm">{comment.userId.username}</span>
+                        <span className="text-gray-400 text-xs">{formatTimeAgo(comment.createdAt)}</span>
+                      </div>
+                      <p className="text-gray-300 text-sm mt-1">{comment.text}</p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+
+            {/* Comment Input */}
+            <form onSubmit={handleCommentSubmit} className="flex items-center space-x-2">
+              <input
+                type="text"
+                value={commentText}
+                onChange={(e) => setCommentText(e.target.value)}
+                placeholder="Add a comment..."
+                className="flex-1 bg-gaming-darker border border-gaming-border rounded-lg px-3 py-2 text-white placeholder-gray-400 focus:outline-none focus:border-neon-purple"
+                maxLength={300}
+              />
+              <button
+                type="submit"
+                disabled={!commentText.trim() || isSubmittingComment}
+                className={`p-2 rounded-lg transition-colors ${
+                  commentText.trim() && !isSubmittingComment
+                    ? 'bg-neon-purple text-white hover:bg-neon-purple/80'
+                    : 'bg-gray-700 text-gray-400 cursor-not-allowed'
+                }`}
+              >
+                <Send className="w-4 h-4" />
+              </button>
+            </form>
+          </div>
+        )}
+      </div>
+    </motion.div>
+  );
+};
+
+export default PostCard;

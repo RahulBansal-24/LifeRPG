@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { useAuth } from '../context/AuthContext';
-import { questAPI } from '../services/api';
+import { questAPI, postAPI } from '../services/api';
 import LoadingSpinner from '../components/LoadingSpinner';
+import CreatePostModal from '../components/CreatePostModal';
 import { 
   Target, 
   Plus, 
@@ -16,7 +17,8 @@ import {
   Edit3,
   Filter,
   X,
-  Sparkles
+  Sparkles,
+  BookOpen
 } from 'lucide-react';
   import { 
   getDifficultyColor, 
@@ -34,6 +36,10 @@ const QuestsPage = () => {
   const [filteredQuests, setFilteredQuests] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [showCreateForm, setShowCreateForm] = useState(false);
+  const [showCreatePostModal, setShowCreatePostModal] = useState(false);
+  const [selectedQuest, setSelectedQuest] = useState(null);
+  const [postEligibility, setPostEligibility] = useState({});
+const [isCheckingEligibility, setIsCheckingEligibility] = useState({});
   const [filters, setFilters] = useState({
     type: 'all',
     difficulty: 'all',
@@ -53,6 +59,25 @@ const QuestsPage = () => {
     }
   });
 
+  const fetchQuests = async () => {
+    try {
+      const response = await questAPI.getQuests(filters);
+      const fetchedQuests = response.data.data;
+      setQuests(fetchedQuests);
+      
+      // Check post eligibility for completed quests
+      const completedQuests = fetchedQuests.filter(quest => quest.status === 'completed');
+      if (completedQuests.length > 0) {
+        await checkPostEligibility(completedQuests);
+      }
+    } catch (error) {
+      console.error('Failed to fetch quests:', error);
+      toast.error('Failed to fetch quests');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   useEffect(() => {
     fetchQuests();
   }, []);
@@ -60,25 +85,6 @@ const QuestsPage = () => {
   useEffect(() => {
     applyFilters();
   }, [quests, filters]);
-
-  const fetchQuests = async () => {
-    try {
-      setIsLoading(true);
-      const response = await questAPI.getQuests();
-      console.log('Fetched quests:', response.data.data?.map(q => ({
-        id: q._id,
-        title: q.title,
-        selectedSkills: q.selectedSkills,
-        statsReward: q.statsReward
-      })));
-      setQuests(response.data.data || []);
-    } catch (error) {
-      console.error('Failed to fetch quests:', error);
-      toast.error('Failed to load quests');
-    } finally {
-      setIsLoading(false);
-    }
-  };
 
   const applyFilters = () => {
     let filtered = [...quests];
@@ -126,6 +132,34 @@ const QuestsPage = () => {
     }
   };
 
+  // Handle post creation for a quest
+  const handleCreatePost = (quest) => {
+    setSelectedQuest(quest);
+    setShowCreatePostModal(true);
+  };
+
+  // Handle post created successfully
+  const handlePostCreated = (newPost) => {
+    // Update post eligibility for the quest
+    setPostEligibility(prev => ({
+      ...prev,
+      [newPost.questId]: false
+    }));
+    
+    setShowCreatePostModal(false);
+    setSelectedQuest(null);
+    toast.success('Chronicle created successfully! ');
+  };
+
+  // Handle post deleted (to re-enable post button)
+  const handlePostDeleted = (questId) => {
+    // Update post eligibility for the quest
+    setPostEligibility(prev => ({
+      ...prev,
+      [questId]: true
+    }));
+  };
+
   const handleCompleteQuest = async (questId) => {
     try {
       console.log('Attempting to complete quest:', questId);
@@ -140,6 +174,19 @@ const QuestsPage = () => {
       setQuests(prev => prev.map(q => 
         q._id === questId ? { ...q, ...quest } : q
       ));
+      
+      // Check post eligibility for the newly completed quest
+      if (quest.status === 'completed') {
+        try {
+          const response = await postAPI.checkPostEligibility(questId);
+          setPostEligibility(prev => ({
+            ...prev,
+            [questId]: response.data.data.canPost
+          }));
+        } catch (error) {
+          console.error('Failed to check post eligibility:', error);
+        }
+      }
       
       // Update user if XP was awarded
       if (userUpdate) {
@@ -198,6 +245,31 @@ const QuestsPage = () => {
     quest.type === 'daily' && 
     new Date(quest.createdAt).toDateString() === new Date().toDateString()
   );
+
+  // Check post eligibility for completed quests
+  const checkPostEligibility = async (completedQuests) => {
+    const eligibility = {};
+    const loading = {};
+    
+    // Set loading state for all quests
+    completedQuests.forEach(quest => {
+      loading[quest._id] = true;
+    });
+    setIsCheckingEligibility(loading);
+    
+    for (const quest of completedQuests) {
+      try {
+        const response = await postAPI.checkPostEligibility(quest._id);
+        eligibility[quest._id] = response.data.data.canPost;
+      } catch (error) {
+        console.error('Failed to check post eligibility:', error);
+        eligibility[quest._id] = false;
+      }
+    }
+    
+    setPostEligibility(eligibility);
+    setIsCheckingEligibility({});
+  };
 
   const handleGenerateDailyQuests = async () => {
     try {
@@ -622,6 +694,36 @@ const QuestsPage = () => {
                           </button>
                         )}
                         
+                        {quest.status === 'completed' && (
+                          <>
+                            {isCheckingEligibility[quest._id] ? (
+                              <button
+                                disabled
+                                className="flex items-center space-x-1 text-sm bg-gray-700 text-gray-400 px-3 py-2 rounded-lg cursor-not-allowed"
+                              >
+                                <BookOpen size={16} />
+                                <span>Checking...</span>
+                              </button>
+                            ) : postEligibility[quest._id] ? (
+                              <button
+                                onClick={() => handleCreatePost(quest)}
+                                className="neon-button-purple flex items-center space-x-1 text-sm"
+                              >
+                                <BookOpen size={16} />
+                                <span>Create Chronicle</span>
+                              </button>
+                            ) : (
+                              <button
+                                disabled
+                                className="flex items-center space-x-1 text-sm bg-gray-700 text-gray-400 px-3 py-2 rounded-lg cursor-not-allowed"
+                              >
+                                <BookOpen size={16} />
+                                <span>Chronicle Created</span>
+                              </button>
+                            )}
+                          </>
+                        )}
+                        
                         <button
                           onClick={() => handleDeleteQuest(quest._id)}
                           className="p-2 text-gray-400 hover:text-red-400 hover:bg-red-400 hover:bg-opacity-10 rounded-lg transition-colors duration-200"
@@ -660,6 +762,18 @@ const QuestsPage = () => {
           )}
         </div>
       </div>
+
+      {/* Create Post Modal */}
+      {showCreatePostModal && (
+        <CreatePostModal
+          onClose={() => {
+            setShowCreatePostModal(false);
+            setSelectedQuest(null);
+          }}
+          onPostCreated={handlePostCreated}
+          selectedQuest={selectedQuest}
+        />
+      )}
     </div>
   );
 };

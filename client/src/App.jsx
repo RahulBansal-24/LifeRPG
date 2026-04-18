@@ -13,6 +13,7 @@ import SignupPage from './pages/SignupPage';
 import DashboardPage from './pages/DashboardPage';
 import Journey from './pages/Journey';
 import QuestsPage from './pages/QuestsPage';
+import Chronicles from './pages/Chronicles';
 import LeaderboardPage from './pages/LeaderboardPage';
 import ResetPasswordPage from './pages/ResetPasswordPage';
 
@@ -216,6 +217,22 @@ function App() {
                   transition={pageTransition}
                 >
                   <QuestsPage />
+                </motion.div>
+              </ProtectedRoute>
+            } 
+          />
+          <Route 
+            path="/chronicles" 
+            element={
+              <ProtectedRoute>
+                <motion.div
+                  initial="initial"
+                  animate="in"
+                  exit="out"
+                  variants={pageVariants}
+                  transition={pageTransition}
+                >
+                  <Chronicles />
                 </motion.div>
               </ProtectedRoute>
             } 
