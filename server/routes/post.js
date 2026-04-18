@@ -18,7 +18,39 @@ const upload = multer({
   }
 });
 
-// All post routes are protected
+// Public image endpoint - no authentication required
+router.get('/:id/image', async (req, res) => {
+  try {
+    const post = await Post.findById(req.params.id);
+    if (!post) {
+      return res.status(404).json({
+        success: false,
+        message: 'Post not found'
+      });
+    }
+
+    // Handle database storage (all posts now use this)
+    if (post.imageData && post.imageContentType) {
+      res.set('Content-Type', post.imageContentType);
+      res.send(post.imageData);
+    }
+    // No image found
+    else {
+      return res.status(404).json({
+        success: false,
+        message: 'Post has no image'
+      });
+    }
+  } catch (error) {
+    console.error('Get image error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Server error while fetching image'
+    });
+  }
+});
+
+// All other post routes are protected
 router.use(protect);
 
 // @route   POST /api/posts/create
@@ -138,51 +170,6 @@ router.post('/create', upload.single('image'), [
   }
 });
 
-// @route   GET /api/posts/:id/image
-// @desc    Get post image from database
-// @access  Public (images should be accessible without auth)
-router.get('/:id/image', async (req, res) => {
-  try {
-    const post = await Post.findById(req.params.id);
-    if (!post) {
-      return res.status(404).json({
-        success: false,
-        message: 'Post not found'
-      });
-    }
-
-    // Handle new database storage
-    if (post.imageData && post.imageContentType) {
-      res.set('Content-Type', post.imageContentType);
-      res.send(post.imageData);
-    }
-    // Handle old file system storage
-    else if (post.imageUrl) {
-      const imagePath = path.join(__dirname, '..', post.imageUrl);
-      if (fs.existsSync(imagePath)) {
-        res.sendFile(imagePath);
-      } else {
-        return res.status(404).json({
-          success: false,
-          message: 'Image file not found'
-        });
-      }
-    }
-    // No image found
-    else {
-      return res.status(404).json({
-        success: false,
-        message: 'Post has no image'
-      });
-    }
-  } catch (error) {
-    console.error('Get image error:', error);
-    res.status(500).json({
-      success: false,
-      message: 'Server error while fetching image'
-    });
-  }
-});
 
 // @route   GET /api/posts/all
 // @desc    Get all posts (chronicles feed)

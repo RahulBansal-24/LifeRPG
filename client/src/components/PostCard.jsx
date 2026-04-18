@@ -209,13 +209,11 @@ const PostCard = ({ post, currentUser, onLike, onComment, onCommentDeleted, onDe
               objectPosition: 'center'
             }}
             onError={(e) => {
-              console.error('Image load error:', e);
               // Create a simple fallback instead of external placeholder
               e.target.style.display = 'none';
               e.target.nextElementSibling.style.display = 'flex';
             }}
             onLoad={(e) => {
-              console.log('Image loaded successfully for post:', post._id);
               e.target.nextElementSibling.style.display = 'none';
             }}
           />

@@ -25,15 +25,11 @@ const postSchema = new mongoose.Schema({
   },
   imageData: {
     type: Buffer,
-    required: false // Make optional to support both old and new posts
+    required: [true, 'Post image is required']
   },
   imageContentType: {
     type: String,
-    required: false // Make optional to support both old and new posts
-  },
-  imageUrl: {
-    type: String,
-    required: false // Keep for backward compatibility with old posts
+    required: [true, 'Image content type is required']
   },
   caption: {
     type: String,
