@@ -150,6 +150,17 @@ const PostCard = ({ post, currentUser, onLike, onComment, onCommentDeleted, onDe
     }
   };
 
+  // Count all comments including replies
+  const getTotalCommentCount = (post) => {
+    let totalComments = post.comments.length;
+    post.comments.forEach(comment => {
+      if (comment.replies && comment.replies.length > 0) {
+        totalComments += comment.replies.length;
+      }
+    });
+    return totalComments;
+  };
+
   return (
     <motion.div
       initial={{ opacity: 0, y: 20 }}
@@ -261,7 +272,7 @@ const PostCard = ({ post, currentUser, onLike, onComment, onCommentDeleted, onDe
               className="flex items-center space-x-1 text-gray-400 hover:text-neon-blue transition-colors"
             >
               <MessageCircle className="w-5 h-5" />
-              <span className="text-sm">{post.comments.length}</span>
+              <span className="text-sm">{getTotalCommentCount(post)}</span>
             </button>
           </div>
           {isPostOwner && (

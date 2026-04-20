@@ -41,7 +41,24 @@ const Chronicles = () => {
       
       const chronicles = userPosts.length;
       const likes = userPosts.reduce((total, post) => total + post.likes.length, 0);
-      const comments = userPosts.reduce((total, post) => total + post.comments.length, 0);
+      
+      // Count all comments including nested replies
+      const countAllComments = (posts) => {
+        let totalComments = 0;
+        posts.forEach(post => {
+          // Count main comments
+          totalComments += post.comments.length;
+          // Count all replies and sub-replies
+          post.comments.forEach(comment => {
+            if (comment.replies && comment.replies.length > 0) {
+              totalComments += comment.replies.length;
+            }
+          });
+        });
+        return totalComments;
+      };
+      
+      const comments = countAllComments(userPosts);
       
       setUserStats({ chronicles, likes, comments });
     } catch (error) {
