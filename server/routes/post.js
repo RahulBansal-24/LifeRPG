@@ -3,6 +3,7 @@ const { body, validationResult } = require('express-validator');
 const { protect } = require('../middleware/auth');
 const Post = require('../models/Post');
 const Quest = require('../models/Quest');
+const User = require('../models/User');
 const multer = require('multer');
 const path = require('path');
 const fs = require('fs');
@@ -260,7 +261,7 @@ router.post('/:id/like', async (req, res) => {
 // @route   POST /api/posts/:id/comment
 // @desc    Add comment to a post
 // @access  Private
-router.post('/:id/comment', [
+router.post('/:id/comment', protect, [
   body('text')
     .trim()
     .isLength({ min: 1, max: 300 })
@@ -315,7 +316,7 @@ router.post('/:id/comment', [
 // @route   DELETE /api/posts/:id/comment/:commentId
 // @desc    Delete a comment (by comment author or post author)
 // @access  Private
-router.delete('/:id/comment/:commentId', async (req, res) => {
+router.delete('/:id/comment/:commentId', protect, async (req, res) => {
   try {
     const postId = req.params.id;
     const commentId = req.params.commentId;
@@ -426,23 +427,170 @@ router.get('/check/:questId', async (req, res) => {
     }
 
     // Check if user already posted for this quest
-    const canPost = await Post.canUserPost(userId, questId);
+  const canPost = await Post.canUserPost(userId, questId);
+  if (!canPost) {
+    return res.status(200).json({
+      success: true,
+      data: {
+        canPost: false,
+        reason: 'Already posted for this quest'
+      }
+    });
+  }
+
+  res.status(200).json({
+    success: true,
+    data: {
+      canPost: true
+    }
+  });
+} catch (error) {
+  console.error('Check post eligibility error:', error);
+  res.status(500).json({
+    success: false,
+    message: 'Server error while checking post eligibility',
+    error: process.env.NODE_ENV === 'development' ? error.message : undefined
+  });
+}
+});
+
+// @route   POST /api/posts/:postId/comments/:commentId/reply
+// @desc    Add a reply to a comment
+// @access  Private
+router.post('/:postId/comments/:commentId/reply', protect, async (req, res) => {
+  try {
+    const { text } = req.body;
+    const postId = req.params.postId;
+    const commentId = req.params.commentId;
+    const userId = req.user._id;
+
+    if (!text || !text.trim()) {
+      return res.status(400).json({
+        success: false,
+        message: 'Reply text is required'
+      });
+    }
+
+    // Find the parent comment
+    const parentComment = await Post.findOne(
+      { _id: postId, 'comments._id': commentId },
+      'comments.userId username avatar'
+    );
+
+    if (!parentComment) {
+      return res.status(404).json({
+        success: false,
+        message: 'Parent comment not found'
+      });
+    }
+
+    // Extract username from text for @mention
+    const mentionMatch = text.match(/@(\w+)/);
+    let replyToUserId = null;
+    if (mentionMatch) {
+      const mentionedUser = await User.findOne({ username: mentionMatch[1] });
+      if (mentionedUser) {
+        replyToUserId = mentionedUser._id;
+      }
+    }
+
+    // Create the reply
+    const reply = {
+      userId,
+      text,
+      replyToUserId,
+      createdAt: new Date()
+    };
+
+    // Add the reply to the parent comment
+    await Post.updateOne(
+      { _id: postId, 'comments._id': commentId },
+      { 
+        $push: { 
+          'comments.$.replies': reply 
+        } 
+      }
+    );
+
+    // Get the updated post with populated user data
+    const updatedPost = await Post.findById(postId)
+      .populate('comments.userId', 'username avatar')
+      .populate('comments.replies.userId', 'username avatar');
+
+    // Find the newly added reply with populated user data
+    const updatedParentComment = updatedPost.comments.find(c => c._id.toString() === commentId);
+    const newReply = updatedParentComment.replies[updatedParentComment.replies.length - 1];
+
+    res.status(201).json({
+      success: true,
+      message: 'Reply added successfully',
+      data: newReply
+    });
+  } catch (error) {
+    console.error('Add reply error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Server error while adding reply',
+      error: process.env.NODE_ENV === 'development' ? error.message : undefined
+    });
+  }
+});
+
+// @route   DELETE /api/posts/:postId/comments/:commentId/replies/:replyId
+// @desc    Delete a specific reply (by reply author or post author)
+// @access  Private
+router.delete('/:postId/comments/:commentId/replies/:replyId', protect, async (req, res) => {
+  try {
+    const { postId, commentId, replyId } = req.params;
+    const userId = req.user._id;
+
+    const post = await Post.findById(postId);
+    if (!post) {
+      return res.status(404).json({
+        success: false,
+        message: 'Post not found'
+      });
+    }
+
+    // Find the parent comment
+    const comment = post.comments.id(commentId);
+    if (!comment) {
+      return res.status(404).json({
+        success: false,
+        message: 'Parent comment not found'
+      });
+    }
+
+    // Find the reply
+    const reply = comment.replies.id(replyId);
+    if (!reply) {
+      return res.status(404).json({
+        success: false,
+        message: 'Reply not found'
+      });
+    }
+
+    // Check if user is the reply author or post author
+    if (reply.userId.toString() !== userId.toString() && post.userId.toString() !== userId.toString()) {
+      return res.status(403).json({
+        success: false,
+        message: 'You can only delete your own replies or replies on your posts'
+      });
+    }
+
+    // Remove only the specific reply (sub-replies will remain as they are separate replies)
+    comment.replies.pull(replyId);
+    await post.save();
 
     res.status(200).json({
       success: true,
-      data: {
-        canPost,
-        quest: {
-          title: quest.title,
-          description: quest.description
-        }
-      }
+      message: 'Reply deleted successfully!'
     });
   } catch (error) {
-    console.error('Check post eligibility error:', error);
+    console.error('Delete reply error:', error);
     res.status(500).json({
       success: false,
-      message: 'Server error while checking post eligibility',
+      message: 'Server error while deleting reply',
       error: process.env.NODE_ENV === 'development' ? error.message : undefined
     });
   }

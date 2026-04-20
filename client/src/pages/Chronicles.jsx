@@ -151,17 +151,39 @@ const Chronicles = () => {
 
   // Handle comment deleted
   const handleCommentDeleted = (postId, commentId) => {
-    setPosts(prev => prev.map(post => 
-      post._id === postId 
-        ? { ...post, comments: post.comments.filter(c => c._id !== commentId) }
-        : post
-    ));
+    setPosts(prev => prev.map(post => {
+      if (post._id === postId) {
+        // Remove comment and all its replies, or remove reply from nested comments
+        const removeCommentOrReply = (comments) => {
+          return comments.filter(c => {
+            // If this is the comment to delete, remove it and all its replies
+            if (c._id === commentId) {
+              return false;
+            }
+            // If this comment has replies, check if any reply needs to be removed
+            if (c.replies && c.replies.length > 0) {
+              c.replies = c.replies.filter(r => r._id !== commentId);
+            }
+            return true;
+          });
+        };
+        
+        return { ...post, comments: removeCommentOrReply([...post.comments]) };
+      }
+      return post;
+    }));
+    
     // Refresh user stats if it's user's post
     const post = posts.find(p => p._id === postId);
     const currentUserId = user._id || user.id;
     if (post && (post.userId._id === currentUserId || post.userId === currentUserId)) {
       loadUserStats();
     }
+    
+    // Trigger a full refresh after a short delay to ensure UI updates
+    setTimeout(() => {
+      refreshPosts();
+    }, 500);
   };
 
   // Initial load

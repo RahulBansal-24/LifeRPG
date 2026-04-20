@@ -56,7 +56,29 @@ const postSchema = new mongoose.Schema({
     createdAt: {
       type: Date,
       default: Date.now
-    }
+    },
+    replies: [{
+      userId: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'User',
+        required: true
+      },
+      text: {
+        type: String,
+        required: [true, 'Reply text is required'],
+        trim: true,
+        maxlength: [300, 'Reply cannot exceed 300 characters']
+      },
+      replyToUserId: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'User',
+        required: false // Optional - only for @mentions
+      },
+      createdAt: {
+        type: Date,
+        default: Date.now
+      }
+    }]
   }],
   createdAt: {
     type: Date,
@@ -83,6 +105,7 @@ postSchema.statics.getAllPosts = function(limit = 20, skip = 0) {
     .populate('userId', 'username avatar')
     .populate('questId', 'title difficulty xpReward')
     .populate('comments.userId', 'username avatar')
+    .populate('comments.replies.userId', 'username avatar')
     .sort({ createdAt: -1 })
     .limit(limit)
     .skip(skip);
@@ -94,6 +117,7 @@ postSchema.statics.getUserPosts = function(userId, limit = 10, skip = 0) {
     .populate('userId', 'username avatar')
     .populate('questId', 'title difficulty xpReward')
     .populate('comments.userId', 'username avatar')
+    .populate('comments.replies.userId', 'username avatar')
     .sort({ createdAt: -1 })
     .limit(limit)
     .skip(skip);

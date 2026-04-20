@@ -1,19 +1,19 @@
 import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { postAPI } from '../services/api';
 import { 
   Heart, 
   MessageCircle, 
-  Trash2, 
-  Send, 
   MoreHorizontal,
   Star,
   Target,
   Calendar,
   User,
-  Image as ImageIcon
+  Image as ImageIcon,
+  Trash2
 } from 'lucide-react';
 import toast from 'react-hot-toast';
+import CommentItem from './CommentItem';
+import { postAPI } from '../services/api';
 
 const PostCard = ({ post, currentUser, onLike, onComment, onCommentDeleted, onDelete, onPostQuest }) => {
   const [isLiked, setIsLiked] = useState(post.likes.includes(currentUser._id) || post.likes.includes(currentUser.id));
@@ -47,6 +47,7 @@ const PostCard = ({ post, currentUser, onLike, onComment, onCommentDeleted, onDe
   const [commentText, setCommentText] = useState('');
   const [isSubmittingComment, setIsSubmittingComment] = useState(false);
   const [isSubmittingLike, setIsSubmittingLike] = useState(false);
+  const [replyingToComment, setReplyingToComment] = useState(null);
 
   // Handle like/unlike
   const handleLike = async () => {
@@ -77,12 +78,29 @@ const PostCard = ({ post, currentUser, onLike, onComment, onCommentDeleted, onDe
 
     try {
       setIsSubmittingComment(true);
-      const response = await postAPI.addComment(post._id, commentText);
-      const newComment = response.data.data;
       
-      setCommentText('');
-      onComment(post._id, newComment);
-      toast.success('Comment added!');
+      let response;
+      if (replyingToComment) {
+        // This is a reply to a comment
+        const mentionMatch = commentText.match(/@(\w+)/);
+        let replyToUserId = null;
+        if (mentionMatch) {
+          replyToUserId = mentionMatch[1];
+        }
+        response = await postAPI.addReply(post._id, replyingToComment.commentId, commentText, replyToUserId);
+      } else {
+        // This is a new comment
+        response = await postAPI.addComment(post._id, commentText);
+      }
+      
+      if (response.data.success) {
+        const newComment = response.data.data;
+        setCommentText('');
+        setReplyingToComment(null);
+        // Pass additional context for replies
+        onComment(post._id, newComment, replyingToComment);
+        toast.success(replyingToComment ? 'Reply added!' : 'Comment added!');
+      }
     } catch (error) {
       console.error('Failed to add comment:', error);
       toast.error('Failed to add comment');
@@ -105,18 +123,9 @@ const PostCard = ({ post, currentUser, onLike, onComment, onCommentDeleted, onDe
   };
 
   // Handle delete comment
-  const handleDeleteComment = async (commentId) => {
-    if (!confirm('Are you sure you want to delete this comment?')) return;
-
-    try {
-      await postAPI.deleteComment(post._id, commentId);
-      // Update parent component to remove the comment
-      onCommentDeleted && onCommentDeleted(post._id, commentId);
-      toast.success('Comment deleted successfully');
-    } catch (error) {
-      console.error('Failed to delete comment:', error);
-      toast.error('Failed to delete comment');
-    }
+  const handleDeleteComment = (postId, commentId) => {
+    // Just pass through to parent component - CommentItem handles the actual API call
+    onCommentDeleted && onCommentDeleted(postId, commentId);
   };
 
   // Format time
@@ -216,8 +225,7 @@ const PostCard = ({ post, currentUser, onLike, onComment, onCommentDeleted, onDe
             }}
             onLoad={(e) => {
               e.target.nextElementSibling.style.display = 'none';
-            }}
-          />
+            }} />
           <div className="w-full bg-gaming-darker flex items-center justify-center" style={{ aspectRatio: '1/1', minHeight: '300px', display: 'none' }}>
             <div className="text-center">
               <div className="w-16 h-16 bg-gray-700 rounded-full flex items-center justify-center mx-auto mb-2">
@@ -274,62 +282,58 @@ const PostCard = ({ post, currentUser, onLike, onComment, onCommentDeleted, onDe
             {post.comments.length > 0 && (
               <div className="space-y-3 mb-4 max-h-40 overflow-y-auto">
                 {post.comments.map((comment) => (
-                  <div key={comment._id} className="flex items-start space-x-2">
-                    {comment.userId.avatar && !comment.userId.avatar.startsWith('http') && !comment.userId.avatar.startsWith('/uploads/') ? (
-                      <span className="text-sm">{comment.userId.avatar}</span>
-                    ) : (
-                      <User className="w-3 h-3 text-white" />
-                    )}
-                    <div className="flex-1">
-                      <div className="flex items-center justify-between">
-                        <div className="flex items-center space-x-2">
-                          <span className="font-medium text-white text-sm">{comment.userId.username}</span>
-                          <span className="text-gray-400 text-xs">{formatTimeAgo(comment.createdAt)}</span>
-                        </div>
-                        {canDeleteComment(comment) && (
-                          <button
-                            onClick={() => handleDeleteComment(comment._id)}
-                            className="p-1 text-gray-400 hover:text-red-500 hover:bg-red-500/10 rounded transition-all duration-200 group"
-                            title="Delete comment"
-                          >
-                            <Trash2 className="w-3 h-3 group-hover:scale-110 transition-transform" />
-                          </button>
-                        )}
-                      </div>
-                      <p className="text-gray-300 text-sm mt-1">{comment.text}</p>
-                    </div>
-                  </div>
+                  <CommentItem
+                    key={comment._id}
+                    comment={{...comment, postId: post._id}}
+                    currentUser={currentUser}
+                    level={0}
+                    onReplyAdded={onComment}
+                    onDelete={handleDeleteComment}
+                    onReplyClick={(postId, commentId, mentionText) => {
+                      // Focus on the main comment input and set the mention
+                      const commentInput = document.querySelector('input[placeholder="Add a comment..."]');
+                      if (commentInput) {
+                        commentInput.focus();
+                        commentInput.value = mentionText;
+                        setCommentText(mentionText);
+                        setReplyingToComment({ postId, commentId });
+                      }
+                    }}
+                  />
                 ))}
               </div>
             )}
-
-            {/* Comment Input */}
-            <form onSubmit={handleCommentSubmit} className="flex items-center space-x-2">
-              <input
-                type="text"
-                value={commentText}
-                onChange={(e) => setCommentText(e.target.value)}
-                placeholder="Add a comment..."
-                className="flex-1 bg-gaming-darker border border-gaming-border rounded-lg px-3 py-2 text-white placeholder-gray-400 focus:outline-none focus:border-neon-purple"
-                maxLength={300}
-              />
-              <button
-                type="submit"
-                disabled={!commentText.trim() || isSubmittingComment}
-                className={`p-2 rounded-lg transition-colors ${
-                  commentText.trim() && !isSubmittingComment
-                    ? 'bg-neon-purple text-white hover:bg-neon-purple/80'
-                    : 'bg-gray-700 text-gray-400 cursor-not-allowed'
-                }`}
-              >
-                <Send className="w-4 h-4" />
-              </button>
+            <form onSubmit={handleCommentSubmit}>
+              <div className="flex items-center space-x-2">
+                <input
+                  type="text"
+                  value={commentText}
+                  onChange={(e) => {
+                    const newValue = e.target.value;
+                    setCommentText(newValue);
+                    // If user clears the input, cancel reply state
+                    if (!newValue.trim()) {
+                      setReplyingToComment(null);
+                    }
+                  }}
+                  placeholder="Add a comment..."
+                  className="flex-1 bg-gaming-darker border border-gaming-border rounded-lg px-3 py-2 text-white placeholder-gray-400 focus:outline-none focus:border-neon-purple"
+                  maxLength={300}
+                />
+                <button
+                  type="submit"
+                  disabled={isSubmittingComment}
+                  className="px-4 py-2 bg-neon-purple text-white rounded-lg hover:bg-neon-purple/80 disabled:opacity-50 transition-colors"
+                >
+                  {isSubmittingComment ? (replyingToComment ? 'Replying...' : 'Commenting...') : (replyingToComment ? 'Reply' : 'Comment')}
+                </button>
+              </div>
             </form>
           </div>
         )}
       </div>
     </motion.div>
-  );
+);
 };
 
 export default PostCard;
