@@ -1,8 +1,9 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import ReactDOM from 'react-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useAuth } from '../context/AuthContext';
 import { questAPI, postAPI } from '../services/api';
+import Cropper from 'react-easy-crop';
 import { 
   X, 
   Upload, 
@@ -21,17 +22,14 @@ const CreatePostModal = ({ onClose, onPostCreated, selectedQuest }) => {
   const [caption, setCaption] = useState('');
   const [imageFile, setImageFile] = useState(null);
   const [imagePreview, setImagePreview] = useState('');
+  const [processedImage, setProcessedImage] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
   const [step, setStep] = useState(selectedQuest ? 2 : 1); // Start from step 2 if quest is pre-selected
   
-  // Image editing state
-  const [imageScale, setImageScale] = useState(1);
-  const [imagePosition, setImagePosition] = useState({ x: 0, y: 0 });
-  const [isEditingImage, setIsEditingImage] = useState(false);
-  const [isDragging, setIsDragging] = useState(false);
-  const [dragStart, setDragStart] = useState({ x: 0, y: 0 });
-  const [imageDimensions, setImageDimensions] = useState({ width: 0, height: 0 });
-  const [containerDimensions, setContainerDimensions] = useState({ width: 400, height: 400 });
+  // Cropper state
+  const [crop, setCrop] = useState({ x: 0, y: 0 });
+  const [zoom, setZoom] = useState(1);
+  const [croppedAreaPixels, setCroppedAreaPixels] = useState(null);
 
   // Load completed quests
   useEffect(() => {
@@ -89,76 +87,75 @@ const CreatePostModal = ({ onClose, onPostCreated, selectedQuest }) => {
     }
     
     setImageFile(file);
-    setIsEditingImage(true);
-    setImageScale(1);
-    setImagePosition({ x: 0, y: 0 });
+    setProcessedImage(null);
+    setZoom(1);
+    setCrop({ x: 0, y: 0 });
     
-    // Create preview and get image dimensions
+    // Create preview
     const reader = new FileReader();
     reader.onloadend = () => {
-      const img = new Image();
-      img.onload = () => {
-        setImageDimensions({ width: img.width, height: img.height });
-        setImagePreview(reader.result);
-      };
-      img.src = reader.result;
+      setImagePreview(reader.result);
     };
     reader.readAsDataURL(file);
   };
 
-  // Handle zoom in
-  const handleZoomIn = () => {
-    setImageScale(prev => Math.min(prev + 0.1, 3));
-  };
-
-  // Handle zoom out
-  const handleZoomOut = () => {
-    setImageScale(prev => Math.max(prev - 0.1, 0.5));
-  };
-
-  // Handle mouse down for dragging
-  const handleMouseDown = (e) => {
-    setIsDragging(true);
-    setDragStart({ x: e.clientX - imagePosition.x, y: e.clientY - imagePosition.y });
-  };
-
-  // Handle mouse move for dragging with boundary constraints
-  const handleMouseMove = (e) => {
-    if (!isDragging) return;
+  // Create cropped image using canvas
+  const createCroppedImage = useCallback(async (imageSrc, croppedAreaPixels) => {
+    const image = new Image();
+    image.src = imageSrc;
     
-    const newX = e.clientX - dragStart.x;
-    const newY = e.clientY - dragStart.y;
-    
-    // Calculate boundary constraints to prevent black areas
-    const scaledWidth = imageDimensions.width * imageScale;
-    const scaledHeight = imageDimensions.height * imageScale;
-    const containerWidth = containerDimensions.width;
-    const containerHeight = containerDimensions.height;
-    
-    // Calculate maximum allowed positions
-    const maxX = (scaledWidth - containerWidth) / 2;
-    const maxY = (scaledHeight - containerHeight) / 2;
-    
-    // Apply boundary constraints
-    const constrainedX = Math.max(-maxX, Math.min(maxX, newX));
-    const constrainedY = Math.max(-maxY, Math.min(maxY, newY));
-    
-    setImagePosition({
-      x: constrainedX,
-      y: constrainedY
+    return new Promise((resolve) => {
+      image.onload = () => {
+        const canvas = document.createElement('canvas');
+        const ctx = canvas.getContext('2d');
+        
+        // Set canvas size to target dimensions (1200x675 for 16:9)
+        canvas.width = 1200;
+        canvas.height = 675;
+        
+        // Calculate scale to fill the canvas
+        const scaleX = 1200 / croppedAreaPixels.width;
+        const scaleY = 675 / croppedAreaPixels.height;
+        const scale = Math.max(scaleX, scaleY);
+        
+        // Calculate position to center the image
+        const x = (1200 - croppedAreaPixels.width * scale) / 2;
+        const y = (675 - croppedAreaPixels.height * scale) / 2;
+        
+        // Draw the cropped and scaled image
+        ctx.drawImage(
+          image,
+          croppedAreaPixels.x,
+          croppedAreaPixels.y,
+          croppedAreaPixels.width,
+          croppedAreaPixels.height,
+          x,
+          y,
+          croppedAreaPixels.width * scale,
+          croppedAreaPixels.height * scale
+        );
+        
+        // Convert to blob
+        canvas.toBlob((blob) => {
+          resolve(blob);
+        }, 'image/jpeg', 0.8);
+      };
     });
-  };
-
-  // Handle mouse up
-  const handleMouseUp = () => {
-    setIsDragging(false);
-  };
-
-  // Reset image position
-  const handleResetImage = () => {
-    setImageScale(1);
-    setImagePosition({ x: 0, y: 0 });
-  };
+  }, []);
+  
+  // Handle crop complete
+  const onCropComplete = useCallback((croppedArea, croppedAreaPixels) => {
+    setCroppedAreaPixels(croppedAreaPixels);
+  }, []);
+  
+  // Generate processed image when crop changes
+  useEffect(() => {
+    if (imagePreview && croppedAreaPixels) {
+      createCroppedImage(imagePreview, croppedAreaPixels).then((blob) => {
+        setProcessedImage(blob);
+      });
+    }
+  }, [imagePreview, croppedAreaPixels, createCroppedImage]);
 
   // Get selected quest details
   const selectedQuestData = selectedQuest || completedQuests.find(q => q._id === selectedQuestId) || null;
@@ -169,7 +166,7 @@ const CreatePostModal = ({ onClose, onPostCreated, selectedQuest }) => {
       toast.error('Please select a quest');
       return;
     }
-    if (step === 2 && (!caption.trim() || !imageFile)) {
+    if (step === 2 && (!caption.trim() || !imageFile || !processedImage)) {
       toast.error('Please add caption and image');
       return;
     }
@@ -190,7 +187,7 @@ const CreatePostModal = ({ onClose, onPostCreated, selectedQuest }) => {
     // When starting from step 2 with pre-selected quest, use the pre-selected quest
     const questId = selectedQuest?._id || selectedQuestId;
     
-    if (!questId || !caption.trim() || !imageFile) {
+    if (!questId || !caption.trim() || !processedImage) {
       toast.error('Please fill all fields');
       return;
     }
@@ -198,10 +195,15 @@ const CreatePostModal = ({ onClose, onPostCreated, selectedQuest }) => {
     try {
       setIsLoading(true);
       
+      // Create a new file from the processed image blob
+      const processedFile = new File([processedImage], 'cropped-image.jpg', {
+        type: 'image/jpeg'
+      });
+      
       const formData = new FormData();
       formData.append('questId', questId);
       formData.append('caption', caption);
-      formData.append('image', imageFile);
+      formData.append('image', processedFile);
 
       const response = await postAPI.createPost(formData);
       onPostCreated(response.data.data);
@@ -343,86 +345,29 @@ const CreatePostModal = ({ onClose, onPostCreated, selectedQuest }) => {
                   <div className="border-2 border-dashed border-gaming-border rounded-lg p-8 text-center hover:border-neon-purple/50 transition-colors">
                     {imagePreview ? (
                       <div className="space-y-4">
-                        {/* Image editing controls */}
-                        <div className="flex items-center justify-center space-x-4 mb-4">
-                          <button
-                            onClick={handleZoomOut}
-                            className="p-2 bg-gaming-darker border border-gaming-border rounded-lg hover:border-neon-purple transition-colors"
-                            title="Zoom out"
-                          >
-                            <span className="text-white text-sm">−</span>
-                          </button>
-                          <span className="text-gray-400 text-sm">
-                            {Math.round(imageScale * 100)}%
-                          </span>
-                          <button
-                            onClick={handleZoomIn}
-                            className="p-2 bg-gaming-darker border border-gaming-border rounded-lg hover:border-neon-purple transition-colors"
-                            title="Zoom in"
-                          >
-                            <span className="text-white text-sm">+</span>
-                          </button>
-                          <button
-                            onClick={handleResetImage}
-                            className="p-2 bg-gaming-darker border border-gaming-border rounded-lg hover:border-neon-purple transition-colors"
-                            title="Reset position"
-                          >
-                            <span className="text-white text-sm">⟲</span>
-                          </button>
+                        {/* Cropper component */}
+                        <div className="relative" style={{ height: '400px', width: '100%' }}>
+                          <Cropper
+                            image={imagePreview}
+                            crop={crop}
+                            zoom={zoom}
+                            aspect={16 / 9}
+                            onCropChange={setCrop}
+                            onCropComplete={onCropComplete}
+                            onZoomChange={setZoom}
+                            objectFit="cover"
+                            showGrid={false}
+                          />
                         </div>
                         
-                        {/* Image preview with editing */}
-                        <div className="max-w-md mx-auto">
-                          <div 
-                            className="relative rounded-lg overflow-hidden bg-gaming-darker cursor-move"
-                            style={{ 
-                              width: '400px', 
-                              height: '400px',
-                              margin: '0 auto'
-                            }}
-                            onMouseDown={handleMouseDown}
-                            onMouseMove={handleMouseMove}
-                            onMouseUp={handleMouseUp}
-                            onMouseLeave={handleMouseUp}
-                          >
-                            {/* Full image display */}
-                            <img
-                              src={imagePreview}
-                              alt="Preview"
-                              className="absolute inset-0 w-full h-full"
-                              style={{ 
-                                transform: `scale(${imageScale}) translate(${imagePosition.x}px, ${imagePosition.y}px)`,
-                                transition: isDragging ? 'none' : 'transform 0.2s ease',
-                                transformOrigin: 'center',
-                                objectFit: 'contain',
-                                objectPosition: 'center'
-                              }}
-                              draggable={false}
-                            />
-                            
-                            {/* Cropping overlay */}
-                            <div 
-                              className="absolute inset-0 border-2 border-neon-purple pointer-events-none"
-                              style={{
-                                boxShadow: '0 0 0 9999px rgba(0, 0, 0, 0.5)'
-                              }}
-                            >
-                              {/* Corner indicators */}
-                              <div className="absolute top-0 left-0 w-4 h-4 border-t-2 border-l-2 border-neon-purple"></div>
-                              <div className="absolute top-0 right-0 w-4 h-4 border-t-2 border-r-2 border-neon-purple"></div>
-                              <div className="absolute bottom-0 left-0 w-4 h-4 border-b-2 border-l-2 border-neon-purple"></div>
-                              <div className="absolute bottom-0 right-0 w-4 h-4 border-b-2 border-r-2 border-neon-purple"></div>
-                            </div>
-                          </div>
-                        </div>
                         <div className="flex items-center justify-center space-x-4">
                           <button
                             onClick={() => {
                               setImageFile(null);
                               setImagePreview('');
-                              setIsEditingImage(false);
-                              setImageScale(1);
-                              setImagePosition({ x: 0, y: 0 });
+                              setProcessedImage(null);
+                              setZoom(1);
+                              setCrop({ x: 0, y: 0 });
                             }}
                             className="text-red-500 hover:text-red-400 text-sm"
                           >
@@ -493,7 +438,7 @@ const CreatePostModal = ({ onClose, onPostCreated, selectedQuest }) => {
                   <p className="text-gray-400 text-sm mb-3">{selectedQuestData.description}</p>
                 </div>
 
-                {imagePreview && (
+                {processedImage && (
                   <div>
                     <h4 className="text-white font-medium mb-2">Image</h4>
                     <div className="max-w-2xl mx-auto">
@@ -506,12 +451,10 @@ const CreatePostModal = ({ onClose, onPostCreated, selectedQuest }) => {
                         }}
                       >
                         <img
-                          src={imagePreview}
-                          alt="Preview"
+                          src={URL.createObjectURL(processedImage)}
+                          alt="Final Preview"
                           className="w-full h-full"
                           style={{ 
-                            transform: `scale(${imageScale}) translate(${imagePosition.x}px, ${imagePosition.y}px)`,
-                            transformOrigin: 'center',
                             objectFit: 'cover',
                             objectPosition: 'center'
                           }}

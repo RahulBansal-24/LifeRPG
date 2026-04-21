@@ -117,22 +117,19 @@ router.post('/create', upload.single('image'), [
       });
     }
 
-    // Resize image and convert to buffer
-    let resizedImageBuffer;
+    // Image is already processed on frontend (1200x675), just convert to buffer
+    let imageBuffer;
     try {
       if (req.file.buffer) {
-        resizedImageBuffer = await sharp(req.file.buffer)
-          .resize(1200, 675, { 
-            fit: 'cover',
-            position: 'center',
-            withoutEnlargement: true
-          })
+        // The frontend already processes the image to 1200x675, so we just store it
+        // Optionally compress if needed, but maintain the processed dimensions
+        imageBuffer = await sharp(req.file.buffer)
           .jpeg({ quality: 80 })
           .toBuffer();
       } else {
         throw new Error('No file buffer available');
       }
-      console.log('Image processed successfully, buffer size:', resizedImageBuffer.length);
+      console.log('Image stored successfully, buffer size:', imageBuffer.length);
     } catch (error) {
       console.error('Image processing error:', error);
       return res.status(400).json({
@@ -147,7 +144,7 @@ router.post('/create', upload.single('image'), [
       questId,
       title: quest.title,
       description: quest.description,
-      imageData: resizedImageBuffer,
+      imageData: imageBuffer,
       imageContentType: 'image/jpeg',
       caption
     });
