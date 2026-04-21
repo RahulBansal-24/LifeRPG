@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { motion } from 'framer-motion';
 import { 
   Heart, 
@@ -19,6 +19,7 @@ const PostCard = ({ post, currentUser, onLike, onComment, onCommentDeleted, onDe
   const [isLiked, setIsLiked] = useState(post.likes.includes(currentUser._id) || post.likes.includes(currentUser.id));
   const [likeCount, setLikeCount] = useState(post.likes.length);
   const [showComments, setShowComments] = useState(false);
+  const commentInputRef = useRef(null);
 
   // Simple check if user is post owner
   const isPostOwner = currentUser && post.userId && (
@@ -302,11 +303,10 @@ const PostCard = ({ post, currentUser, onLike, onComment, onCommentDeleted, onDe
                     onReplyAdded={onComment}
                     onDelete={handleDeleteComment}
                     onReplyClick={(postId, commentId, mentionText) => {
-                      // Focus on the main comment input and set the mention
-                      const commentInput = document.querySelector('input[placeholder="Add a comment..."]');
-                      if (commentInput) {
-                        commentInput.focus();
-                        commentInput.value = mentionText;
+                      // Focus on the specific comment input for this post
+                      if (commentInputRef.current) {
+                        commentInputRef.current.focus();
+                        commentInputRef.current.value = mentionText;
                         setCommentText(mentionText);
                         setReplyingToComment({ postId, commentId });
                       }
@@ -318,6 +318,7 @@ const PostCard = ({ post, currentUser, onLike, onComment, onCommentDeleted, onDe
             <form onSubmit={handleCommentSubmit}>
               <div className="flex items-center space-x-2">
                 <input
+                  ref={commentInputRef}
                   type="text"
                   value={commentText}
                   onChange={(e) => {
