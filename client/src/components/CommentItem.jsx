@@ -7,6 +7,7 @@ const CommentItem = ({
   comment, 
   currentUser, 
   level = 0, 
+  isPostOwner = false,
   onReplyAdded, 
   onDelete,
   onReplyClick 
@@ -85,11 +86,11 @@ const CommentItem = ({
             >
               <Reply className="w-3 h-3 group-hover:scale-110 transition-transform" />
             </button>
-            {/* Only show delete button for comment author */}
-            {(comment.userId === currentUser._id || 
+            {/* Show delete button for comment author or post owner */}
+            {((comment.userId === currentUser._id || 
               comment.userId === currentUser.id ||
               (comment.userId._id && comment.userId._id === currentUser._id) ||
-              (comment.userId._id && comment.userId._id === currentUser.id)) && (
+              (comment.userId._id && comment.userId._id === currentUser.id)) || isPostOwner) && (
               <button
                 onClick={handleDeleteComment}
                 className="p-1 text-gray-400 hover:text-red-500 hover:bg-red-500/10 rounded transition-all duration-200 group"
@@ -123,6 +124,7 @@ const CommentItem = ({
               comment={{...reply, parentCommentId: comment._id, postId: comment.postId}}
               currentUser={currentUser}
               level={level + 1}
+              isPostOwner={isPostOwner}
               onReplyAdded={onReplyAdded}
               onDelete={onDelete}
               onReplyClick={onReplyClick}

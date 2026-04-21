@@ -298,6 +298,7 @@ const PostCard = ({ post, currentUser, onLike, onComment, onCommentDeleted, onDe
                     comment={{...comment, postId: post._id}}
                     currentUser={currentUser}
                     level={0}
+                    isPostOwner={isPostOwner}
                     onReplyAdded={onComment}
                     onDelete={handleDeleteComment}
                     onReplyClick={(postId, commentId, mentionText) => {
