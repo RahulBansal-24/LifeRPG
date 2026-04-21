@@ -237,7 +237,7 @@ const PostCard = ({ post, currentUser, onLike, onComment, onCommentDeleted, onDe
             style={{ 
               aspectRatio: '16/9', 
               maxHeight: '400px',
-              objectFit: 'cover',
+              objectFit: 'contain',
               objectPosition: 'center'
             }}
             onError={(e) => {

@@ -28,7 +28,6 @@ const CreatePostModal = ({ onClose, onPostCreated, selectedQuest }) => {
   
   // Cropper state
   const [crop, setCrop] = useState({ x: 0, y: 0 });
-  const [zoom, setZoom] = useState(1);
   const [croppedAreaPixels, setCroppedAreaPixels] = useState(null);
 
   // Load completed quests
@@ -88,7 +87,6 @@ const CreatePostModal = ({ onClose, onPostCreated, selectedQuest }) => {
     
     setImageFile(file);
     setProcessedImage(null);
-    setZoom(1);
     setCrop({ x: 0, y: 0 });
     
     // Create preview
@@ -109,30 +107,31 @@ const CreatePostModal = ({ onClose, onPostCreated, selectedQuest }) => {
         const canvas = document.createElement('canvas');
         const ctx = canvas.getContext('2d');
         
-        // Set canvas size to target dimensions (1200x675 for 16:9)
+        // Set canvas to exact final dimensions (16:9 ratio)
         canvas.width = 1200;
         canvas.height = 675;
         
-        // Calculate scale to fill the canvas
-        const scaleX = 1200 / croppedAreaPixels.width;
-        const scaleY = 675 / croppedAreaPixels.height;
-        const scale = Math.max(scaleX, scaleY);
+        // Calculate scale factor between displayed image and original image
+        const scaleX = image.naturalWidth / image.width;
+        const scaleY = image.naturalHeight / image.height;
         
-        // Calculate position to center the image
-        const x = (1200 - croppedAreaPixels.width * scale) / 2;
-        const y = (675 - croppedAreaPixels.height * scale) / 2;
+        // Map cropped area coordinates to original image dimensions
+        const originalX = croppedAreaPixels.x * scaleX;
+        const originalY = croppedAreaPixels.y * scaleY;
+        const originalWidth = croppedAreaPixels.width * scaleX;
+        const originalHeight = croppedAreaPixels.height * scaleY;
         
-        // Draw the cropped and scaled image
+        // Draw cropped area from original image to final dimensions
         ctx.drawImage(
           image,
-          croppedAreaPixels.x,
-          croppedAreaPixels.y,
-          croppedAreaPixels.width,
-          croppedAreaPixels.height,
-          x,
-          y,
-          croppedAreaPixels.width * scale,
-          croppedAreaPixels.height * scale
+          originalX,
+          originalY,
+          originalWidth,
+          originalHeight,
+          0,
+          0,
+          1200,
+          675
         );
         
         // Convert to blob
@@ -350,12 +349,14 @@ const CreatePostModal = ({ onClose, onPostCreated, selectedQuest }) => {
                           <Cropper
                             image={imagePreview}
                             crop={crop}
-                            zoom={zoom}
+                            zoom={1}
                             aspect={16 / 9}
+                            minZoom={1}
+                            maxZoom={1}
+                            restrictPosition={true}
                             onCropChange={setCrop}
                             onCropComplete={onCropComplete}
-                            onZoomChange={setZoom}
-                            objectFit="cover"
+                            objectFit="contain"
                             showGrid={false}
                           />
                         </div>
@@ -366,7 +367,6 @@ const CreatePostModal = ({ onClose, onPostCreated, selectedQuest }) => {
                               setImageFile(null);
                               setImagePreview('');
                               setProcessedImage(null);
-                              setZoom(1);
                               setCrop({ x: 0, y: 0 });
                             }}
                             className="text-red-500 hover:text-red-400 text-sm"
@@ -455,7 +455,7 @@ const CreatePostModal = ({ onClose, onPostCreated, selectedQuest }) => {
                           alt="Final Preview"
                           className="w-full h-full"
                           style={{ 
-                            objectFit: 'cover',
+                            objectFit: 'contain',
                             objectPosition: 'center'
                           }}
                         />

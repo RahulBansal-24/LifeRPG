@@ -209,7 +209,7 @@ export const AuthProvider = ({ children }) => {
       // Reset mage to visible on login
       resetMageOnLogin();
 
-      toast.success('Welcome back to LifeRPG! ðŸŽ');
+      toast.success('Welcome back to LifeRPG!');
       return { success: true };
     } catch (error) {
       const errorMessage = error.response?.data?.message || 'Login failed';
@@ -241,7 +241,7 @@ export const AuthProvider = ({ children }) => {
       // Reset mage to visible on signup
       resetMageOnLogin();
 
-      toast.success('Welcome to LifeRPG! ðŸŽ');
+      toast.success('Welcome to LifeRPG!');
       return { success: true };
     } catch (error) {
       const errorMessage = error.response?.data?.message || 'Signup failed';
