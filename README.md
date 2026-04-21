@@ -25,6 +25,11 @@ Turn boring routines into epic quests, track your progress with XP and levels, a
 - 📧 **Password Recovery** - Forgot password feature with email-based password recovery system
 - ⭐ **50-Level Progression System** - Epic journey from Novice to Godlike with exponential XP requirements
 - 📋 **Quest Management** - Create and complete Daily & Main quests with skill rewards
+- **Dynamic Daily Quest Pool** - System generates 5 daily quests from curated pool
+- **Main Quest Creation** - Create personalized main quests for long-term goals
+- **Skill-Based Rewards** - Complete quests to earn XP and stat points in specific skills
+- **Quest Progress Tracking** - Real-time updates on quest status and completion
+- **Daily Reset System** - New quests available every 24 hours with automatic cleanup
 - 💪 **Advanced Character Stats** - Develop Strength, Intelligence, Discipline, and Charisma up to 100,000
 - 🏆 **Real-time Leaderboard** - Compete with players globally and climb the ranks
 - ⚡ **Tiered Level Boosts** - Strategic stat bonuses based on level ranges (0% to 25%)
@@ -34,6 +39,7 @@ Turn boring routines into epic quests, track your progress with XP and levels, a
 - ✨ **Smooth Animations** - Beautiful transitions and micro-interactions with Framer Motion
 - 📱 **Fully Responsive** - Works seamlessly on desktop, tablet, and mobile devices
 - 🎯 **Intuitive Interface** - Easy-to-navigate design for all user levels
+- 🧙 **Mage Guide System** - Interactive companion that provides contextual tips and guidance throughout the user journey
 
 ---
 
@@ -119,13 +125,14 @@ LifeRPG features an extensive 50-level progression system with unique titles:
 
 ### 📱 User Journey
 ```
-🔐 Login/Signup → 🎮 Dashboard → 📋 Quests → 🏆 Leaderboard
+🔐 Login/Signup → 🎮 Dashboard → 📋 Quests → 📜 Chronicles → 🏆 Leaderboard
 ```
 
 ### 📄 Page Structure
 - **🔐 Authentication Pages** - Login & Signup with avatar selection
 - **🎮 Dashboard** - Main hub with stats, XP, and recent quests
 - **📋 Quests Page** - Create, manage, and complete quests
+- **📜 Chronicles Page** - Create and view chronicles with image uploads, comments, and likes
 - **🏆 Leaderboard** - Global rankings and achievements
 - **👤 Profile** - User stats and settings (coming soon)
 
@@ -207,6 +214,35 @@ npm run dev
 - `PUT /api/quests/:id` - ✅ Update quest status
 - `DELETE /api/quests/:id` - 🗑️ Delete quest
 - `POST /api/quests/generate-daily` - 🌅 Generate daily quests
+
+### 📜 Chronicles System
+LifeRPG features a complete chronicles system for sharing achievements and experiences:
+
+#### **Core Features**
+- **📸 Chronicle Creation** - Create detailed posts with images, captions, and quest associations
+- **🖼️ Image Upload & Cropping** - Advanced WYSIWYG image editor with 16:9 aspect ratio
+- **📝 Rich Text Content** - Support for detailed captions and storytelling
+- **❤️ Like System** - Like and unlike chronicles with real-time updates
+- **💬 Comment System** - Hierarchical comments with reply functionality
+- **🔗 Quest Integration** - Link chronicles to completed quests for context
+
+#### **Technical Implementation**
+- **Perfect WYSIWYG** - What you crop is exactly what gets posted (pixel-perfect)
+- **16:9 Standard** - Consistent aspect ratio across creation and display
+- **Real-time Updates** - Instant like/comment updates without page refresh
+- **Image Processing** - Advanced canvas-based cropping with 1200x675 output
+- **Responsive Design** - Works seamlessly on all device sizes
+
+#### **API Endpoints**
+- `GET /api/posts` - 📜 Get all chronicles (posts)
+- `GET /api/posts/my` - 📜 Get user's chronicles
+- `POST /api/posts/create` - 📸 Create new chronicle with image
+- `GET /api/posts/:id/image` - 🖼️ Get chronicle image
+- `POST /api/posts/:id/like` - ❤️ Like chronicle
+- `POST /api/posts/:id/comment` - 💬 Comment on chronicle
+- `POST /api/posts/:id/comment/:commentId/reply` - 💭 Reply to comment
+- `DELETE /api/posts/:id/comment/:commentId` - 🗑️ Delete comment
+- `POST /api/posts/check-eligibility/:questId` - 🔍 Check if quest is eligible for chronicle
 
 ### 🏆 Leaderboard
 - `GET /api/leaderboard` - 🏆 Get top users by XP
