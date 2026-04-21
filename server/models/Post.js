@@ -100,27 +100,43 @@ postSchema.statics.canUserPost = async function(userId, questId) {
 };
 
 // Static method to get all posts with populated user data
-postSchema.statics.getAllPosts = function(limit = 20, skip = 0) {
-  return this.find({})
-    .populate('userId', 'username avatar')
-    .populate('questId', 'title difficulty xpReward')
-    .populate('comments.userId', 'username avatar')
-    .populate('comments.replies.userId', 'username avatar')
-    .sort({ createdAt: -1 })
-    .limit(limit)
-    .skip(skip);
+postSchema.statics.getAllPosts = async function(limit = 20, skip = 0) {
+  try {
+    const posts = await this.find({})
+      .populate('userId', 'username avatar')
+      .populate('questId', 'title difficulty xpReward')
+      .populate('comments.userId', 'username avatar')
+      .populate('comments.replies.userId', 'username avatar')
+      .sort({ createdAt: -1 })
+      .limit(limit)
+      .skip(skip);
+    
+    // Filter out posts where questId population failed (quest was deleted)
+    return posts.filter(post => post.questId != null);
+  } catch (error) {
+    console.error('Error in getAllPosts:', error);
+    return [];
+  }
 };
 
 // Static method to get posts by user
-postSchema.statics.getUserPosts = function(userId, limit = 10, skip = 0) {
-  return this.find({ userId })
-    .populate('userId', 'username avatar')
-    .populate('questId', 'title difficulty xpReward')
-    .populate('comments.userId', 'username avatar')
-    .populate('comments.replies.userId', 'username avatar')
-    .sort({ createdAt: -1 })
-    .limit(limit)
-    .skip(skip);
+postSchema.statics.getUserPosts = async function(userId, limit = 10, skip = 0) {
+  try {
+    const posts = await this.find({ userId })
+      .populate('userId', 'username avatar')
+      .populate('questId', 'title difficulty xpReward')
+      .populate('comments.userId', 'username avatar')
+      .populate('comments.replies.userId', 'username avatar')
+      .sort({ createdAt: -1 })
+      .limit(limit)
+      .skip(skip);
+    
+    // Filter out posts where questId population failed (quest was deleted)
+    return posts.filter(post => post.questId != null);
+  } catch (error) {
+    console.error('Error in getUserPosts:', error);
+    return [];
+  }
 };
 
 // Instance method to toggle like

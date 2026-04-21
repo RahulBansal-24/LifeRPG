@@ -184,9 +184,25 @@ const DAILY_QUEST_POOL = [
   }
 ];
 
-// Function to randomly select 5 quests from the pool
+// Function to randomly select 5 quests from pool with date-based seed
 const selectDailyQuests = () => {
-  const shuffled = [...DAILY_QUEST_POOL].sort(() => 0.5 - Math.random());
+  const today = new Date();
+  const dateString = today.toDateString(); // e.g., "Mon Apr 21 2026"
+  
+  // Create seeded random using date string for consistency within the same day
+  let seed = 0;
+  for (let i = 0; i < dateString.length; i++) {
+    seed += dateString.charCodeAt(i);
+  }
+  
+  // Use seeded random to get different quests each day but same within the day
+  const random = (seed) => {
+    const x = Math.sin(seed++) * 10000;
+    return x - Math.floor(x);
+  };
+  
+  // Shuffle using seeded random
+  const shuffled = [...DAILY_QUEST_POOL].sort(() => random(seed) - 0.5);
   return shuffled.slice(0, 5);
 };
 

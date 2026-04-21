@@ -325,18 +325,26 @@ const Chronicles = () => {
           </div>
         ) : (
           <div className="space-y-6">
-            {posts.map((post) => (
-              <PostCard
-                key={post._id}
-                post={post}
-                currentUser={user}
-                onLike={handlePostLiked}
-                onComment={handleCommentAdded}
-                onCommentDeleted={handleCommentDeleted}
-                onDelete={handlePostDeleted}
-                onPostQuest={handleCreatePost}
-              />
-            ))}
+            {posts.map((post) => {
+              // Skip posts with missing critical data to prevent crashes
+              if (!post || !post._id || !post.userId) {
+                console.warn('Skipping post with missing data:', post);
+                return null;
+              }
+              
+              return (
+                <PostCard
+                  key={post._id}
+                  post={post}
+                  currentUser={user}
+                  onLike={handlePostLiked}
+                  onComment={handleCommentAdded}
+                  onCommentDeleted={handleCommentDeleted}
+                  onDelete={handlePostDeleted}
+                  onPostQuest={handleCreatePost}
+                />
+              );
+            })}
             
             {/* Load More */}
             {hasMore && (

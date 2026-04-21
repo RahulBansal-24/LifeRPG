@@ -16,8 +16,13 @@ import CommentItem from './CommentItem';
 import { postAPI } from '../services/api';
 
 const PostCard = ({ post, currentUser, onLike, onComment, onCommentDeleted, onDelete, onPostQuest }) => {
-  const [isLiked, setIsLiked] = useState(post.likes.includes(currentUser._id) || post.likes.includes(currentUser.id));
-  const [likeCount, setLikeCount] = useState(post.likes.length);
+  // Guard against missing post data
+  if (!post) {
+    return null;
+  }
+  
+  const [isLiked, setIsLiked] = useState(post.likes?.includes(currentUser._id) || post.likes?.includes(currentUser.id) || false);
+  const [likeCount, setLikeCount] = useState(post.likes?.length || 0);
   const [showComments, setShowComments] = useState(false);
   const commentInputRef = useRef(null);
 
@@ -151,12 +156,17 @@ const PostCard = ({ post, currentUser, onLike, onComment, onCommentDeleted, onDe
     }
   };
 
-  // Count all comments including replies
+  // Helper function to count all comments including replies
   const getTotalCommentCount = (post) => {
-    let totalComments = post.comments.length;
+    if (!post.comments || !Array.isArray(post.comments)) {
+      return 0;
+    }
+    
+    let totalComments = 0;
     post.comments.forEach(comment => {
-      if (comment.replies && comment.replies.length > 0) {
-        totalComments += comment.replies.length;
+      if (comment) {
+        totalComments += 1;
+        totalComments += comment.replies ? comment.replies.length : 0;
       }
     });
     return totalComments;
@@ -286,36 +296,40 @@ const PostCard = ({ post, currentUser, onLike, onComment, onCommentDeleted, onDe
             </button>
           )}
         </div>
+      </div>
 
         {/* Comments Section */}
         {showComments && (
-          <div className="mt-4 pt-4 border-t border-gaming-border">
-            {/* Comments List */}
-            {post.comments.length > 0 && (
-              <div className="space-y-3 mb-4 max-h-40 overflow-y-auto">
-                {post.comments.map((comment) => (
-                  <CommentItem
-                    key={comment._id}
-                    comment={{...comment, postId: post._id}}
-                    currentUser={currentUser}
-                    level={0}
-                    isPostOwner={isPostOwner}
-                    onReplyAdded={onComment}
-                    onDelete={handleDeleteComment}
-                    onReplyClick={(postId, commentId, mentionText) => {
-                      // Focus on the specific comment input for this post
-                      if (commentInputRef.current) {
-                        commentInputRef.current.focus();
-                        commentInputRef.current.value = mentionText;
-                        setCommentText(mentionText);
-                        setReplyingToComment({ postId, commentId });
-                      }
-                    }}
-                  />
-                ))}
-              </div>
+          <div className="mt-4 pt-4 px-4 pb-4 border-t border-gaming-border">
+            {post.comments && Array.isArray(post.comments) && post.comments.length > 0 && (
+              <>
+                <h4 className="text-white font-medium mb-3">Comments</h4>
+                <div className="space-y-3">
+                  {post.comments.filter(comment => comment && comment._id).map((comment) => (
+                    <CommentItem
+                      key={comment._id}
+                      comment={{...comment, postId: post._id}}
+                      currentUser={currentUser}
+                      level={0}
+                      isPostOwner={isPostOwner}
+                      onReplyAdded={onComment}
+                      onDelete={handleDeleteComment}
+                      onReplyClick={(postId, commentId, mentionText) => {
+                        // Focus on the specific comment input for this post
+                        if (commentInputRef.current) {
+                          commentInputRef.current.focus();
+                          commentInputRef.current.value = mentionText;
+                          setCommentText(mentionText);
+                          setReplyingToComment({ postId, commentId });
+                        }
+                      }}
+                    />
+                  ))}
+                </div>
+              </>
             )}
-            <form onSubmit={handleCommentSubmit}>
+            {/* Comment Form */}
+            <form onSubmit={handleCommentSubmit} className={post.comments && Array.isArray(post.comments) && post.comments.length > 0 ? "mt-4" : ""}>
               <div className="flex items-center space-x-2">
                 <input
                   ref={commentInputRef}
@@ -344,9 +358,8 @@ const PostCard = ({ post, currentUser, onLike, onComment, onCommentDeleted, onDe
             </form>
           </div>
         )}
-      </div>
     </motion.div>
-);
+  );
 };
 
 export default PostCard;

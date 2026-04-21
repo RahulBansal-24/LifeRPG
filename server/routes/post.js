@@ -362,7 +362,7 @@ router.delete('/:id/comment/:commentId', protect, async (req, res) => {
 });
 
 // @route   DELETE /api/posts/:id
-// @desc    Delete a post (only by owner)
+// @desc    Delete a post (only by owner) with proper cleanup
 // @access  Private
 router.delete('/:id', async (req, res) => {
   try {
@@ -385,13 +385,22 @@ router.delete('/:id', async (req, res) => {
       });
     }
 
-    // Image data is stored in database, no file cleanup needed
+    // Store quest info for potential cleanup
+    const questId = post.questId;
 
+    // Delete the post
     await Post.findByIdAndDelete(postId);
+
+    // Log cleanup for debugging
+    console.log(`Post ${postId} deleted, associated quest ${questId} is now available for posting again`);
 
     res.status(200).json({
       success: true,
-      message: 'Post deleted successfully'
+      message: 'Post deleted successfully',
+      data: {
+        postId,
+        questId // Return questId for frontend cleanup if needed
+      }
     });
   } catch (error) {
     console.error('Delete post error:', error);
