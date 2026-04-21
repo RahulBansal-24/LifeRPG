@@ -280,7 +280,6 @@ LifeRPG/
 │   └── 📄 server.js            # Server entry point
 ├── 📄 .gitignore               # Git ignore file
 ├── 📄 README.md                # This file
-├── 📄 DEPLOYMENT.md            # Deployment guide
 ├── 📄 LifeRPG-Gamify-Your-Life.pptx  # Presentation
 └── 📄 LifeRPG-Gamify-Your-Life.pdf   # PDF
 ```
