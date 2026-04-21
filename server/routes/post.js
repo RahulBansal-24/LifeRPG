@@ -122,7 +122,7 @@ router.post('/create', upload.single('image'), [
     try {
       if (req.file.buffer) {
         resizedImageBuffer = await sharp(req.file.buffer)
-          .resize(800, 800, { 
+          .resize(1200, 675, { 
             fit: 'cover',
             position: 'center',
             withoutEnlargement: true

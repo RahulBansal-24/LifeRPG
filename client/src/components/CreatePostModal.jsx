@@ -496,12 +496,12 @@ const CreatePostModal = ({ onClose, onPostCreated, selectedQuest }) => {
                 {imagePreview && (
                   <div>
                     <h4 className="text-white font-medium mb-2">Image</h4>
-                    <div className="max-w-md mx-auto">
+                    <div className="max-w-2xl mx-auto">
                       <div 
                         className="rounded-lg overflow-hidden bg-gaming-darker"
                         style={{ 
                           width: '100%', 
-                          aspectRatio: '1/1', 
+                          aspectRatio: '16/9', 
                           maxHeight: '400px'
                         }}
                       >

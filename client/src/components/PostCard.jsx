@@ -166,7 +166,7 @@ const PostCard = ({ post, currentUser, onLike, onComment, onCommentDeleted, onDe
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.3 }}
-      className="bg-gaming-card border border-gaming-border rounded-xl overflow-hidden shadow-lg hover:shadow-xl transition-shadow max-w-md mx-auto"
+      className="bg-gaming-card border border-gaming-border rounded-xl overflow-hidden shadow-lg hover:shadow-xl transition-shadow max-w-2xl mx-auto"
     >
       {/* Header */}
       <div className="p-4 border-b border-gaming-border">
@@ -224,7 +224,7 @@ const PostCard = ({ post, currentUser, onLike, onComment, onCommentDeleted, onDe
             alt={post.title}
             className="w-full"
             style={{ 
-              aspectRatio: '1/1', 
+              aspectRatio: '16/9', 
               maxHeight: '400px',
               objectFit: 'cover',
               objectPosition: 'center'
@@ -237,7 +237,7 @@ const PostCard = ({ post, currentUser, onLike, onComment, onCommentDeleted, onDe
             onLoad={(e) => {
               e.target.nextElementSibling.style.display = 'none';
             }} />
-          <div className="w-full bg-gaming-darker flex items-center justify-center" style={{ aspectRatio: '1/1', minHeight: '300px', display: 'none' }}>
+          <div className="w-full bg-gaming-darker flex items-center justify-center" style={{ aspectRatio: '16/9', minHeight: '300px', display: 'none' }}>
             <div className="text-center">
               <div className="w-16 h-16 bg-gray-700 rounded-full flex items-center justify-center mx-auto mb-2">
                 <ImageIcon className="w-8 h-8 text-gray-500" />
