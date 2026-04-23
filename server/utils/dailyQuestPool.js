@@ -184,18 +184,20 @@ const DAILY_QUEST_POOL = [
   }
 ];
 
-// Function to randomly select 5 quests from pool with date-based seed
-const selectDailyQuests = () => {
+// Function to randomly select 5 quests from pool with user and date-based seed
+const selectDailyQuests = (userId) => {
   const today = new Date();
   const dateString = today.toDateString(); // e.g., "Mon Apr 21 2026"
+  const userString = userId.toString(); // User ID for uniqueness
   
-  // Create seeded random using date string for consistency within the same day
+  // Create seeded random using date + user string for user-specific daily quests
   let seed = 0;
-  for (let i = 0; i < dateString.length; i++) {
-    seed += dateString.charCodeAt(i);
+  const combinedString = dateString + userString;
+  for (let i = 0; i < combinedString.length; i++) {
+    seed += combinedString.charCodeAt(i);
   }
   
-  // Use seeded random to get different quests each day but same within the day
+  // Use seeded random to get different quests each day but same within the day for each user
   const random = (seed) => {
     const x = Math.sin(seed++) * 10000;
     return x - Math.floor(x);
@@ -231,7 +233,7 @@ const calculateXPReward = (difficulty, skillCount) => {
 
 // Function to prepare quests for database insertion
 const prepareDailyQuests = (userId) => {
-  const selectedQuests = selectDailyQuests();
+  const selectedQuests = selectDailyQuests(userId);
   
   return selectedQuests.map(quest => {
     const skillCount = quest.selectedSkills.length;
