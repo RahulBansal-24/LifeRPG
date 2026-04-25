@@ -12,6 +12,8 @@ pnpm-debug.log*
 
 # Environment variables
 .env
+server/.env
+client/.env
 
 # Logs
 logs
@@ -119,6 +121,7 @@ Thumbs.db
 DEPLOYMENT.md
 PPT_Prompt.md
 Hackathon_PPT_Prompt.md
+ARCHITECTURE.md
 
 # Test files
 test/
