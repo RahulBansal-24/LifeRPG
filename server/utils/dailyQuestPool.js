@@ -184,7 +184,7 @@ const DAILY_QUEST_POOL = [
   }
 ];
 
-// Function to randomly select 5 quests from pool with user and date-based seed
+// Function to randomly select 5 quests from pool with balanced difficulty distribution
 const selectDailyQuests = (userId) => {
   const today = new Date();
   const dateString = today.toDateString(); // e.g., "Mon Apr 21 2026"
@@ -203,14 +203,36 @@ const selectDailyQuests = (userId) => {
     return x - Math.floor(x);
   };
   
-  // Fisher-Yates shuffle algorithm with seeded random
-  const shuffled = [...DAILY_QUEST_POOL];
-  for (let i = shuffled.length - 1; i > 0; i--) {
+  // Separate quests by difficulty
+  const easyQuests = DAILY_QUEST_POOL.filter(quest => quest.difficulty === 'easy');
+  const mediumQuests = DAILY_QUEST_POOL.filter(quest => quest.difficulty === 'medium');
+  const hardQuests = DAILY_QUEST_POOL.filter(quest => quest.difficulty === 'hard');
+  
+  // Shuffle each difficulty category separately
+  const shuffleArray = (array) => {
+    const shuffled = [...array];
+    for (let i = shuffled.length - 1; i > 0; i--) {
+      const j = Math.floor(random() * (i + 1));
+      [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+    }
+    return shuffled;
+  };
+  
+  // Select balanced distribution: 2 easy, 2 medium, 1 hard
+  const selectedEasy = shuffleArray(easyQuests).slice(0, 2);
+  const selectedMedium = shuffleArray(mediumQuests).slice(0, 2);
+  const selectedHard = shuffleArray(hardQuests).slice(0, 1);
+  
+  // Combine and shuffle the final selection to randomize order
+  const finalSelection = [...selectedEasy, ...selectedMedium, ...selectedHard];
+  
+  // Final shuffle to randomize the order of the 5 selected quests
+  for (let i = finalSelection.length - 1; i > 0; i--) {
     const j = Math.floor(random() * (i + 1));
-    [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+    [finalSelection[i], finalSelection[j]] = [finalSelection[j], finalSelection[i]];
   }
   
-  return shuffled.slice(0, 5);
+  return finalSelection;
 };
 
 // Function to calculate XP reward based on difficulty and skills
