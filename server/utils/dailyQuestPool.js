@@ -198,13 +198,18 @@ const selectDailyQuests = (userId) => {
   }
   
   // Use seeded random to get different quests each day but same within the day for each user
-  const random = (seed) => {
+  const random = () => {
     const x = Math.sin(seed++) * 10000;
     return x - Math.floor(x);
   };
   
-  // Shuffle using seeded random
-  const shuffled = [...DAILY_QUEST_POOL].sort(() => random(seed) - 0.5);
+  // Fisher-Yates shuffle algorithm with seeded random
+  const shuffled = [...DAILY_QUEST_POOL];
+  for (let i = shuffled.length - 1; i > 0; i--) {
+    const j = Math.floor(random() * (i + 1));
+    [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+  }
+  
   return shuffled.slice(0, 5);
 };
 
