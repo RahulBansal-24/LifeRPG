@@ -80,7 +80,7 @@ router.post('/signup', [
     });
 
     // Create default daily quests for new user
-    await Quest.createDefaultDailyQuests(user._id);
+    await Quest.createDailyQuestsFromPool(user._id);
 
     // Generate token
     const token = generateToken(user._id);
@@ -164,7 +164,7 @@ router.post('/login', [
     // Check and create daily quests if needed
     const existingDailyQuests = await Quest.getDailyQuests(user._id);
     if (existingDailyQuests.length === 0) {
-      await Quest.createDefaultDailyQuests(user._id);
+      await Quest.createDailyQuestsFromPool(user._id);
     } else {
       // Update existing daily quests to include selectedSkills if missing or empty
       for (const quest of existingDailyQuests) {
