@@ -330,6 +330,24 @@ router.delete('/:id', async (req, res) => {
 router.post('/generate-daily', async (req, res) => {
   try {
     const userId = req.user._id;
+    
+    // Get user to check regeneration limits
+    const user = await User.findById(userId);
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        message: 'User not found'
+      });
+    }
+    
+    // Check if user can generate daily quests
+    if (!user.canGenerateDailyQuests()) {
+      return res.status(429).json({
+        success: false,
+        message: 'Daily quests already generated for today. Try again tomorrow!',
+        alreadyGenerated: true
+      });
+    }
 
     // Check if daily quests already exist for today
     const existingDailyQuests = await Quest.getDailyQuests(userId);
@@ -374,10 +392,15 @@ router.post('/generate-daily', async (req, res) => {
         // Create new daily quests using quest pool system
         const dailyQuests = await Quest.createDailyQuestsFromPool(userId);
         
+        // Mark daily quests as generated
+        user.markDailyQuestsGenerated();
+        await user.save();
+        
         return res.status(201).json({
           success: true,
           message: 'Daily quests regenerated from quest pool!',
-          data: dailyQuests
+          data: dailyQuests,
+          alreadyGenerated: false
         });
       } else {
         console.log('All daily quests have valid data');
@@ -392,11 +415,16 @@ router.post('/generate-daily', async (req, res) => {
     // Create daily quests using new quest pool system
     console.log('Creating new daily quests from quest pool...');
     const dailyQuests = await Quest.createDailyQuestsFromPool(userId);
+    
+    // Mark daily quests as generated
+    user.markDailyQuestsGenerated();
+    await user.save();
 
     res.status(201).json({
       success: true,
       message: 'Daily quests generated from quest pool successfully!',
-      data: dailyQuests
+      data: dailyQuests,
+      alreadyGenerated: false
     });
   } catch (error) {
     console.error('Generate daily quests error:', error);

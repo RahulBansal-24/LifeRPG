@@ -40,6 +40,7 @@ const QuestsPage = () => {
   const [selectedQuest, setSelectedQuest] = useState(null);
   const [postEligibility, setPostEligibility] = useState({});
 const [isCheckingEligibility, setIsCheckingEligibility] = useState({});
+  const [dailyGenerated, setDailyGenerated] = useState(false);
   const [filters, setFilters] = useState({
     type: 'all',
     difficulty: 'all',
@@ -276,11 +277,20 @@ const [isCheckingEligibility, setIsCheckingEligibility] = useState({});
       const response = await questAPI.generateDailyQuests();
       const newQuests = response.data.data;
       
+      // Update daily generated status from response
+      if (response.data.alreadyGenerated !== undefined) {
+        setDailyGenerated(response.data.alreadyGenerated);
+      }
+      
       setQuests(prev => [...newQuests, ...prev]);
       toast.success('Daily quests generated! 🌅');
     } catch (error) {
       console.error('Failed to generate daily quests:', error);
-      if (error.response?.status === 400 && error.response?.data?.message?.includes('already exist')) {
+      if (error.response?.status === 429) {
+        // Already generated today
+        setDailyGenerated(true);
+        toast.error(error.response?.data?.message || 'Daily quests already generated for today!');
+      } else if (error.response?.status === 400 && error.response?.data?.message?.includes('already exist')) {
         toast.info('Daily quests already exist for today! 📅');
       } else {
         toast.error(error.response?.data?.message || 'Failed to generate daily quests');
@@ -383,15 +393,22 @@ const [isCheckingEligibility, setIsCheckingEligibility] = useState({});
           <div className="flex items-center space-x-3">
             <button
               onClick={handleGenerateDailyQuests}
-              disabled={hasDailyQuests}
+              disabled={hasDailyQuests || dailyGenerated}
               className={`flex items-center space-x-2 ${
-                hasDailyQuests 
+                hasDailyQuests || dailyGenerated
                   ? 'bg-gray-600 text-gray-400 cursor-not-allowed opacity-50' 
                   : 'neon-button-blue'
               }`}
             >
               <Calendar size={18} />
-              <span>{hasDailyQuests ? 'Daily Generated' : 'Generate Daily'}</span>
+              <span>
+                {hasDailyQuests 
+                  ? 'Daily Generated' 
+                  : dailyGenerated
+                    ? 'Already Generated'
+                    : 'Generate Daily'
+                }
+              </span>
             </button>
             
             <button

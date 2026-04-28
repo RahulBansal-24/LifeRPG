@@ -73,6 +73,10 @@ const userSchema = new mongoose.Schema({
     type: Number,
     default: 0,
     min: 0
+  },
+  dailyQuestGenerated: {
+    type: Date,
+    default: null
   }
 }, {
   timestamps: true
@@ -137,6 +141,26 @@ userSchema.methods.addXP = function(xpAmount) {
     leveledUp: leveledUp,
     xpToNextLevel: this.getXPToNextLevel()
   };
+};
+
+// Method to check if user can generate daily quests
+userSchema.methods.canGenerateDailyQuests = function() {
+  const today = new Date();
+  const todayString = today.toDateString();
+  
+  // If no daily quests generated today or different day, can generate
+  if (!this.dailyQuestGenerated || 
+      this.dailyQuestGenerated.toDateString() !== todayString) {
+    return true;
+  }
+  
+  // Already generated today
+  return false;
+};
+
+// Method to mark daily quests as generated
+userSchema.methods.markDailyQuestsGenerated = function() {
+  this.dailyQuestGenerated = new Date();
 };
 
 // Method to get XP needed for next level

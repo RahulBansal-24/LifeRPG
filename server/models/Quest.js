@@ -67,13 +67,15 @@ questSchema.methods.complete = function() {
 
 // Static method to get daily quests for user
 questSchema.statics.getDailyQuests = function(userId) {
-  const today = new Date();
-  today.setHours(0, 0, 0, 0);
+  const now = new Date();
+  const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+  const tomorrow = new Date(today);
+  tomorrow.setDate(today.getDate() + 1);
   
   return this.find({
     userId: userId,
     type: 'daily',
-    createdAt: { $gte: today }
+    createdAt: { $gte: today, $lt: tomorrow }
   });
 };
 
