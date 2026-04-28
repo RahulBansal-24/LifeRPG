@@ -28,6 +28,7 @@ import {
   avatarOptions,
   getStatIcon
 } from '../utils/helpers';
+import { playSound } from '../utils/sounds';
 import toast from 'react-hot-toast';
 
 const QuestsPage = () => {
@@ -140,6 +141,7 @@ const [isCheckingEligibility, setIsCheckingEligibility] = useState({});
       setShowCreateForm(false);
       resetForm();
       
+      playSound('create');
       toast.success(`Quest "${newQuest.title}" created! 🎯`);
     } catch (error) {
       console.error('Failed to create quest:', error);
@@ -213,6 +215,8 @@ const [isCheckingEligibility, setIsCheckingEligibility] = useState({});
       if (userUpdate) {
         console.log('Updating user context with:', userUpdate);
         updateUser(userUpdate);
+        
+        playSound('complete');
         
         if (userUpdate.leveledUp) {
           toast.success(`🎉 LEVEL UP! You are now level ${userUpdate.level}!`);

@@ -16,6 +16,7 @@ import {
   Map,
   BookOpen
 } from 'lucide-react';
+import { playSound } from '../utils/sounds';
 
 const Navbar = () => {
   const { user, isAuthenticated, logout } = useAuth();
@@ -52,7 +53,10 @@ const Navbar = () => {
             <Link 
               to="/" 
               className="flex items-center space-x-2 group"
-              onClick={() => setIsMobileMenuOpen(false)}
+              onClick={() => {
+                setIsMobileMenuOpen(false);
+                playSound('click');
+              }}
             >
               <motion.div
                 whileHover={{ rotate: 360, scale: 1.1 }}
@@ -78,6 +82,7 @@ const Navbar = () => {
                   <Link
                     key={item.path}
                     to={item.path}
+                    onClick={() => playSound('click')}
                     className={`flex items-center space-x-2 px-3 py-2 rounded-lg transition-all duration-200 ${
                       isActive
                         ? 'bg-neon-purple bg-opacity-20 text-neon-purple border border-neon-purple'
@@ -114,7 +119,10 @@ const Navbar = () => {
               </div>
               
               <button
-                onClick={handleLogout}
+                onClick={() => {
+                  handleLogout();
+                  playSound('click');
+                }}
                 className="flex items-center space-x-2 px-3 py-2 text-gray-300 hover:text-red-400 hover:bg-red-400 hover:bg-opacity-10 rounded-lg transition-all duration-200"
               >
                 <LogOut size={18} />
@@ -126,7 +134,10 @@ const Navbar = () => {
           {/* Mobile Menu Button */}
           {isAuthenticated && (
             <button
-              onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+              onClick={() => {
+                setIsMobileMenuOpen(!isMobileMenuOpen);
+                playSound('click');
+              }}
               className="md:hidden p-2 rounded-lg text-gray-300 hover:text-white hover:bg-gaming-border"
             >
               {isMobileMenuOpen ? <X size={24} /> : <Menu size={24} />}
@@ -151,7 +162,10 @@ const Navbar = () => {
                   <Link
                     key={item.path}
                     to={item.path}
-                    onClick={() => setIsMobileMenuOpen(false)}
+                    onClick={() => {
+                      setIsMobileMenuOpen(false);
+                      playSound('click');
+                    }}
                     className={`flex items-center space-x-3 px-3 py-2 rounded-lg transition-all duration-200 ${
                       isActive
                         ? 'bg-neon-purple bg-opacity-20 text-neon-purple border border-neon-purple'

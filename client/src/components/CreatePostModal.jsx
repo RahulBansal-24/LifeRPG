@@ -13,6 +13,7 @@ import {
   CheckCircle,
   AlertCircle
 } from 'lucide-react';
+import { playSound } from '../utils/sounds';
 import toast from 'react-hot-toast';
 
 const CreatePostModal = ({ onClose, onPostCreated, selectedQuest }) => {
@@ -206,6 +207,7 @@ const CreatePostModal = ({ onClose, onPostCreated, selectedQuest }) => {
 
       const response = await postAPI.createPost(formData);
       onPostCreated(response.data.data);
+      playSound('create');
     } catch (error) {
       console.error('Failed to create post:', error);
       toast.error(error.response?.data?.message || 'Failed to create chronicle');

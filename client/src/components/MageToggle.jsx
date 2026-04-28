@@ -1,13 +1,17 @@
 import React from 'react';
 import { motion } from 'framer-motion';
 import { useMage } from '../context/MageContext';
+import { playSound } from '../utils/sounds';
 
 const MageToggle = () => {
   const { isMageVisible, toggleMage } = useMage();
 
   return (
     <button
-      onClick={toggleMage}
+      onClick={() => {
+        toggleMage();
+        playSound('click');
+      }}
       className="relative inline-flex items-center justify-center p-2 rounded-lg bg-gradient-to-r from-purple-900/50 to-indigo-900/50 hover:from-purple-900/70 hover:to-indigo-900/70 border border-purple-500/30 transition-all duration-300 group"
       title="Mage Guide Toggle"
     >
