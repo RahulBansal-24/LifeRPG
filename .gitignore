@@ -76,7 +76,10 @@ dist
 
 # Gatsby files
 .cache/
-public
+# public
+
+# But allow sounds folder
+!public/sounds/
 
 # Vite build cache
 .vite/
