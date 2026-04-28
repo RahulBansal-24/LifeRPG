@@ -2,6 +2,7 @@ const express = require('express');
 const { protect } = require('../middleware/auth');
 const User = require('../models/User');
 const Quest = require('../models/Quest');
+const Post = require('../models/Post');
 
 const router = express.Router();
 
@@ -131,6 +132,27 @@ router.delete('/delete-account', async (req, res) => {
     
     // Delete all quests associated with this user
     await Quest.deleteMany({ userId: userId });
+    
+    // Delete all posts (chronicles) created by this user
+    await Post.deleteMany({ userId: userId });
+    
+    // Remove user's likes from all posts
+    await Post.updateMany(
+      { likes: userId },
+      { $pull: { likes: userId } }
+    );
+    
+    // Remove user's comments from all posts
+    await Post.updateMany(
+      { 'comments.userId': userId },
+      { $pull: { comments: { userId: userId } } }
+    );
+    
+    // Remove user's replies from all comments
+    await Post.updateMany(
+      { 'comments.replies.userId': userId },
+      { $pull: { 'comments.$.replies': { userId: userId } } }
+    );
     
     res.status(200).json({
       success: true,
