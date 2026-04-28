@@ -112,7 +112,9 @@ const CATEGORIES = {
     'Your legend grows with each completed quest, so keep questing and make your mark',
     'Focus on your goals and you will achieve them, so stay focused and motivated',
     'Believe in yourself and your abilities, and you will be unstoppable',
-    'The journey of a thousand miles begins with a single step, so take that first step today, traveller!'
+    'The journey of a thousand miles begins with a single step, so take that first step today, traveller!',
+    'Level up, traveller! Higher levels unlock more quest completions each day.',
+    'Your power grows with your level — rise higher to complete more quests daily!'
   ]
 };
 

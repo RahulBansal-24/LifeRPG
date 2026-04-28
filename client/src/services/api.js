@@ -70,6 +70,7 @@ export const questAPI = {
   updateQuest: (questId, updates) => api.put(`/quests/${questId}`, updates),
   deleteQuest: (questId) => api.delete(`/quests/${questId}`),
   generateDailyQuests: () => api.post('/quests/generate-daily'),
+  getDailyProgress: () => api.get('/quests/daily-progress'),
 };
 
 // Post API calls

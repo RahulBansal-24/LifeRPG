@@ -77,6 +77,15 @@ const userSchema = new mongoose.Schema({
   dailyQuestGenerated: {
     type: Date,
     default: null
+  },
+  dailyCompletedCount: {
+    type: Number,
+    default: 0,
+    min: 0
+  },
+  lastCompletionDate: {
+    type: Date,
+    default: null
   }
 }, {
   timestamps: true
@@ -161,6 +170,73 @@ userSchema.methods.canGenerateDailyQuests = function() {
 // Method to mark daily quests as generated
 userSchema.methods.markDailyQuestsGenerated = function() {
   this.dailyQuestGenerated = new Date();
+};
+
+// Method to get daily quest completion limit based on level
+userSchema.methods.getDailyCompletionLimit = function() {
+  const level = this.level;
+  if (level <= 5) return 6;
+  if (level <= 15) return 8;
+  if (level <= 25) return 10;
+  if (level <= 35) return 14;
+  if (level <= 45) return 18;
+  return 20;
+};
+
+// Method to check if user can complete more quests today
+userSchema.methods.canCompleteMoreQuests = function() {
+  const today = new Date();
+  const todayString = today.toDateString();
+  
+  // Reset count if it's a new day
+  if (!this.lastCompletionDate || 
+      this.lastCompletionDate.toDateString() !== todayString) {
+    return true; // New day, can complete quests
+  }
+  
+  // Check if under daily limit
+  return this.dailyCompletedCount < this.getDailyCompletionLimit();
+};
+
+// Method to increment daily completion count
+userSchema.methods.incrementDailyCompletion = function() {
+  const today = new Date();
+  const todayString = today.toDateString();
+  
+  // Reset count if it's a new day
+  if (!this.lastCompletionDate || 
+      this.lastCompletionDate.toDateString() !== todayString) {
+    this.dailyCompletedCount = 1;
+    this.lastCompletionDate = today;
+  } else {
+    // Increment if under limit
+    if (this.dailyCompletedCount < this.getDailyCompletionLimit()) {
+      this.dailyCompletedCount += 1;
+      this.lastCompletionDate = today;
+    }
+  }
+};
+
+// Method to get daily completion progress
+userSchema.methods.getDailyCompletionProgress = function() {
+  const today = new Date();
+  const todayString = today.toDateString();
+  
+  // Reset count if it's a new day
+  if (!this.lastCompletionDate || 
+      this.lastCompletionDate.toDateString() !== todayString) {
+    return {
+      completed: 0,
+      limit: this.getDailyCompletionLimit(),
+      canComplete: true
+    };
+  }
+  
+  return {
+    completed: this.dailyCompletedCount,
+    limit: this.getDailyCompletionLimit(),
+    canComplete: this.dailyCompletedCount < this.getDailyCompletionLimit()
+  };
 };
 
 // Method to get XP needed for next level

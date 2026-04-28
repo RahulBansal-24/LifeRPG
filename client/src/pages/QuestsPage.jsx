@@ -41,6 +41,7 @@ const QuestsPage = () => {
   const [postEligibility, setPostEligibility] = useState({});
 const [isCheckingEligibility, setIsCheckingEligibility] = useState({});
   const [dailyGenerated, setDailyGenerated] = useState(false);
+  const [dailyProgress, setDailyProgress] = useState({ completed: 0, limit: 6, canComplete: true });
   const [filters, setFilters] = useState({
     type: 'all',
     difficulty: 'all',
@@ -79,8 +80,21 @@ const [isCheckingEligibility, setIsCheckingEligibility] = useState({});
     }
   };
 
+  const fetchDailyProgress = async () => {
+    try {
+      const response = await questAPI.getDailyProgress();
+      const progress = response.data.data;
+      setDailyProgress(progress);
+    } catch (error) {
+      console.error('Failed to fetch daily progress:', error);
+      // Set default values if API fails
+      setDailyProgress({ completed: 0, limit: 6, canComplete: true });
+    }
+  };
+
   useEffect(() => {
     fetchQuests();
+    fetchDailyProgress();
   }, []);
 
   useEffect(() => {
@@ -167,9 +181,10 @@ const [isCheckingEligibility, setIsCheckingEligibility] = useState({});
       const response = await questAPI.updateQuest(questId, { status: 'completed' });
       console.log('Quest completion response:', response.data);
       
-      const { quest, userUpdate } = response.data.data;
+      const { quest, userUpdate, dailyProgress } = response.data.data;
       console.log('Quest data:', quest);
       console.log('User update data:', userUpdate);
+      console.log('Daily progress:', dailyProgress);
       
       // Update quest in local state
       setQuests(prev => prev.map(q => 
@@ -187,6 +202,11 @@ const [isCheckingEligibility, setIsCheckingEligibility] = useState({});
         } catch (error) {
           console.error('Failed to check post eligibility:', error);
         }
+      }
+      
+      // Update daily progress if available
+      if (dailyProgress) {
+        setDailyProgress(dailyProgress);
       }
       
       // Update user if XP was awarded
@@ -208,7 +228,14 @@ const [isCheckingEligibility, setIsCheckingEligibility] = useState({});
     } catch (error) {
       console.error('Failed to complete quest:', error);
       console.error('Error response:', error.response);
-      toast.error(error.response?.data?.message || 'Failed to complete quest');
+      
+      // Handle daily completion limit error
+      if (error.response?.status === 429 && error.response?.data?.dailyProgress) {
+        setDailyProgress(error.response.data.dailyProgress);
+        toast.error(error.response.data.message || 'Daily quest completion limit reached!');
+      } else {
+        toast.error(error.response?.data?.message || 'Failed to complete quest');
+      }
     }
   };
 
@@ -352,9 +379,39 @@ const [isCheckingEligibility, setIsCheckingEligibility] = useState({});
           <h1 className="font-orbitron text-4xl md:text-5xl font-bold bg-gradient-to-r from-neon-purple to-neon-pink bg-clip-text text-transparent mb-2">
             Quest Board
           </h1>
-          <p className="text-gray-400 text-lg">
+          <p className="text-gray-400 text-lg mb-4">
             Manage your adventures and complete quests to gain XP!
           </p>
+          
+          {/* Daily Progress Indicator */}
+          <motion.div
+            initial={{ opacity: 0, scale: 0.9 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ delay: 0.2 }}
+            className="inline-flex items-center space-x-4 bg-gaming-card border border-gaming-border rounded-lg px-6 py-3"
+          >
+            <div className="flex items-center space-x-2">
+              <Target size={18} className="text-neon-purple" />
+              <span className="text-white font-semibold">
+                Daily Progress: {dailyProgress.completed} / {dailyProgress.limit}
+              </span>
+            </div>
+            
+            {/* Progress Bar */}
+            <div className="w-32 h-2 bg-gaming-darker rounded-full overflow-hidden">
+              <div 
+                className="h-full bg-gradient-to-r from-neon-purple to-neon-pink transition-all duration-500"
+                style={{ width: `${(dailyProgress.completed / dailyProgress.limit) * 100}%` }}
+              />
+            </div>
+            
+            {!dailyProgress.canComplete && (
+              <div className="flex items-center space-x-1 text-yellow-400 text-sm">
+                <Sparkles size={14} />
+                <span>Limit Reached</span>
+              </div>
+            )}
+          </motion.div>
         </motion.div>
 
         {/* Actions Bar */}
@@ -704,10 +761,16 @@ const [isCheckingEligibility, setIsCheckingEligibility] = useState({});
                         {quest.status === 'pending' && (
                           <button
                             onClick={() => handleCompleteQuest(quest._id)}
-                            className="neon-button-green flex items-center space-x-1 text-sm"
+                            disabled={!dailyProgress.canComplete}
+                            className={`flex items-center space-x-1 text-sm ${
+                              !dailyProgress.canComplete
+                                ? 'bg-gray-600 text-gray-400 cursor-not-allowed opacity-50'
+                                : 'neon-button-green'
+                            }`}
+                            title={!dailyProgress.canComplete ? 'Daily limit reached. Level up to unlock more!' : 'Complete quest'}
                           >
                             <Sword size={16} />
-                            <span>Complete</span>
+                            <span>{!dailyProgress.canComplete ? 'Limit Reached' : 'Complete'}</span>
                           </button>
                         )}
                         

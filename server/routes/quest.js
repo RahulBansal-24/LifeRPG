@@ -9,6 +9,38 @@ const router = express.Router();
 // All quest routes are protected
 router.use(protect);
 
+// @route   GET /api/quests/daily-progress
+// @desc    Get daily quest completion progress for the current user
+// @access  Private
+router.get('/daily-progress', async (req, res) => {
+  try {
+    const userId = req.user._id;
+    
+    // Get user and their daily progress
+    const user = await User.findById(userId);
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        message: 'User not found'
+      });
+    }
+    
+    const dailyProgress = user.getDailyCompletionProgress();
+    
+    res.status(200).json({
+      success: true,
+      data: dailyProgress
+    });
+  } catch (error) {
+    console.error('Get daily progress error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Server error while fetching daily progress',
+      error: process.env.NODE_ENV === 'development' ? error.message : undefined
+    });
+  }
+});
+
 // @route   GET /api/quests
 // @desc    Get all quests for the current user
 // @access  Private
@@ -208,18 +240,13 @@ router.put('/:id', [
 
     let userUpdate = null;
     let leveledUp = false;
+    let user = null;
 
     // If completing quest, award XP and stats
     if (status === 'completed' && quest.status === 'pending') {
       try {
-        // Complete the quest
-        quest.status = 'completed';
-        quest.completedAt = new Date();
-        await quest.save();
-        console.log('Quest saved with status:', quest.status);
-        
-        // Get user and award XP
-        const user = await User.findById(userId);
+        // Get user and check daily completion limit
+        user = await User.findById(userId);
         if (!user) {
           return res.status(404).json({
             success: false,
@@ -227,7 +254,26 @@ router.put('/:id', [
           });
         }
         
+        // Check daily completion limit
+        if (!user.canCompleteMoreQuests()) {
+          const progress = user.getDailyCompletionProgress();
+          return res.status(429).json({
+            success: false,
+            message: 'Daily quest completion limit reached. Level up to unlock more!',
+            dailyProgress: progress
+          });
+        }
+        
+        // Complete the quest
+        quest.status = 'completed';
+        quest.completedAt = new Date();
+        await quest.save();
+        console.log('Quest saved with status:', quest.status);
+        
         console.log('User before update:', { stars: user.stars, xp: user.xp, stats: user.stats });
+        
+        // Increment daily completion count
+        user.incrementDailyCompletion();
         
         const result = user.addXP(quest.xpReward);
         userUpdate = result;
@@ -272,6 +318,9 @@ router.put('/:id', [
       await quest.save();
     }
 
+    // Get daily progress for response
+    const dailyProgress = user ? user.getDailyCompletionProgress() : null;
+
     res.status(200).json({
       success: true,
       message: status === 'completed' 
@@ -279,7 +328,8 @@ router.put('/:id', [
         : 'Quest updated successfully',
       data: {
         quest,
-        userUpdate: userUpdate || null
+        userUpdate: userUpdate || null,
+        dailyProgress: dailyProgress
       }
     });
   } catch (error) {
