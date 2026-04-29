@@ -30,6 +30,7 @@ Turn boring routines into epic quests, track your progress with XP and levels, a
 - **Skill-Based Rewards** - Complete quests to earn XP and stat points in specific skills
 - **Quest Progress Tracking** - Real-time updates on quest status and completion
 - **Daily Reset System** - New quests available every 24 hours with automatic cleanup
+- **Daily Quest Limits** - Level-based daily completion limits to maintain game balance (3-10 quests based on level)
 - 💪 **Advanced Character Stats** - Develop Strength, Intelligence, Discipline, and Charisma up to 100,000
 - 🏆 **Real-time Leaderboard** - Compete with players globally and climb the ranks
 - ⚡ **Tiered Level Boosts** - Strategic stat bonuses based on level ranges (0% to 25%)
@@ -40,6 +41,7 @@ Turn boring routines into epic quests, track your progress with XP and levels, a
 - 📱 **Fully Responsive** - Works seamlessly on desktop, tablet, and mobile devices
 - 🎯 **Intuitive Interface** - Easy-to-navigate design for all user levels
 - 🧙 **Mage Guide System** - Interactive companion that provides contextual tips and guidance throughout the user journey
+- 🔊 **Immersive Sound System** - Lightweight audio feedback for quest creation, completion, and UI interactions with volume control and mute toggle
 
 ---
 
@@ -258,13 +260,14 @@ LifeRPG features a complete chronicles system for sharing achievements and exper
 ```
 LifeRPG/
 ├── 📁 client/                 # React Frontend Application
-│   ├── 📁 public/              # Static assets (favicon, images)
+│   ├── 📁 public/              # Static assets (favicon, images, sounds)
+│   │   └── 📁 sounds/         # Audio files for immersive feedback
 │   ├── 📁 src/
 │   │   ├── 📁 components/      # Reusable UI components
-│   │   ├── 📁 context/         # React Context (Auth)
+│   │   ├── 📁 context/         # React Context (Auth, Mage)
 │   │   ├── 📁 pages/           # Page components
 │   │   ├── 📁 services/        # API services
-│   │   ├── 📁 utils/           # Helper functions
+│   │   ├── 📁 utils/           # Helper functions (sounds, formatting)
 │   │   ├── 📄 App.jsx          # Main App component
 │   │   └── 📄 main.jsx         # App entry point
 │   ├── 📄 package.json         # Frontend dependencies
