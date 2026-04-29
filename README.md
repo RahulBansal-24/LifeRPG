@@ -25,12 +25,12 @@ Turn boring routines into epic quests, track your progress with XP and levels, a
 - 📧 **Password Recovery** - Forgot password feature with email-based password recovery system
 - ⭐ **50-Level Progression System** - Epic journey from Novice to Godlike with exponential XP requirements
 - 📋 **Quest Management** - Create and complete Daily & Main quests with skill rewards
-- **Dynamic Daily Quest Pool** - System generates 5 daily quests from curated pool
-- **Main Quest Creation** - Create personalized main quests for long-term goals
-- **Skill-Based Rewards** - Complete quests to earn XP and stat points in specific skills
-- **Quest Progress Tracking** - Real-time updates on quest status and completion
-- **Daily Reset System** - New quests available every 24 hours with automatic cleanup
-- **Daily Quest Limits** - Level-based daily completion limits to maintain game balance (3-10 quests based on level)
+- 🎲 **Dynamic Daily Quest Pool** - System generates 5 daily quests from curated pool
+- 📝 **Main Quest Creation** - Create personalized main quests for long-term goals
+- 🎯 **Skill-Based Rewards** - Complete quests to earn XP and stat points in specific skills
+- 📈 **Quest Progress Tracking** - Real-time updates on quest status and completion
+- 🔄 **Daily Reset System** - New quests available every 24 hours with automatic cleanup
+- ⏰ **Daily Quest Limits** - Level-based daily completion limits to maintain game balance (3-10 quests based on level)
 - 💪 **Advanced Character Stats** - Develop Strength, Intelligence, Discipline, and Charisma up to 100,000
 - 🏆 **Real-time Leaderboard** - Compete with players globally and climb the ranks
 - ⚡ **Tiered Level Boosts** - Strategic stat bonuses based on level ranges (0% to 25%)
