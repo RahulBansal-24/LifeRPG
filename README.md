@@ -10,7 +10,7 @@
 
 ---
 
-## � About LifeRPG
+## ✨ About LifeRPG
 
 LifeRPG is a **revolutionary gamified life management web application** that transforms your daily tasks and personal development goals into an exciting RPG adventure! 🎯⚔️
 
@@ -70,7 +70,7 @@ LifeRPG includes a comprehensive password recovery feature:
 
 ---
 
-## � Leveling & Stats System
+## 📊 Leveling & Stats System
 
 ### 🏆 50-Level Progression
 LifeRPG features an extensive 50-level progression system with unique titles:
@@ -100,7 +100,7 @@ LifeRPG features an extensive 50-level progression system with unique titles:
 
 ---
 
-## �️ Technology Stack
+## 🛠️ Technology Stack
 
 ### Frontend 🎨
 <div align="center">
