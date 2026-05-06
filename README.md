@@ -45,7 +45,66 @@ Turn boring routines into epic quests, track your progress with XP and levels, a
 
 ---
 
-## 🔐 Authentication & Security
+## 🎵 Sound System Architecture
+
+### Core Features
+LifeRPG features a sophisticated yet lightweight audio system that enhances user experience without compromising performance:
+
+#### **Sound Library**
+- 🎵 **3 Essential Sounds**: `create.mp3`, `complete.mp3`, `click.mp3`
+- 📈 **Optimized Size**: Total ~157KB for all audio files
+- 📍 **Strategic Placement**: Sounds mapped to specific user actions
+
+#### **Volume Control System** 
+- **Dynamic Volume Levels**: Different volumes per sound type
+  - `create.mp3`: 0.4 volume (subtle creation feedback)
+  - `complete.mp3`: 0.4 volume (achievement celebration)
+  - `click.mp3`: 0.6 volume (enhanced UI feedback)
+- **User Control**: Global mute toggle with localStorage persistence
+- **Non-Intrusive**: Designed to enhance without overwhelming
+
+#### **Smart Sound Management** 
+- **Cooldown System**: 100ms between sounds prevents spam
+- **Error Handling**: Silent fail for browser autoplay restrictions
+- **Success-Only**: Sounds play only on successful actions, not errors
+- **Memory Efficient**: Audio objects created on-demand
+
+###  Technical Implementation
+
+#### **Centralized Sound Utility** 
+```javascript
+// Location: /src/utils/sounds.js
+export const playSound = (type) => {
+  // Mute check, cooldown, volume control, error handling
+}
+```
+
+#### **Sound Mapping Architecture** 
+- **Quest Creation** `create.mp3` - New quests, chronicles, successful submissions
+- **Quest Completion** `complete.mp3` - Achievement celebrations, level ups
+- **UI Interactions** `click.mp3` - Navigation, mage toggle, button clicks
+
+#### **Browser Compatibility** 
+- **HTML5 Audio API**: Native browser audio playback
+- **Autoplay Safe**: Handles modern browser autoplay policies
+- **Cross-Platform**: Works on desktop, tablet, and mobile devices
+
+###  User Experience Integration
+
+#### **Contextual Audio Feedback** 
+- **Creation Actions**: Positive reinforcement for content creation
+- **Achievement Actions**: Celebratory sounds for accomplishments
+- **Navigation**: Subtle clicks for UI interactions
+- **Error Prevention**: No sound plays on failed actions
+
+#### **Accessibility Features** 
+- **Mute Persistence**: User preference saved across sessions
+- **Volume Balance**: Click sounds louder for visibility, others subtle
+- **Performance Optimized**: Minimal impact on page load and responsiveness
+
+---
+
+## 🔒 Authentication & Security
 
 ### 📧 Password Recovery System
 LifeRPG includes a comprehensive password recovery feature:
@@ -245,13 +304,22 @@ LifeRPG features a complete chronicles system for sharing achievements and exper
 - `POST /api/posts/:id/comment/:commentId/reply` - 💭 Reply to comment
 - `DELETE /api/posts/:id/comment/:commentId` - 🗑️ Delete comment
 - `POST /api/posts/check-eligibility/:questId` - 🔍 Check if quest is eligible for chronicle
-
-### 🏆 Leaderboard
+- `DELETE /api/posts/:id` - 🗑️ Delete chronicle
 - `GET /api/leaderboard` - 🏆 Get top users by XP
 - `GET /api/leaderboard/my-rank` - 🎯 Get user's rank
-
-### 🏥 Health Check
 - `GET /api/health` - 🔍 Server status monitoring (deployment/monitoring utility, not used in core functionality)
+
+---
+
+## 🎯 Brand & Visual Identity
+- **🌐 Production-Ready Favicon System** - Comprehensive favicon setup with PWA support
+  - Main favicon.ico for browser tabs
+  - High-resolution 96x96.png for modern displays
+  - Apple touch icon for iOS home screens
+  - Progressive Web App manifest for PWA installation
+  - Proper theme colors matching gaming aesthetic (#0f172a)
+- **🎨 Consistent Branding** - All icons follow LifeRPG's neon/cyberpunk theme
+- **📱 Mobile Optimized** - Works seamlessly across all device sizes and platforms
 
 ---
 
@@ -261,7 +329,13 @@ LifeRPG features a complete chronicles system for sharing achievements and exper
 LifeRPG/
 ├── 📁 client/                 # React Frontend Application
 │   ├── 📁 public/              # Static assets (favicon, images, sounds)
-│   │   └── 📁 sounds/         # Audio files for immersive feedback
+│   │   ├── favicon.ico           # Main browser tab icon
+│   │   ├── favicon-96x96.png     # High-resolution icon for modern displays
+│   │   ├── apple-touch-icon.png  # iOS home screen icon
+│   │   ├── site.webmanifest       # PWA manifest for app installation
+│   │   ├── web-app-manifest-192x192.png  # PWA icon (192x192)
+│   │   ├── web-app-manifest-512x512.png  # PWA icon (512x512)
+│   │   └── sounds/         # Audio files for immersive feedback
 │   ├── 📁 src/
 │   │   ├── 📁 components/      # Reusable UI components
 │   │   ├── 📁 context/         # React Context (Auth, Mage)
@@ -275,8 +349,9 @@ LifeRPG/
 │   └── 📄 tailwind.config.js   # Tailwind CSS config
 ├── 📁 server/                  # Node.js Backend API
 │   ├── 📁 middleware/          # Express middleware
-│   ├── 📁 models/              # MongoDB models (User, Quest)
+│   ├── 📁 models/              # MongoDB models (User, Quest, Post)
 │   ├── 📁 routes/              # API routes
+│   ├── 📁 utils/              # Utility functions
 │   ├── 📄 .env                 # Environment variables
 │   ├── 📄 .env.example         # Environment template
 │   ├── 📄 package.json         # Backend dependencies
