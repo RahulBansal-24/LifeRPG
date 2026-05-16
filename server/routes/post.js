@@ -202,11 +202,12 @@ router.get('/my', async (req, res) => {
     const userId = req.user._id;
     
     const posts = await Post.getUserPosts(userId, parseInt(limit), parseInt(skip));
+    const totalCount = await Post.countDocuments({ userId });
     
     res.status(200).json({
       success: true,
       data: posts,
-      count: posts.length
+      count: totalCount
     });
   } catch (error) {
     console.error('Get user posts error:', error);
