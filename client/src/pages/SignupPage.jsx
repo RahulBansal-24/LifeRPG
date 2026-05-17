@@ -325,6 +325,14 @@ const SignupPage = () => {
                 Login Here
               </Link>
             </p>
+            <p className="text-gray-400 mt-4">
+              <Link
+                to="/"
+                className="text-gray-500 hover:text-white transition-colors duration-200 text-sm"
+              >
+                ← Back to Landing
+              </Link>
+            </p>
           </div>
         </div>
 

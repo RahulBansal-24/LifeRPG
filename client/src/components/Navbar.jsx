@@ -33,15 +33,15 @@ const Navbar = () => {
   };
 
   const navItems = [
-    { path: '/', label: 'Dashboard', icon: Home },
+    { path: '/dashboard', label: 'Dashboard', icon: Home },
     { path: '/quests', label: 'Quests', icon: Target },
     { path: '/chronicles', label: 'Chronicles', icon: BookOpen },
     { path: '/leaderboard', label: 'Leaderboard', icon: Trophy },
   ];
 
   const isActivePath = (path) => {
-    if (path === '/') {
-      return location.pathname === '/' || location.pathname === '/dashboard';
+    if (path === '/dashboard') {
+      return location.pathname === '/dashboard';
     }
     return location.pathname === path;
   };

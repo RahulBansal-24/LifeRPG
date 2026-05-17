@@ -1,8 +1,9 @@
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
-import { Building2, Mail, Lock } from 'lucide-react';
+import { Link, useNavigate } from 'react-router-dom';
+import { useCompanyAuth } from '../../context/CompanyAuthContext';
+import { Building2, Lock, Mail, ArrowRight } from 'lucide-react';
 import axios from 'axios';
-import { useNavigate } from 'react-router-dom';
 
 const CompanyLoginPage = () => {
   const [formData, setFormData] = useState({
@@ -12,6 +13,7 @@ const CompanyLoginPage = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const navigate = useNavigate();
+  const { login } = useCompanyAuth();
 
   const handleChange = (e) => {
     setFormData({
@@ -28,8 +30,7 @@ const CompanyLoginPage = () => {
     try {
       const response = await axios.post('/api/company/login', formData);
       if (response.data.success) {
-        localStorage.setItem('companyToken', response.data.data.token);
-        localStorage.setItem('companyData', JSON.stringify(response.data.data.company));
+        login(response.data.data.token, response.data.data.company);
         navigate('/enterprise/dashboard');
       }
     } catch (error) {
@@ -118,6 +119,14 @@ const CompanyLoginPage = () => {
               >
                 Create Account
               </button>
+            </p>
+            <p className="text-gray-400 mt-4">
+              <Link
+                to="/"
+                className="text-gray-500 hover:text-white transition-colors text-sm"
+              >
+                ← Back to Landing
+              </Link>
             </p>
           </div>
         </div>

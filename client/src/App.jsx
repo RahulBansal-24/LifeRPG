@@ -1,7 +1,8 @@
 import React from 'react';
-import { Routes, Route, Navigate } from 'react-router-dom';
+import { Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useAuth } from './context/AuthContext';
+import { useCompanyAuth } from './context/CompanyAuthContext';
 import { MageProvider } from './context/MageContext';
 import { CompanyAuthProvider } from './context/CompanyAuthContext';
 import Navbar from './components/Navbar';
@@ -9,6 +10,7 @@ import LoadingSpinner from './components/LoadingSpinner';
 import MageGuide from './components/MageGuide';
 
 // Page Components
+import LandingPage from './pages/LandingPage';
 import LoginPage from './pages/LoginPage';
 import SignupPage from './pages/SignupPage';
 import DashboardPage from './pages/DashboardPage';
@@ -89,8 +91,47 @@ const PublicRoute = ({ children }) => {
   return children;
 };
 
+// Company Public Route Component (redirect if company authenticated)
+const CompanyPublicRoute = ({ children }) => {
+  const { isAuthenticated, isLoading } = useCompanyAuth();
+
+  if (isLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gaming-dark">
+        <LoadingSpinner size="lg" text="Loading..." />
+      </div>
+    );
+  }
+
+  if (isAuthenticated) {
+    return <Navigate to="/enterprise/dashboard" replace />;
+  }
+
+  return children;
+};
+
+// Company Protected Route Component (redirect if not authenticated)
+const CompanyProtectedRoute = ({ children }) => {
+  const { isAuthenticated, isLoading } = useCompanyAuth();
+
+  if (isLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gaming-dark">
+        <LoadingSpinner size="lg" text="Loading..." />
+      </div>
+    );
+  }
+
+  if (!isAuthenticated) {
+    return <Navigate to="/enterprise/login" replace />;
+  }
+
+  return children;
+};
+
 function App() {
   const { isLoading } = useAuth();
+  const location = useLocation();
 
   // Show loading screen while checking authentication
   if (isLoading) {
@@ -108,12 +149,31 @@ function App() {
     );
   }
 
+  const isLandingPage = location.pathname === '/';
+  const isEnterpriseRoute = location.pathname.startsWith('/enterprise');
+
   return (
     <div className="min-h-screen bg-gaming-dark">
-      <Navbar />
+      {!isLandingPage && !isEnterpriseRoute && <Navbar />}
       
       <AnimatePresence mode="wait">
         <Routes>
+          {/* Landing Page */}
+          <Route 
+            path="/" 
+            element={
+              <motion.div
+                initial="initial"
+                animate="in"
+                exit="out"
+                variants={pageVariants}
+                transition={pageTransition}
+              >
+                <LandingPage />
+              </motion.div>
+            } 
+          />
+
           {/* Public Routes */}
           <Route 
             path="/login" 
@@ -165,22 +225,6 @@ function App() {
           />
 
           {/* Protected Routes */}
-          <Route 
-            path="/" 
-            element={
-              <ProtectedRoute>
-                <motion.div
-                  initial="initial"
-                  animate="in"
-                  exit="out"
-                  variants={pageVariants}
-                  transition={pageTransition}
-                >
-                  <DashboardPage />
-                </motion.div>
-              </ProtectedRoute>
-            } 
-          />
           <Route 
             path="/dashboard" 
             element={
@@ -282,65 +326,73 @@ function App() {
           <Route 
             path="/enterprise/signup" 
             element={
-              <motion.div
-                initial="initial"
-                animate="in"
-                exit="out"
-                variants={pageVariants}
-                transition={pageTransition}
-              >
-                <CompanyAuthProvider>
-                  <CompanySignupPage />
-                </CompanyAuthProvider>
-              </motion.div>
+              <CompanyAuthProvider>
+                <CompanyPublicRoute>
+                  <motion.div
+                    initial="initial"
+                    animate="in"
+                    exit="out"
+                    variants={pageVariants}
+                    transition={pageTransition}
+                  >
+                    <CompanySignupPage />
+                  </motion.div>
+                </CompanyPublicRoute>
+              </CompanyAuthProvider>
             } 
           />
           <Route 
             path="/enterprise/login" 
             element={
-              <motion.div
-                initial="initial"
-                animate="in"
-                exit="out"
-                variants={pageVariants}
-                transition={pageTransition}
-              >
-                <CompanyAuthProvider>
-                  <CompanyLoginPage />
-                </CompanyAuthProvider>
-              </motion.div>
+              <CompanyAuthProvider>
+                <CompanyPublicRoute>
+                  <motion.div
+                    initial="initial"
+                    animate="in"
+                    exit="out"
+                    variants={pageVariants}
+                    transition={pageTransition}
+                  >
+                    <CompanyLoginPage />
+                  </motion.div>
+                </CompanyPublicRoute>
+              </CompanyAuthProvider>
             } 
           />
           <Route 
             path="/enterprise/dashboard" 
             element={
-              <motion.div
-                initial="initial"
-                animate="in"
-                exit="out"
-                variants={pageVariants}
-                transition={pageTransition}
-              >
-                <CompanyAuthProvider>
-                  <CompanyDashboard />
-                </CompanyAuthProvider>
-              </motion.div>
+              <CompanyAuthProvider>
+                <CompanyProtectedRoute>
+                  <motion.div
+                    initial="initial"
+                    animate="in"
+                    exit="out"
+                    variants={pageVariants}
+                    transition={pageTransition}
+                  >
+                    <CompanyDashboard />
+                  </motion.div>
+                </CompanyProtectedRoute>
+              </CompanyAuthProvider>
             } 
           />
           <Route 
             path="/enterprise/coupons" 
             element={
-              <motion.div
-                initial="initial"
-                animate="in"
-                exit="out"
-                variants={pageVariants}
-                transition={pageTransition}
-              >
-                <CompanyAuthProvider>
-                  <CompanyCouponsPage />
-                </CompanyAuthProvider>
-              </motion.div>
+              <CompanyAuthProvider>
+                <CompanyProtectedRoute>
+                  <motion.div
+                    initial="initial"
+                    animate="in"
+                    exit="out"
+                    variants={pageVariants}
+                    transition={pageTransition}
+                  >
+                    <CompanyCouponsPage />
+                  </motion.div>
+                </CompanyProtectedRoute>
+              </CompanyAuthProvider>
             } 
           />
 
@@ -373,8 +425,8 @@ function App() {
         </Routes>
       </AnimatePresence>
       
-      {/* Global Mage Guide Assistant */}
-      <MageGuide />
+      {/* Global Mage Guide Assistant - only show on user authenticated pages */}
+      {!isLandingPage && !isEnterpriseRoute && <MageGuide />}
     </div>
   );
 }
