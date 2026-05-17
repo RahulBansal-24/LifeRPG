@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import { Link, useNavigate } from 'react-router-dom';
+import { useCompanyAuth } from '../../context/CompanyAuthContext';
 import { Building2, Mail, Lock, User } from 'lucide-react';
 import axios from 'axios';
 
@@ -52,10 +53,10 @@ const CompanySignupPage = () => {
           <div className="text-center mb-8">
             <motion.div
               animate={{ rotate: 360 }}
-              transition={{ duration: 3, repeat: Infinity, ease: 'linear' }}
+              transition={{ duration: 20, repeat: Infinity, ease: 'linear' }}
               className="text-5xl mb-4"
             >
-              🏢
+              💰
             </motion.div>
             <h1 className="text-3xl font-orbitron font-bold bg-gradient-to-r from-neon-purple to-neon-pink bg-clip-text text-transparent mb-2">
               Enterprise Portal
@@ -131,12 +132,12 @@ const CompanySignupPage = () => {
           <div className="mt-6 text-center">
             <p className="text-gray-400 text-sm">
               Already have an account?{' '}
-              <button
-                onClick={() => navigate('/enterprise/login')}
+              <Link
+                to="/enterprise/login"
                 className="text-neon-purple hover:text-neon-pink transition-colors"
               >
                 Sign In
-              </button>
+              </Link>
             </p>
             <p className="text-gray-400 mt-4">
               <Link

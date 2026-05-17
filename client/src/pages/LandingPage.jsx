@@ -133,7 +133,7 @@ const LandingPage = () => {
                   transition={{ duration: 0.5 }}
                   className="text-6xl mb-4 inline-block"
                 >
-                  🏢
+                  ⚒️
                 </motion.div>
                 <h2 className="text-3xl font-orbitron font-bold text-white mb-2">
                   Merchant Portal
