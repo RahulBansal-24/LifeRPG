@@ -74,6 +74,15 @@ const userSchema = new mongoose.Schema({
     default: 0,
     min: 0
   },
+  coins: {
+    type: Number,
+    default: 0,
+    min: 0
+  },
+  rewardedQuestIds: {
+    type: [mongoose.Schema.Types.ObjectId],
+    default: []
+  },
   dailyQuestGenerated: {
     type: Date,
     default: null

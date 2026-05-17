@@ -153,10 +153,22 @@ router.post('/create', upload.single('image'), [
     await post.populate('userId', 'username avatar');
     await post.populate('questId', 'title difficulty xpReward');
 
+    // Award coins if quest hasn't been rewarded yet
+    let coinsAwarded = 0;
+    const user = await User.findById(userId);
+    if (user && !user.rewardedQuestIds.includes(questId)) {
+      // Award coins equal to quest XP
+      coinsAwarded = quest.xpReward;
+      user.coins += coinsAwarded;
+      user.rewardedQuestIds.push(questId);
+      await user.save();
+    }
+
     res.status(201).json({
       success: true,
-      message: 'Post created successfully!',
-      data: post
+      message: `Post created successfully!${coinsAwarded > 0 ? ` +${coinsAwarded} coins earned!` : ''}`,
+      data: post,
+      coinsAwarded: coinsAwarded
     });
   } catch (error) {
     console.error('Create post error:', error);

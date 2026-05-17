@@ -14,7 +14,9 @@ import {
   Home,
   Sparkles,
   Map,
-  BookOpen
+  BookOpen,
+  Coins,
+  ShoppingBag
 } from 'lucide-react';
 import { playSound } from '../utils/sounds';
 
@@ -97,6 +99,17 @@ const Navbar = () => {
               
               {/* Mage Toggle */}
               <MageToggle />
+              
+              {/* Marketplace Button */}
+              <button
+                onClick={() => {
+                  navigate('/marketplace');
+                  playSound('click');
+                }}
+                className="flex items-center space-x-2 px-3 py-2 text-gray-300 hover:text-neon-purple hover:bg-neon-purple hover:bg-opacity-10 rounded-lg transition-all duration-200"
+              >
+                <ShoppingBag size={18} />
+              </button>
             </div>
           )}
 
@@ -113,6 +126,11 @@ const Navbar = () => {
                     <div className="flex items-center space-x-1">
                       <span className="text-lg">⭐</span>
                       <span className="text-xs text-xp-gold font-bold">{user?.stars || 0}</span>
+                    </div>
+                    <span className="text-xs text-gray-400">|</span>
+                    <div className="flex items-center space-x-1">
+                      <Coins size={14} className="text-yellow-400" />
+                      <span className="text-xs text-yellow-400 font-bold">{user?.coins || 0}</span>
                     </div>
                   </div>
                 </div>
@@ -184,6 +202,19 @@ const Navbar = () => {
                 <MageToggle />
               </div>
               
+              {/* Marketplace Button in Mobile Menu */}
+              <Link
+                to="/marketplace"
+                onClick={() => {
+                  setIsMobileMenuOpen(false);
+                  playSound('click');
+                }}
+                className="flex items-center space-x-3 px-3 py-2 text-gray-300 hover:text-neon-purple hover:bg-gaming-border rounded-lg transition-all duration-200"
+              >
+                <ShoppingBag size={20} />
+                <span className="font-medium">Marketplace</span>
+              </Link>
+              
               <div className="pt-4 border-t border-gaming-border">
                 <div className="flex items-center space-x-3 px-3 py-2 bg-gaming-darker rounded-lg border border-gaming-border mb-3">
                   <span className="text-2xl">{user?.avatar || '🎮'}</span>
@@ -195,6 +226,11 @@ const Navbar = () => {
                       <div className="flex items-center space-x-1">
                         <span className="text-lg">⭐</span>
                         <span className="text-xs text-xp-gold font-bold">{user?.stars || 0}</span>
+                      </div>
+                      <span className="text-xs text-gray-400">|</span>
+                      <div className="flex items-center space-x-1">
+                        <Coins size={14} className="text-yellow-400" />
+                        <span className="text-xs text-yellow-400 font-bold">{user?.coins || 0}</span>
                       </div>
                     </div>
                   </div>

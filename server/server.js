@@ -13,6 +13,8 @@ const userRoutes = require('./routes/user');
 const questRoutes = require('./routes/quest');
 const leaderboardRoutes = require('./routes/leaderboard');
 const postRoutes = require('./routes/post');
+const couponRoutes = require('./routes/coupons');
+const companyRoutes = require('./routes/company');
 
 // Initialize Express app
 const app = express();
@@ -35,6 +37,8 @@ app.use('/api/user', userRoutes);
 app.use('/api/quests', questRoutes);
 app.use('/api/leaderboard', leaderboardRoutes);
 app.use('/api/posts', postRoutes);
+app.use('/api/coupons', couponRoutes);
+app.use('/api/company', companyRoutes);
 
 // Serve uploaded files
 app.use('/uploads', express.static('uploads'));

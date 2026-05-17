@@ -3,6 +3,7 @@ import { Routes, Route, Navigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useAuth } from './context/AuthContext';
 import { MageProvider } from './context/MageContext';
+import { CompanyAuthProvider } from './context/CompanyAuthContext';
 import Navbar from './components/Navbar';
 import LoadingSpinner from './components/LoadingSpinner';
 import MageGuide from './components/MageGuide';
@@ -16,6 +17,13 @@ import QuestsPage from './pages/QuestsPage';
 import Chronicles from './pages/Chronicles';
 import LeaderboardPage from './pages/LeaderboardPage';
 import ResetPasswordPage from './pages/ResetPasswordPage';
+import MarketplacePage from './pages/MarketplacePage';
+
+// Enterprise Portal Components
+import CompanySignupPage from './pages/enterprise/CompanySignupPage';
+import CompanyLoginPage from './pages/enterprise/CompanyLoginPage';
+import CompanyDashboard from './pages/enterprise/CompanyDashboard';
+import CompanyCouponsPage from './pages/enterprise/CompanyCouponsPage';
 
 // Page transition animation
 const pageVariants = {
@@ -251,6 +259,88 @@ function App() {
                   <LeaderboardPage />
                 </motion.div>
               </ProtectedRoute>
+            } 
+          />
+          <Route 
+            path="/marketplace" 
+            element={
+              <ProtectedRoute>
+                <motion.div
+                  initial="initial"
+                  animate="in"
+                  exit="out"
+                  variants={pageVariants}
+                  transition={pageTransition}
+                >
+                  <MarketplacePage />
+                </motion.div>
+              </ProtectedRoute>
+            } 
+          />
+
+          {/* Enterprise Portal Routes */}
+          <Route 
+            path="/enterprise/signup" 
+            element={
+              <motion.div
+                initial="initial"
+                animate="in"
+                exit="out"
+                variants={pageVariants}
+                transition={pageTransition}
+              >
+                <CompanyAuthProvider>
+                  <CompanySignupPage />
+                </CompanyAuthProvider>
+              </motion.div>
+            } 
+          />
+          <Route 
+            path="/enterprise/login" 
+            element={
+              <motion.div
+                initial="initial"
+                animate="in"
+                exit="out"
+                variants={pageVariants}
+                transition={pageTransition}
+              >
+                <CompanyAuthProvider>
+                  <CompanyLoginPage />
+                </CompanyAuthProvider>
+              </motion.div>
+            } 
+          />
+          <Route 
+            path="/enterprise/dashboard" 
+            element={
+              <motion.div
+                initial="initial"
+                animate="in"
+                exit="out"
+                variants={pageVariants}
+                transition={pageTransition}
+              >
+                <CompanyAuthProvider>
+                  <CompanyDashboard />
+                </CompanyAuthProvider>
+              </motion.div>
+            } 
+          />
+          <Route 
+            path="/enterprise/coupons" 
+            element={
+              <motion.div
+                initial="initial"
+                animate="in"
+                exit="out"
+                variants={pageVariants}
+                transition={pageTransition}
+              >
+                <CompanyAuthProvider>
+                  <CompanyCouponsPage />
+                </CompanyAuthProvider>
+              </motion.div>
             } 
           />
 
