@@ -29,6 +29,8 @@ router.get('/profile', async (req, res) => {
         xp: user.xp,
         stats: user.stats,
         avatar: user.avatar,
+        coins: user.coins,
+        stars: user.stars,
         xpProgress: xpProgress,
         createdAt: user.createdAt
       }

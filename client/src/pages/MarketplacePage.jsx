@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { Search, Filter, ShoppingBag } from 'lucide-react';
+import { Search, Filter, ShoppingBag, RefreshCw } from 'lucide-react';
 import axios from 'axios';
 import { useAuth } from '../context/AuthContext';
 
@@ -15,6 +15,9 @@ const MarketplacePage = () => {
   const [selectedCoupon, setSelectedCoupon] = useState(null);
   const [showDetailModal, setShowDetailModal] = useState(false);
   const [loading, setLoading] = useState(true);
+  const [tempSearchTerm, setTempSearchTerm] = useState('');
+  const [tempCategory, setTempCategory] = useState('All');
+  const [tempStatus, setTempStatus] = useState('All');
 
   const categories = ['All', 'Books', 'Courses', 'Clothing', 'Sports', 'Food', 'Travel', 'Gaming', 'Electronics', 'Fitness', 'Lifestyle'];
 
@@ -65,6 +68,23 @@ const MarketplacePage = () => {
     setFilteredCoupons(filtered);
   };
 
+  const handleApplyFilters = () => {
+    setSearchTerm(tempSearchTerm);
+    setSelectedCategory(tempCategory);
+    setSelectedStatus(tempStatus);
+    setShowFilterModal(false);
+  };
+
+  const handleResetFilters = () => {
+    setTempSearchTerm('');
+    setTempCategory('All');
+    setTempStatus('All');
+    setSearchTerm('');
+    setSelectedCategory('All');
+    setSelectedStatus('All');
+    setShowFilterModal(false);
+  };
+
   const handleCouponClick = (coupon) => {
     setSelectedCoupon(coupon);
     setShowDetailModal(true);
@@ -100,8 +120,8 @@ const MarketplacePage = () => {
             <input
               type="text"
               placeholder="Search coupons, brands, categories..."
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
+              value={tempSearchTerm}
+              onChange={(e) => setTempSearchTerm(e.target.value)}
               className="w-full pl-10 pr-4 py-3 bg-gaming-card border border-gaming-border rounded-lg focus:outline-none focus:border-neon-purple text-white placeholder-gray-400"
             />
           </div>
@@ -111,6 +131,13 @@ const MarketplacePage = () => {
           >
             <Filter size={20} />
             <span>Filters</span>
+          </button>
+          <button
+            onClick={fetchCoupons}
+            className="flex items-center justify-center space-x-2 px-6 py-3 bg-gaming-card border border-gaming-border rounded-lg hover:border-neon-purple transition-all duration-200"
+          >
+            <RefreshCw size={20} />
+            <span>Refresh</span>
           </button>
         </div>
 
@@ -218,8 +245,8 @@ const MarketplacePage = () => {
             <div className="mb-4">
               <label className="block text-sm font-medium mb-2">Category</label>
               <select
-                value={selectedCategory}
-                onChange={(e) => setSelectedCategory(e.target.value)}
+                value={tempCategory}
+                onChange={(e) => setTempCategory(e.target.value)}
                 className="w-full px-4 py-2 bg-gaming-darker border border-gaming-border rounded-lg focus:outline-none focus:border-neon-purple text-white"
               >
                 {categories.map(category => (
@@ -231,8 +258,8 @@ const MarketplacePage = () => {
             <div className="mb-6">
               <label className="block text-sm font-medium mb-2">Availability</label>
               <select
-                value={selectedStatus}
-                onChange={(e) => setSelectedStatus(e.target.value)}
+                value={tempStatus}
+                onChange={(e) => setTempStatus(e.target.value)}
                 className="w-full px-4 py-2 bg-gaming-darker border border-gaming-border rounded-lg focus:outline-none focus:border-neon-purple text-white"
               >
                 <option value="All">All</option>
@@ -243,13 +270,13 @@ const MarketplacePage = () => {
 
             <div className="flex space-x-4">
               <button
-                onClick={() => setShowFilterModal(false)}
+                onClick={handleResetFilters}
                 className="flex-1 px-4 py-2 bg-gaming-darker border border-gaming-border rounded-lg hover:bg-gaming-border transition-all duration-200"
               >
-                Cancel
+                Reset
               </button>
               <button
-                onClick={() => setShowFilterModal(false)}
+                onClick={handleApplyFilters}
                 className="flex-1 px-4 py-2 bg-neon-purple border border-neon-purple rounded-lg hover:bg-neon-purple hover:bg-opacity-80 transition-all duration-200"
               >
                 Apply Filters

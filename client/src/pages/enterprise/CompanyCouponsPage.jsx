@@ -96,7 +96,7 @@ const CompanyCouponsPage = () => {
                 transition={{ duration: 0.5 }}
                 className="text-3xl"
               >
-                🏢
+                💰
               </motion.div>
               <div>
                 <h1 className="text-xl font-orbitron font-bold bg-gradient-to-r from-neon-purple to-neon-pink bg-clip-text text-transparent">

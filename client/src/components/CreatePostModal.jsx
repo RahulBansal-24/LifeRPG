@@ -2,7 +2,7 @@ import React, { useState, useEffect, useCallback } from 'react';
 import ReactDOM from 'react-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useAuth } from '../context/AuthContext';
-import { questAPI, postAPI } from '../services/api';
+import { questAPI, postAPI, userAPI } from '../services/api';
 import Cropper from 'react-easy-crop';
 import { 
   X, 
@@ -17,7 +17,7 @@ import { playSound } from '../utils/sounds';
 import toast from 'react-hot-toast';
 
 const CreatePostModal = ({ onClose, onPostCreated, selectedQuest }) => {
-  const { user } = useAuth();
+  const { user, updateUser } = useAuth();
   const [completedQuests, setCompletedQuests] = useState([]);
   const [selectedQuestId, setSelectedQuestId] = useState(selectedQuest?._id || '');
   const [caption, setCaption] = useState('');
@@ -206,6 +206,38 @@ const CreatePostModal = ({ onClose, onPostCreated, selectedQuest }) => {
       formData.append('image', processedFile);
 
       const response = await postAPI.createPost(formData);
+      const { coinsAwarded } = response.data;
+      
+      console.log('Post creation response:', response.data);
+      console.log('Current user coins before update:', user?.coins);
+      
+      // Fetch fresh user data from backend to get updated coin balance
+      if (coinsAwarded > 0) {
+        try {
+          const userResponse = await userAPI.getProfile();
+          console.log('User profile response:', userResponse.data);
+          const updatedUser = userResponse.data.data;
+          console.log('Updated user data:', updatedUser);
+          console.log('Updated user coins:', updatedUser.coins);
+          updateUser(updatedUser);
+          console.log('User context updated via updateUser');
+          toast.success(`+${coinsAwarded} coins earned!`);
+        } catch (error) {
+          console.error('Failed to fetch updated user data:', error);
+          // Fallback to local update if API fails
+          if (user) {
+            console.log('Falling back to local update');
+            const currentCoins = user.coins || 0;
+            const newCoins = currentCoins + coinsAwarded;
+            console.log('New coins (local):', newCoins);
+            updateUser({
+              coins: newCoins
+            });
+            toast.success(`+${coinsAwarded} coins earned!`);
+          }
+        }
+      }
+      
       onPostCreated(response.data.data);
       playSound('create');
     } catch (error) {

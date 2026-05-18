@@ -156,12 +156,28 @@ router.post('/create', upload.single('image'), [
     // Award coins if quest hasn't been rewarded yet
     let coinsAwarded = 0;
     const user = await User.findById(userId);
+    console.log('Coin awarding check:', {
+      userId,
+      questId,
+      userFound: !!user,
+      userCoins: user?.coins,
+      questXP: quest.xpReward,
+      rewardedQuestIds: user?.rewardedQuestIds,
+      isQuestRewarded: user?.rewardedQuestIds?.includes(questId)
+    });
+    
     if (user && !user.rewardedQuestIds.includes(questId)) {
       // Award coins equal to quest XP
       coinsAwarded = quest.xpReward;
       user.coins += coinsAwarded;
       user.rewardedQuestIds.push(questId);
       await user.save();
+      console.log('Coins awarded successfully:', {
+        coinsAwarded,
+        newTotal: user.coins
+      });
+    } else {
+      console.log('Coins not awarded - quest already rewarded or user not found');
     }
 
     res.status(201).json({

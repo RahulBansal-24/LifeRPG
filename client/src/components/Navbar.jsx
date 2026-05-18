@@ -129,7 +129,7 @@ const Navbar = () => {
                     </div>
                     <span className="text-xs text-gray-400">|</span>
                     <div className="flex items-center space-x-1">
-                      <Coins size={14} className="text-yellow-400" />
+                      <span className="text-lg">🪙</span>
                       <span className="text-xs text-yellow-400 font-bold">{user?.coins || 0}</span>
                     </div>
                   </div>
@@ -229,7 +229,7 @@ const Navbar = () => {
                       </div>
                       <span className="text-xs text-gray-400">|</span>
                       <div className="flex items-center space-x-1">
-                        <Coins size={14} className="text-yellow-400" />
+                        <span className="text-lg">🪙</span>
                         <span className="text-xs text-yellow-400 font-bold">{user?.coins || 0}</span>
                       </div>
                     </div>

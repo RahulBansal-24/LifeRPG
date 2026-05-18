@@ -98,6 +98,7 @@ router.post('/signup', [
           xp: user.xp,
           stats: user.stats,
           avatar: avatar || '🎮',
+          coins: user.coins,
           stars: user.stars,
           createdAt: user.createdAt
         }
@@ -202,6 +203,7 @@ router.post('/login', [
           stars: user.stars,
           stats: user.stats,
           avatar: user.avatar,
+          coins: user.coins,
           createdAt: user.createdAt
         }
       }

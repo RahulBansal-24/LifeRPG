@@ -8,12 +8,9 @@ const Company = require('../models/Company');
 
 const router = express.Router();
 
-// All coupon routes are protected
-router.use(protect);
-
 // @route   GET /api/coupons
-// @desc    Get all coupons for marketplace
-// @access  Private
+// @desc    Get all coupons for marketplace (public)
+// @access  Public
 router.get('/', async (req, res) => {
   try {
     const { search, category, status } = req.query;
@@ -67,7 +64,7 @@ router.get('/', async (req, res) => {
 // @route   GET /api/coupons/:id
 // @desc    Get single coupon details
 // @access  Private
-router.get('/:id', async (req, res) => {
+router.get('/:id', protect, async (req, res) => {
   try {
     const coupon = await Coupon.findById(req.params.id)
       .populate('companyId', 'companyName logo');
@@ -105,7 +102,7 @@ router.get('/:id', async (req, res) => {
 // @route   POST /api/coupons/:id/redeem
 // @desc    Redeem a coupon
 // @access  Private
-router.post('/:id/redeem', async (req, res) => {
+router.post('/:id/redeem', protect, async (req, res) => {
   try {
     const couponId = req.params.id;
     const userId = req.user._id;
