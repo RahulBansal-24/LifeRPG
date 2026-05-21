@@ -76,7 +76,7 @@ const SignupPage = () => {
     const result = await signup(signupData);
     
     if (result.success) {
-      navigate('/dashboard');
+      navigate('/dashboard', { replace: true });
     }
   };
 

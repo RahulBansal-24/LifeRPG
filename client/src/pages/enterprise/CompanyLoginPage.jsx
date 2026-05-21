@@ -31,7 +31,7 @@ const CompanyLoginPage = () => {
       const response = await axios.post('/api/company/login', formData);
       if (response.data.success) {
         login(response.data.data.token, response.data.data.company);
-        navigate('/enterprise/dashboard');
+        navigate('/enterprise/dashboard', { replace: true });
       }
     } catch (error) {
       setError(error.response?.data?.message || 'Login failed');

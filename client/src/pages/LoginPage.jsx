@@ -56,7 +56,7 @@ const LoginPage = () => {
     const result = await login(formData);
     
     if (result.success) {
-      navigate('/dashboard');
+      navigate('/dashboard', { replace: true });
     }
   };
 
