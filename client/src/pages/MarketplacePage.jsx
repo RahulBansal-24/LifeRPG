@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { Search, Filter, ShoppingBag, RefreshCw } from 'lucide-react';
+import { Search, Filter, ShoppingBag, RefreshCw, Copy, Check } from 'lucide-react';
 import axios from 'axios';
 import { useAuth } from '../context/AuthContext';
+import toast from 'react-hot-toast';
 
 const MarketplacePage = () => {
   const { user } = useAuth();
@@ -203,9 +204,9 @@ const MarketplacePage = () => {
                     </div>
                     
                     {/* Image or Placeholder */}
-                    {coupon.image ? (
+                    {coupon.imageData ? (
                       <div className="w-full h-48 bg-gray-800 flex items-center justify-center">
-                        <img src={coupon.image} alt={coupon.couponName} className="w-full h-full object-cover" />
+                        <img src={`/api/company/coupons/${coupon._id}/image`} alt={coupon.couponName} className="w-full h-full object-cover" />
                       </div>
                     ) : (
                       <div className="w-full h-48 bg-gradient-to-br from-gaming-darker to-gaming-card flex items-center justify-center">
@@ -303,6 +304,7 @@ const CouponDetailModal = ({ coupon, user, onClose, onRedeem }) => {
   const [redeeming, setRedeeming] = useState(false);
   const [redeemed, setRedeemed] = useState(false);
   const [couponCode, setCouponCode] = useState('');
+  const [copied, setCopied] = useState(false);
 
   const handleRedeem = async () => {
     if (!user || user.coins < coupon.cost) {
@@ -323,6 +325,13 @@ const CouponDetailModal = ({ coupon, user, onClose, onRedeem }) => {
       alert(error.response?.data?.message || 'Failed to redeem coupon');
     }
     setRedeeming(false);
+  };
+
+  const handleCopyCode = () => {
+    navigator.clipboard.writeText(couponCode);
+    setCopied(true);
+    toast.success('Coupon code copied to clipboard!');
+    setTimeout(() => setCopied(false), 2000);
   };
 
   const getRarityColor = (type) => {
@@ -357,8 +366,8 @@ const CouponDetailModal = ({ coupon, user, onClose, onRedeem }) => {
         </div>
 
         {/* Image */}
-        {coupon.image ? (
-          <img src={coupon.image} alt={coupon.couponName} className="w-full h-48 object-cover rounded-lg mb-4" />
+        {coupon.imageData ? (
+          <img src={`/api/company/coupons/${coupon._id}/image`} alt={coupon.couponName} className="w-full h-48 object-cover rounded-lg mb-4" />
         ) : (
           <div className="w-full h-48 bg-gradient-to-br from-gaming-darker to-gaming-card rounded-lg mb-4 flex items-center justify-center">
             <ShoppingBag size={48} className="text-gray-600" />
@@ -384,9 +393,18 @@ const CouponDetailModal = ({ coupon, user, onClose, onRedeem }) => {
 
         {redeemed ? (
           <div className="bg-green-500 bg-opacity-20 border border-green-500 rounded-lg p-4 mb-4">
-            <p className="text-green-400 font-semibold mb-2">Coupon Redeemed!</p>
-            <div className="bg-white bg-opacity-10 border-2 border-dashed border-green-400 rounded-lg p-4 text-center">
-              <p className="text-green-400 text-xl font-mono font-bold">{couponCode}</p>
+            <div className="mb-4">
+              <h3 className="font-semibold mb-2">Coupon Code</h3>
+              <div className="bg-white bg-opacity-10 border-2 border-dashed border-neon-purple rounded-lg p-4 flex items-center justify-between">
+                <p className="text-neon-purple text-xl font-mono font-bold">{couponCode}</p>
+                <button
+                  onClick={handleCopyCode}
+                  className="flex items-center space-x-2 px-3 py-2 bg-neon-purple hover:bg-neon-purple hover:bg-opacity-80 rounded-lg transition-all duration-200"
+                >
+                  {copied ? <Check size={16} /> : <Copy size={16} />}
+                  <span className="text-sm">{copied ? 'Copied!' : 'Copy'}</span>
+                </button>
+              </div>
             </div>
           </div>
         ) : (

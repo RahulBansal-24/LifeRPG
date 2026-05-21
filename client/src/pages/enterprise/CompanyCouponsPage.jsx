@@ -1,9 +1,11 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { motion } from 'framer-motion';
-import { Search, Filter, Plus, ShoppingBag, Clock } from 'lucide-react';
+import { Search, Filter, Plus, ShoppingBag, Clock, Upload, Image as ImageIcon, X, Trash2 } from 'lucide-react';
 import axios from 'axios';
 import { useCompanyAuth } from '../../context/CompanyAuthContext';
 import { useNavigate } from 'react-router-dom';
+import Cropper from 'react-easy-crop';
+import toast from 'react-hot-toast';
 
 const CompanyCouponsPage = () => {
   const { company } = useCompanyAuth();
@@ -69,6 +71,20 @@ const CompanyCouponsPage = () => {
     } catch (error) {
       console.error('Error expiring coupon:', error);
       alert('Failed to expire coupon');
+    }
+  };
+
+  const handleDeleteCoupon = async (couponId) => {
+    try {
+      const token = localStorage.getItem('companyToken');
+      await axios.delete(`/api/company/coupons/${couponId}`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      fetchCoupons();
+      toast.success('Coupon deleted successfully');
+    } catch (error) {
+      console.error('Error deleting coupon:', error);
+      toast.error('Failed to delete coupon');
     }
   };
 
@@ -192,9 +208,9 @@ const CompanyCouponsPage = () => {
                     </div>
                     
                     {/* Image or Placeholder */}
-                    {coupon.image ? (
+                    {coupon.imageData ? (
                       <div className="w-full h-48 bg-gray-800 flex items-center justify-center">
-                        <img src={coupon.image} alt={coupon.couponName} className="w-full h-full object-cover" />
+                        <img src={`/api/company/coupons/${coupon._id}/image`} alt={coupon.couponName} className="w-full h-full object-cover" />
                       </div>
                     ) : (
                       <div className="w-full h-48 bg-gradient-to-br from-gaming-darker to-gaming-card flex items-center justify-center">
@@ -235,6 +251,7 @@ const CompanyCouponsPage = () => {
           coupon={selectedCoupon}
           onClose={() => setShowDetailModal(false)}
           onExpire={handleExpireCoupon}
+          onDelete={handleDeleteCoupon}
         />
       )}
     </div>
@@ -248,10 +265,104 @@ const AddCouponModal = ({ onClose, onCouponAdded }) => {
     category: 'Books',
     details: '',
     couponCode: '',
-    image: null
   });
+  const [imageFile, setImageFile] = useState(null);
+  const [imagePreview, setImagePreview] = useState('');
+  const [processedImage, setProcessedImage] = useState(null);
+  const [crop, setCrop] = useState({ x: 0, y: 0 });
+  const [croppedAreaPixels, setCroppedAreaPixels] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+
+  // Create cropped image using canvas
+  const createCroppedImage = useCallback(async (imageSrc, croppedAreaPixels) => {
+    const image = new Image();
+    image.src = imageSrc;
+    
+    return new Promise((resolve) => {
+      image.onload = () => {
+        const canvas = document.createElement('canvas');
+        const ctx = canvas.getContext('2d');
+        
+        // Set canvas to exact final dimensions (16:9 ratio)
+        canvas.width = 1200;
+        canvas.height = 675;
+        
+        // Calculate scale factor between displayed image and original image
+        const scaleX = image.naturalWidth / image.width;
+        const scaleY = image.naturalHeight / image.height;
+        
+        // Map cropped area coordinates to original image dimensions
+        const originalX = croppedAreaPixels.x * scaleX;
+        const originalY = croppedAreaPixels.y * scaleY;
+        const originalWidth = croppedAreaPixels.width * scaleX;
+        const originalHeight = croppedAreaPixels.height * scaleY;
+        
+        // Draw cropped area from original image to final dimensions
+        ctx.drawImage(
+          image,
+          originalX,
+          originalY,
+          originalWidth,
+          originalHeight,
+          0,
+          0,
+          1200,
+          675
+        );
+        
+        // Convert to blob
+        canvas.toBlob((blob) => {
+          resolve(blob);
+        }, 'image/jpeg', 0.8);
+      };
+    });
+  }, []);
+
+  // Handle crop complete
+  const onCropComplete = useCallback((croppedArea, croppedAreaPixels) => {
+    setCroppedAreaPixels(croppedAreaPixels);
+  }, []);
+
+  // Generate processed image when crop changes
+  useEffect(() => {
+    if (imagePreview && croppedAreaPixels) {
+      createCroppedImage(imagePreview, croppedAreaPixels).then((blob) => {
+        setProcessedImage(blob);
+      });
+    }
+  }, [imagePreview, croppedAreaPixels, createCroppedImage]);
+
+  // Handle image upload
+  const handleImageUpload = (e) => {
+    const file = e.target.files[0];
+    if (!file) {
+      return;
+    }
+    
+    // Check file type
+    if (!file.type.startsWith('image/')) {
+      toast.error('Please select an image file');
+      return;
+    }
+    
+    // Check file size (5MB limit)
+    if (file.size > 5 * 1024 * 1024) {
+      toast.error('Image size should be less than 5MB');
+      return;
+    }
+    
+    setImageFile(file);
+    setProcessedImage(null);
+    setCrop({ x: 0, y: 0 });
+    
+    // Create preview
+    const reader = new FileReader();
+    reader.onloadend = () => {
+      setImagePreview(reader.result);
+    };
+    reader.readAsDataURL(file);
+  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -260,11 +371,29 @@ const AddCouponModal = ({ onClose, onCouponAdded }) => {
 
     try {
       const token = localStorage.getItem('companyToken');
-      await axios.post('/api/company/coupons', formData, {
-        headers: { Authorization: `Bearer ${token}` }
+      const formDataToSend = new FormData();
+      formDataToSend.append('couponName', formData.couponName);
+      formDataToSend.append('type', formData.type);
+      formDataToSend.append('category', formData.category);
+      formDataToSend.append('details', formData.details);
+      formDataToSend.append('couponCode', formData.couponCode);
+      
+      if (processedImage) {
+        const processedFile = new File([processedImage], 'cropped-image.jpg', {
+          type: 'image/jpeg'
+        });
+        formDataToSend.append('image', processedFile);
+      }
+
+      await axios.post('/api/company/coupons', formDataToSend, {
+        headers: { 
+          Authorization: `Bearer ${token}`,
+          'Content-Type': 'multipart/form-data'
+        }
       });
       onCouponAdded();
       onClose();
+      toast.success('Coupon created successfully!');
     } catch (error) {
       setError(error.response?.data?.message || 'Failed to create coupon');
     } finally {
@@ -361,6 +490,59 @@ const AddCouponModal = ({ onClose, onCouponAdded }) => {
             />
           </div>
 
+          {/* Image Upload Section */}
+          <div>
+            <label className="block text-sm font-medium mb-2">Coupon Image (Optional)</label>
+            {!imagePreview ? (
+              <div className="relative">
+                <input
+                  type="file"
+                  accept="image/*"
+                  onChange={handleImageUpload}
+                  className="hidden"
+                  id="couponImageUpload"
+                />
+                <label
+                  htmlFor="couponImageUpload"
+                  className="flex flex-col items-center justify-center w-full h-48 border-2 border-dashed border-gaming-border rounded-lg cursor-pointer hover:border-neon-purple transition-all duration-200 bg-gaming-darker"
+                >
+                  <Upload size={32} className="text-gray-400 mb-2" />
+                  <span className="text-gray-400 text-sm">Click to upload image</span>
+                  <span className="text-gray-500 text-xs mt-1">Optional - Max 5MB</span>
+                </label>
+              </div>
+            ) : (
+              <div className="space-y-4">
+                <div className="relative h-64 bg-gaming-darker rounded-lg overflow-hidden">
+                  <Cropper
+                    image={imagePreview}
+                    crop={crop}
+                    onCropChange={setCrop}
+                    onCropComplete={onCropComplete}
+                    aspect={16 / 9}
+                    cropShape="rect"
+                    showGrid={false}
+                    style={{ containerStyle: { height: '100%' } }}
+                  />
+                </div>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setImageFile(null);
+                    setImagePreview('');
+                    setProcessedImage(null);
+                    setCrop({ x: 0, y: 0 });
+                    setCroppedAreaPixels(null);
+                  }}
+                  className="flex items-center space-x-2 px-4 py-2 bg-red-600 hover:bg-red-600 hover:bg-opacity-80 border border-red-600 rounded-lg transition-all duration-200"
+                >
+                  <X size={16} />
+                  <span>Remove Image</span>
+                </button>
+              </div>
+            )}
+          </div>
+
           <div className="flex space-x-4 pt-4">
             <button
               type="button"
@@ -383,7 +565,7 @@ const AddCouponModal = ({ onClose, onCouponAdded }) => {
   );
 };
 
-const CouponDetailModal = ({ coupon, onClose, onExpire }) => {
+const CouponDetailModal = ({ coupon, onClose, onExpire, onDelete }) => {
   const getRarityColor = (type) => {
     const colors = {
       'Basic': 'bg-gray-500',
@@ -411,8 +593,8 @@ const CouponDetailModal = ({ coupon, onClose, onExpire }) => {
         </div>
 
         {/* Image */}
-        {coupon.image ? (
-          <img src={coupon.image} alt={coupon.couponName} className="w-full h-48 object-cover rounded-lg mb-4" />
+        {coupon.imageData ? (
+          <img src={`/api/company/coupons/${coupon._id}/image`} alt={coupon.couponName} className="w-full h-48 object-cover rounded-lg mb-4" />
         ) : (
           <div className="w-full h-48 bg-gradient-to-br from-gaming-darker to-gaming-card rounded-lg mb-4 flex items-center justify-center">
             <ShoppingBag size={48} className="text-gray-600" />
@@ -460,6 +642,19 @@ const CouponDetailModal = ({ coupon, onClose, onExpire }) => {
             Mark as Expired
           </button>
         )}
+
+        <button
+          onClick={() => {
+            if (confirm('Are you sure you want to delete this coupon? This action cannot be undone.')) {
+              onDelete(coupon._id);
+              onClose();
+            }
+          }}
+          className="w-full py-3 mt-3 bg-gray-700 hover:bg-gray-700 hover:bg-opacity-80 border border-gray-600 rounded-lg font-semibold transition-all duration-200 flex items-center justify-center space-x-2"
+        >
+          <Trash2 size={16} />
+          <span>Delete Coupon</span>
+        </button>
       </motion.div>
     </div>
   );

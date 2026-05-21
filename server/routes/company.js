@@ -4,8 +4,17 @@ const Company = require('../models/Company');
 const Coupon = require('../models/Coupon');
 const CouponRedemption = require('../models/CouponRedemption');
 const jwt = require('jsonwebtoken');
+const multer = require('multer');
 
 const router = express.Router();
+
+// Configure multer for image uploads (memory storage for database)
+const upload = multer({
+  storage: multer.memoryStorage(),
+  limits: {
+    fileSize: 5 * 1024 * 1024 // 5MB limit
+  }
+});
 
 // Company middleware for JWT authentication
 const companyAuth = async (req, res, next) => {
@@ -182,10 +191,10 @@ router.get('/dashboard', companyAuth, async (req, res) => {
   try {
     const companyId = req.company._id;
     
-    // Get coupon stats
-    const totalCoupons = await Coupon.countDocuments({ companyId });
-    const activeCoupons = await Coupon.countDocuments({ companyId, isActive: true });
-    const expiredCoupons = await Coupon.countDocuments({ companyId, isActive: false });
+    // Get coupon stats - exclude deleted coupons
+    const totalCoupons = await Coupon.countDocuments({ companyId, isDeleted: false });
+    const activeCoupons = await Coupon.countDocuments({ companyId, isActive: true, isDeleted: false });
+    const expiredCoupons = await Coupon.countDocuments({ companyId, isActive: false, isDeleted: false });
     
     // Get total redemptions
     const totalRedemptions = await CouponRedemption.countDocuments({ companyId });
@@ -236,8 +245,8 @@ router.get('/coupons', companyAuth, async (req, res) => {
     const companyId = req.company._id;
     const { search, status } = req.query;
     
-    // Build filter object
-    let filter = { companyId };
+    // Build filter object - exclude deleted coupons
+    let filter = { companyId, isDeleted: false };
     
     if (status === 'active') {
       filter.isActive = true;
@@ -278,40 +287,47 @@ router.get('/coupons', companyAuth, async (req, res) => {
 // @route   POST /api/company/coupons
 // @desc    Create new coupon
 // @access  Private (Company)
-router.post('/coupons', companyAuth, [
-  body('couponName')
-    .trim()
-    .isLength({ min: 2, max: 100 })
-    .withMessage('Coupon name must be between 2 and 100 characters'),
-  body('type')
-    .isIn(['Basic', 'Smart Save', 'Hot Deal', 'Premium', 'Ultra Premium', 'Ultimate Deal'])
-    .withMessage('Invalid coupon type'),
-  body('category')
-    .isIn(['Books', 'Courses', 'Clothing', 'Sports', 'Food', 'Travel', 'Gaming', 'Electronics', 'Fitness', 'Lifestyle'])
-    .withMessage('Invalid category'),
-  body('details')
-    .trim()
-    .isLength({ min: 10, max: 500 })
-    .withMessage('Details must be between 10 and 500 characters'),
-  body('couponCode')
-    .trim()
-    .isLength({ min: 4, max: 20 })
-    .withMessage('Coupon code must be between 4 and 20 characters')
-], async (req, res) => {
+router.post('/coupons', companyAuth, upload.single('image'), async (req, res) => {
   try {
-    // Check for validation errors
-    const errors = validationResult(req);
-    if (!errors.isEmpty()) {
-      return res.status(400).json({
-        success: false,
-        message: 'Validation failed',
-        errors: errors.array()
-      });
-    }
-
-    const { couponName, type, category, details, couponCode, image } = req.body;
+    const { couponName, type, category, details, couponCode } = req.body;
     const companyId = req.company._id;
     const brandName = req.company.companyName;
+    
+    // Validation
+    if (!couponName || couponName.length < 2 || couponName.length > 100) {
+      return res.status(400).json({
+        success: false,
+        message: 'Coupon name must be between 2 and 100 characters'
+      });
+    }
+    
+    if (!['Basic', 'Smart Save', 'Hot Deal', 'Premium', 'Ultra Premium', 'Ultimate Deal'].includes(type)) {
+      return res.status(400).json({
+        success: false,
+        message: 'Invalid coupon type'
+      });
+    }
+    
+    if (!['Books', 'Courses', 'Clothing', 'Sports', 'Food', 'Travel', 'Gaming', 'Electronics', 'Fitness', 'Lifestyle'].includes(category)) {
+      return res.status(400).json({
+        success: false,
+        message: 'Invalid category'
+      });
+    }
+    
+    if (!details || details.length < 10 || details.length > 500) {
+      return res.status(400).json({
+        success: false,
+        message: 'Details must be between 10 and 500 characters'
+      });
+    }
+    
+    if (!couponCode || couponCode.length < 4 || couponCode.length > 20) {
+      return res.status(400).json({
+        success: false,
+        message: 'Coupon code must be between 4 and 20 characters'
+      });
+    }
     
     // Auto-assign cost based on type
     const costMap = {
@@ -325,6 +341,22 @@ router.post('/coupons', companyAuth, [
     
     const cost = costMap[type] || 2000;
     
+    // Handle image if provided
+    let imageData = null;
+    let imageContentType = null;
+    
+    if (req.file) {
+      imageData = req.file.buffer;
+      imageContentType = req.file.mimetype;
+      console.log('Coupon image received:', {
+        originalname: req.file.originalname,
+        mimetype: req.file.mimetype,
+        size: req.file.size,
+        buffer: 'Yes'
+      });
+      console.log('Image stored successfully, buffer size:', imageData.length);
+    }
+    
     // Create coupon
     const coupon = await Coupon.create({
       companyId,
@@ -335,7 +367,8 @@ router.post('/coupons', companyAuth, [
       details,
       couponCode: couponCode.toUpperCase(),
       brandName,
-      image: image || null,
+      imageData,
+      imageContentType,
       isActive: true
     });
     
@@ -385,6 +418,79 @@ router.put('/coupons/:id/expire', companyAuth, async (req, res) => {
     res.status(500).json({
       success: false,
       message: 'Server error while expiring coupon',
+      error: process.env.NODE_ENV === 'development' ? error.message : undefined
+    });
+  }
+});
+
+// @route   DELETE /api/company/coupons/:id
+// @desc    Delete coupon (soft delete - keeps for redeemed users)
+// @access  Private (Company)
+router.delete('/coupons/:id', companyAuth, async (req, res) => {
+  try {
+    const couponId = req.params.id;
+    const companyId = req.company._id;
+    
+    // Find coupon
+    const coupon = await Coupon.findOne({ _id: couponId, companyId });
+    if (!coupon) {
+      return res.status(404).json({
+        success: false,
+        message: 'Coupon not found'
+      });
+    }
+    
+    // Soft delete - mark as deleted instead of removing
+    // This keeps the coupon for users who have already redeemed it
+    coupon.isDeleted = true;
+    await coupon.save();
+    
+    console.log(`Coupon ${couponId} soft deleted, kept for redeemed users`);
+    
+    res.status(200).json({
+      success: true,
+      message: 'Coupon deleted successfully'
+    });
+  } catch (error) {
+    console.error('Delete coupon error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Server error while deleting coupon',
+      error: process.env.NODE_ENV === 'development' ? error.message : undefined
+    });
+  }
+});
+
+// @route   GET /api/company/coupons/:id/image
+// @desc    Get coupon image
+// @access  Public
+router.get('/coupons/:id/image', async (req, res) => {
+  try {
+    const coupon = await Coupon.findById(req.params.id);
+    if (!coupon) {
+      return res.status(404).json({
+        success: false,
+        message: 'Coupon not found'
+      });
+    }
+
+    // Handle database storage
+    if (coupon.imageData && coupon.imageContentType) {
+      res.set('Content-Type', coupon.imageContentType);
+      res.send(coupon.imageData);
+    }
+    // No image found
+    else {
+      return res.status(404).json({
+        success: false,
+        message: 'Coupon has no image'
+      });
+    }
+  } catch (error) {
+    console.error('Get coupon image error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Server error while fetching image',
       error: process.env.NODE_ENV === 'development' ? error.message : undefined
     });
   }

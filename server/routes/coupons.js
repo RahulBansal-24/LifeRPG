@@ -15,8 +15,8 @@ router.get('/', async (req, res) => {
   try {
     const { search, category, status } = req.query;
     
-    // Build filter object
-    let filter = {};
+    // Build filter object - exclude deleted coupons
+    let filter = { isDeleted: false };
     
     if (category) {
       filter.category = category;
@@ -185,7 +185,7 @@ router.post('/:id/redeem', protect, async (req, res) => {
   }
 });
 
-// @route   GET /api/coupons/categories
+// @route   GET /api/coupons/meta/categories
 // @desc    Get all coupon categories
 // @access  Private
 router.get('/meta/categories', async (req, res) => {
@@ -201,6 +201,54 @@ router.get('/meta/categories', async (req, res) => {
     res.status(500).json({
       success: false,
       message: 'Server error while fetching categories',
+      error: process.env.NODE_ENV === 'development' ? error.message : undefined
+    });
+  }
+});
+
+// @route   GET /api/coupons/redeemed
+// @desc    Get user's redeemed coupons (including deleted ones)
+// @access  Private
+router.get('/redeemed', protect, async (req, res) => {
+  try {
+    const userId = req.user._id;
+    
+    // Get all redemptions for this user
+    const redemptions = await CouponRedemption.find({ userId })
+      .populate('couponId')
+      .sort({ createdAt: -1 });
+    
+    // Extract coupon details from redemptions
+    const redeemedCoupons = redemptions.map(redemption => {
+      const coupon = redemption.couponId;
+      return {
+        _id: coupon._id,
+        couponName: coupon.couponName,
+        type: coupon.type,
+        category: coupon.category,
+        cost: coupon.cost,
+        details: coupon.details,
+        couponCode: redemption.couponCode,
+        brandName: coupon.brandName,
+        imageData: coupon.imageData,
+        imageContentType: coupon.imageContentType,
+        isActive: coupon.isActive,
+        isDeleted: coupon.isDeleted || false,
+        redeemedAt: redemption.createdAt,
+        coinsSpent: redemption.coinsSpent
+      };
+    });
+    
+    res.status(200).json({
+      success: true,
+      data: redeemedCoupons,
+      count: redeemedCoupons.length
+    });
+  } catch (error) {
+    console.error('Get redeemed coupons error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Server error while fetching redeemed coupons',
       error: process.env.NODE_ENV === 'development' ? error.message : undefined
     });
   }

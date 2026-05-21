@@ -47,13 +47,21 @@ const couponSchema = new mongoose.Schema({
     required: [true, 'Brand name is required'],
     trim: true
   },
-  image: {
+  imageData: {
+    type: Buffer,
+    default: null
+  },
+  imageContentType: {
     type: String,
     default: null
   },
   isActive: {
     type: Boolean,
     default: true
+  },
+  isDeleted: {
+    type: Boolean,
+    default: false
   },
   redemptionCount: {
     type: Number,
