@@ -6,7 +6,7 @@ import { useCompanyAuth } from '../../context/CompanyAuthContext';
 import { useNavigate } from 'react-router-dom';
 
 const CompanyDashboard = () => {
-  const { company, logout } = useCompanyAuth();
+  const { company, logout, startLogout } = useCompanyAuth();
   const navigate = useNavigate();
   const [stats, setStats] = useState({
     totalCoupons: 0,
@@ -36,8 +36,12 @@ const CompanyDashboard = () => {
   };
 
   const handleLogout = () => {
+    // Set logout flag to prevent CompanyProtectedRoute redirect
+    startLogout();
+    // Clear auth state immediately
     logout();
-    navigate('/enterprise/login');
+    // Navigate to landing page
+    window.location.href = '/';
   };
 
   return (

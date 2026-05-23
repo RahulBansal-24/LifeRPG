@@ -19,6 +19,7 @@ const initialState = {
   isAuthenticated: false,
   isLoading: false,
   error: null,
+  isLoggingOut: false,
 };
 
 // Action types
@@ -26,6 +27,7 @@ const AUTH_ACTIONS = {
   LOGIN_START: 'LOGIN_START',
   LOGIN_SUCCESS: 'LOGIN_SUCCESS',
   LOGIN_FAILURE: 'LOGIN_FAILURE',
+  LOGOUT_START: 'LOGOUT_START',
   LOGOUT: 'LOGOUT',
   SIGNUP_START: 'SIGNUP_START',
   SIGNUP_SUCCESS: 'SIGNUP_SUCCESS',
@@ -81,6 +83,12 @@ const authReducer = (state, action) => {
         error: action.payload,
       };
 
+    case AUTH_ACTIONS.LOGOUT_START:
+      return {
+        ...state,
+        isLoggingOut: true,
+      };
+
     case AUTH_ACTIONS.LOGOUT:
       return {
         ...state,
@@ -89,6 +97,7 @@ const authReducer = (state, action) => {
         isAuthenticated: false,
         isLoading: false,
         error: null,
+        isLoggingOut: false,
       };
 
     case AUTH_ACTIONS.UPDATE_USER:
@@ -262,6 +271,11 @@ export const AuthProvider = ({ children }) => {
     toast.success('Logged out successfully');
   };
 
+  // Start logout function (sets flag to prevent ProtectedRoute redirect)
+  const startLogout = () => {
+    dispatch({ type: AUTH_ACTIONS.LOGOUT_START });
+  };
+
   // Delete account function
   const deleteAccount = async () => {
     try {
@@ -297,6 +311,7 @@ export const AuthProvider = ({ children }) => {
     login,
     signup,
     logout,
+    startLogout,
     deleteAccount,
     updateUser,
     clearError,

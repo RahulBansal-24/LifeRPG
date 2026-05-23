@@ -15,6 +15,7 @@ export const CompanyAuthProvider = ({ children }) => {
   const [company, setCompany] = useState(null);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
+  const [isLoggingOut, setIsLoggingOut] = useState(false);
 
   useEffect(() => {
     checkAuth();
@@ -48,10 +49,15 @@ export const CompanyAuthProvider = ({ children }) => {
     localStorage.removeItem('companyData');
     setCompany(null);
     setIsAuthenticated(false);
+    setIsLoggingOut(false);
+  };
+
+  const startLogout = () => {
+    setIsLoggingOut(true);
   };
 
   return (
-    <CompanyAuthContext.Provider value={{ company, isAuthenticated, isLoading, login, logout }}>
+    <CompanyAuthContext.Provider value={{ company, isAuthenticated, isLoading, isLoggingOut, login, logout, startLogout }}>
       {children}
     </CompanyAuthContext.Provider>
   );

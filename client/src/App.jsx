@@ -51,9 +51,9 @@ const pageTransition = {
 
 // Protected Route Component
 const ProtectedRoute = ({ children }) => {
-  const { isAuthenticated, isLoading, user } = useAuth();
+  const { isAuthenticated, isLoading, user, isLoggingOut } = useAuth();
 
-  console.log('ProtectedRoute - Auth state:', { isAuthenticated, isLoading, user });
+  console.log('ProtectedRoute - Auth state:', { isAuthenticated, isLoading, user, isLoggingOut });
 
   if (isLoading) {
     return (
@@ -63,12 +63,12 @@ const ProtectedRoute = ({ children }) => {
     );
   }
 
-  if (!isAuthenticated) {
+  if (!isAuthenticated && !isLoggingOut) {
     console.log('ProtectedRoute - Redirecting to login, user not authenticated');
     return <Navigate to="/login" replace />;
   }
 
-  console.log('ProtectedRoute - User authenticated, rendering children');
+  console.log('ProtectedRoute - User authenticated or logging out, rendering children');
   return children;
 };
 
@@ -112,7 +112,7 @@ const CompanyPublicRoute = ({ children }) => {
 
 // Company Protected Route Component (redirect if not authenticated)
 const CompanyProtectedRoute = ({ children }) => {
-  const { isAuthenticated, isLoading } = useCompanyAuth();
+  const { isAuthenticated, isLoading, isLoggingOut } = useCompanyAuth();
 
   if (isLoading) {
     return (
@@ -122,7 +122,7 @@ const CompanyProtectedRoute = ({ children }) => {
     );
   }
 
-  if (!isAuthenticated) {
+  if (!isAuthenticated && !isLoggingOut) {
     return <Navigate to="/enterprise/login" replace />;
   }
 

@@ -21,14 +21,18 @@ import {
 import { playSound } from '../utils/sounds';
 
 const Navbar = () => {
-  const { user, isAuthenticated, logout } = useAuth();
+  const { user, isAuthenticated, logout, startLogout } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
   const handleLogout = () => {
+    // Set logout flag to prevent ProtectedRoute redirect
+    startLogout();
+    // Clear auth state immediately
     logout();
-    navigate('/login');
+    // Navigate to landing page
+    window.location.href = '/';
     setIsMobileMenuOpen(false);
   };
 
