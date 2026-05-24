@@ -6,7 +6,7 @@ import { useAuth } from '../context/AuthContext';
 import toast from 'react-hot-toast';
 
 const MarketplacePage = () => {
-  const { user } = useAuth();
+  const { user, updateUser } = useAuth();
   const [coupons, setCoupons] = useState([]);
   const [filteredCoupons, setFilteredCoupons] = useState([]);
   const [searchTerm, setSearchTerm] = useState('');
@@ -19,11 +19,13 @@ const MarketplacePage = () => {
   const [tempSearchTerm, setTempSearchTerm] = useState('');
   const [tempCategory, setTempCategory] = useState('All');
   const [tempStatus, setTempStatus] = useState('All');
+  const [redeemedCoupons, setRedeemedCoupons] = useState([]);
 
   const categories = ['All', 'Books', 'Courses', 'Clothing', 'Sports', 'Food', 'Travel', 'Gaming', 'Electronics', 'Fitness', 'Lifestyle'];
 
   useEffect(() => {
     fetchCoupons();
+    fetchRedeemedCoupons();
   }, []);
 
   useEffect(() => {
@@ -38,6 +40,18 @@ const MarketplacePage = () => {
     } catch (error) {
       console.error('Error fetching coupons:', error);
       setLoading(false);
+    }
+  };
+
+  const fetchRedeemedCoupons = async () => {
+    try {
+      const token = localStorage.getItem('token');
+      const response = await axios.get('/api/coupons/redeemed', {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      setRedeemedCoupons(response.data.data || []);
+    } catch (error) {
+      console.error('Error fetching redeemed coupons:', error);
     }
   };
 
@@ -292,32 +306,67 @@ const MarketplacePage = () => {
         <CouponDetailModal
           coupon={selectedCoupon}
           user={user}
+          redeemedCoupons={redeemedCoupons}
           onClose={() => setShowDetailModal(false)}
-          onRedeem={fetchCoupons}
+          onRedeem={() => {
+            fetchCoupons();
+            fetchRedeemedCoupons();
+          }}
         />
       )}
     </div>
   );
 };
 
-const CouponDetailModal = ({ coupon, user, onClose, onRedeem }) => {
+const CouponDetailModal = ({ coupon, user, redeemedCoupons, onClose, onRedeem }) => {
   const [redeeming, setRedeeming] = useState(false);
   const [redeemed, setRedeemed] = useState(false);
   const [couponCode, setCouponCode] = useState('');
   const [copied, setCopied] = useState(false);
+  const { updateUser } = useAuth();
+  const [currentUser, setCurrentUser] = useState(user);
+
+  // Update local user state when prop changes
+  useEffect(() => {
+    setCurrentUser(user);
+  }, [user]);
+
+  // Check if coupon is already redeemed when modal opens
+  useEffect(() => {
+    const alreadyRedeemed = redeemedCoupons.find(rc => rc._id === coupon._id);
+    if (alreadyRedeemed) {
+      setRedeemed(true);
+      setCouponCode(alreadyRedeemed.couponCode);
+    }
+  }, [coupon._id, redeemedCoupons]);
 
   const handleRedeem = async () => {
-    if (!user || user.coins < coupon.cost) {
+    if (!currentUser || currentUser.coins < coupon.cost) {
       alert('Insufficient coins!');
       return;
     }
 
     setRedeeming(true);
     try {
-      const response = await axios.post(`/api/coupons/${coupon._id}/redeem`);
+      const token = localStorage.getItem('token');
+      const response = await axios.post(`/api/coupons/${coupon._id}/redeem`, {}, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
       if (response.data.success) {
         setRedeemed(true);
         setCouponCode(response.data.data.couponCode);
+        
+        // Fetch updated user profile to refresh coin balance
+        try {
+          const userResponse = await axios.get('/api/user/profile', {
+            headers: { Authorization: `Bearer ${token}` }
+          });
+          updateUser(userResponse.data.data);
+          setCurrentUser(userResponse.data.data);
+        } catch (error) {
+          console.error('Failed to fetch updated user data:', error);
+        }
+        
         onRedeem();
       }
     } catch (error) {
@@ -326,6 +375,13 @@ const CouponDetailModal = ({ coupon, user, onClose, onRedeem }) => {
     }
     setRedeeming(false);
   };
+
+  // Update local user state when context user changes
+  useEffect(() => {
+    if (user) {
+      // Force re-render when user data changes
+    }
+  }, [user]);
 
   const handleCopyCode = () => {
     navigator.clipboard.writeText(couponCode);
@@ -410,13 +466,13 @@ const CouponDetailModal = ({ coupon, user, onClose, onRedeem }) => {
         ) : (
           <button
             onClick={handleRedeem}
-            disabled={!coupon.isActive || redeeming || !user || user.coins < coupon.cost}
+            disabled={!coupon.isActive || redeeming || !currentUser || currentUser.coins < coupon.cost}
             className={`w-full py-3 rounded-lg font-semibold transition-all duration-200 ${
               !coupon.isActive
                 ? 'bg-gray-600 text-gray-400 cursor-not-allowed'
                 : redeeming
                 ? 'bg-gray-600 text-gray-400 cursor-wait'
-                : !user || user.coins < coupon.cost
+                : !currentUser || currentUser.coins < coupon.cost
                 ? 'bg-red-600 text-gray-300 cursor-not-allowed'
                 : 'bg-neon-purple hover:bg-neon-purple hover:bg-opacity-80 text-white'
             }`}
@@ -425,7 +481,7 @@ const CouponDetailModal = ({ coupon, user, onClose, onRedeem }) => {
               ? 'Expired'
               : redeeming
               ? 'Redeeming...'
-              : !user || user.coins < coupon.cost
+              : !currentUser || currentUser.coins < coupon.cost
               ? `Insufficient Coins (Need ${coupon.cost})`
               : `Redeem for ${coupon.cost} Coins`}
           </button>

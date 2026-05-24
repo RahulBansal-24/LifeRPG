@@ -6,6 +6,7 @@ import { useCompanyAuth } from '../../context/CompanyAuthContext';
 import { useNavigate } from 'react-router-dom';
 import Cropper from 'react-easy-crop';
 import toast from 'react-hot-toast';
+import { playSound } from '../../utils/sounds';
 
 const CompanyCouponsPage = () => {
   const { company } = useCompanyAuth();
@@ -122,7 +123,10 @@ const CompanyCouponsPage = () => {
               </div>
             </div>
             <button
-              onClick={() => navigate('/enterprise/dashboard')}
+              onClick={() => {
+                playSound('click');
+                navigate('/enterprise/dashboard');
+              }}
               className="flex items-center space-x-2 px-4 py-2 text-gray-300 hover:text-white hover:bg-gaming-border rounded-lg transition-all duration-200"
             >
               Dashboard
@@ -136,7 +140,10 @@ const CompanyCouponsPage = () => {
         <div className="flex justify-between items-center mb-8">
           <h2 className="text-3xl font-bold">Coupon Management</h2>
           <button
-            onClick={() => setShowAddModal(true)}
+            onClick={() => {
+              playSound('click');
+              setShowAddModal(true);
+            }}
             className="flex items-center space-x-2 px-6 py-3 bg-neon-purple hover:bg-neon-purple hover:bg-opacity-80 border border-neon-purple rounded-lg transition-all duration-200"
           >
             <Plus size={20} />
@@ -179,7 +186,10 @@ const CompanyCouponsPage = () => {
                 <ShoppingBag size={48} className="mx-auto text-gray-600 mb-4" />
                 <p className="text-gray-400 text-lg">No coupons found</p>
                 <button
-                  onClick={() => setShowAddModal(true)}
+                  onClick={() => {
+                    playSound('click');
+                    setShowAddModal(true);
+                  }}
                   className="mt-4 px-6 py-3 bg-neon-purple hover:bg-neon-purple hover:bg-opacity-80 border border-neon-purple rounded-lg transition-all duration-200"
                 >
                   Create Your First Coupon
@@ -192,6 +202,7 @@ const CompanyCouponsPage = () => {
                   whileHover={{ scale: 1.05, y: -5 }}
                   transition={{ duration: 0.2 }}
                   onClick={() => {
+                    playSound('click');
                     setSelectedCoupon(coupon);
                     setShowDetailModal(true);
                   }}
@@ -394,6 +405,7 @@ const AddCouponModal = ({ onClose, onCouponAdded }) => {
       onCouponAdded();
       onClose();
       toast.success('Coupon created successfully!');
+      playSound('create');
     } catch (error) {
       setError(error.response?.data?.message || 'Failed to create coupon');
     } finally {
@@ -410,7 +422,10 @@ const AddCouponModal = ({ onClose, onCouponAdded }) => {
       >
         <div className="flex justify-between items-center mb-6">
           <h2 className="text-2xl font-bold">Create New Coupon</h2>
-          <button onClick={onClose} className="text-gray-400 hover:text-white">✕</button>
+          <button onClick={() => {
+            playSound('click');
+            onClose();
+          }} className="text-gray-400 hover:text-white">✕</button>
         </div>
 
         {error && (
@@ -528,6 +543,7 @@ const AddCouponModal = ({ onClose, onCouponAdded }) => {
                 <button
                   type="button"
                   onClick={() => {
+                    playSound('click');
                     setImageFile(null);
                     setImagePreview('');
                     setProcessedImage(null);
@@ -546,7 +562,10 @@ const AddCouponModal = ({ onClose, onCouponAdded }) => {
           <div className="flex space-x-4 pt-4">
             <button
               type="button"
-              onClick={onClose}
+              onClick={() => {
+                playSound('click');
+                onClose();
+              }}
               className="flex-1 px-4 py-2 bg-gaming-darker border border-gaming-border rounded-lg hover:bg-gaming-border transition-all duration-200"
             >
               Cancel
@@ -589,7 +608,10 @@ const CouponDetailModal = ({ coupon, onClose, onExpire, onDelete }) => {
           <div className={`px-3 py-1 ${getRarityColor(coupon.type)} text-white text-sm font-semibold rounded-md`}>
             {coupon.type}
           </div>
-          <button onClick={onClose} className="text-gray-400 hover:text-white">✕</button>
+          <button onClick={() => {
+            playSound('click');
+            onClose();
+          }} className="text-gray-400 hover:text-white">✕</button>
         </div>
 
         {/* Image */}
@@ -632,6 +654,7 @@ const CouponDetailModal = ({ coupon, onClose, onExpire, onDelete }) => {
         {coupon.isActive && (
           <button
             onClick={() => {
+              playSound('click');
               if (confirm('Are you sure you want to mark this coupon as expired?')) {
                 onExpire(coupon._id);
                 onClose();
@@ -645,6 +668,7 @@ const CouponDetailModal = ({ coupon, onClose, onExpire, onDelete }) => {
 
         <button
           onClick={() => {
+            playSound('click');
             if (confirm('Are you sure you want to delete this coupon? This action cannot be undone.')) {
               onDelete(coupon._id);
               onClose();

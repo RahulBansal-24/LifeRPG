@@ -4,6 +4,7 @@ import { Building2, ShoppingBag, TrendingUp, Clock, Plus, LogOut } from 'lucide-
 import axios from 'axios';
 import { useCompanyAuth } from '../../context/CompanyAuthContext';
 import { useNavigate } from 'react-router-dom';
+import { playSound } from '../../utils/sounds';
 
 const CompanyDashboard = () => {
   const { company, logout, startLogout } = useCompanyAuth();
@@ -67,14 +68,20 @@ const CompanyDashboard = () => {
             </div>
             <div className="flex items-center space-x-4">
               <button
-                onClick={() => navigate('/enterprise/coupons')}
+                onClick={() => {
+                  playSound('click');
+                  navigate('/enterprise/coupons');
+                }}
                 className="flex items-center space-x-2 px-4 py-2 bg-neon-purple hover:bg-neon-purple hover:bg-opacity-80 border border-neon-purple rounded-lg transition-all duration-200"
               >
                 <ShoppingBag size={18} />
                 <span>Coupons</span>
               </button>
               <button
-                onClick={handleLogout}
+                onClick={() => {
+                  playSound('click');
+                  handleLogout();
+                }}
                 className="flex items-center space-x-2 px-4 py-2 text-gray-300 hover:text-red-400 hover:bg-red-400 hover:bg-opacity-10 rounded-lg transition-all duration-200"
               >
                 <LogOut size={18} />
