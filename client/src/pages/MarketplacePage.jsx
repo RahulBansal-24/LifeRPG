@@ -12,6 +12,7 @@ const MarketplacePage = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('All');
   const [selectedStatus, setSelectedStatus] = useState('All');
+  const [selectedRedemption, setSelectedRedemption] = useState('All');
   const [showFilterModal, setShowFilterModal] = useState(false);
   const [selectedCoupon, setSelectedCoupon] = useState(null);
   const [showDetailModal, setShowDetailModal] = useState(false);
@@ -19,6 +20,7 @@ const MarketplacePage = () => {
   const [tempSearchTerm, setTempSearchTerm] = useState('');
   const [tempCategory, setTempCategory] = useState('All');
   const [tempStatus, setTempStatus] = useState('All');
+  const [tempRedemption, setTempRedemption] = useState('All');
   const [redeemedCoupons, setRedeemedCoupons] = useState([]);
 
   const categories = ['All', 'Books', 'Courses', 'Clothing', 'Sports', 'Food', 'Travel', 'Gaming', 'Electronics', 'Fitness', 'Lifestyle'];
@@ -30,7 +32,7 @@ const MarketplacePage = () => {
 
   useEffect(() => {
     filterCoupons();
-  }, [coupons, searchTerm, selectedCategory, selectedStatus]);
+  }, [coupons, searchTerm, selectedCategory, selectedStatus, selectedRedemption, redeemedCoupons]);
 
   const fetchCoupons = async () => {
     try {
@@ -80,6 +82,13 @@ const MarketplacePage = () => {
       filtered = filtered.filter(coupon => !coupon.isActive);
     }
 
+    // Redemption filter
+    if (selectedRedemption === 'redeemed') {
+      filtered = filtered.filter(coupon => redeemedCoupons.find(rc => rc._id === coupon._id));
+    } else if (selectedRedemption === 'not_redeemed') {
+      filtered = filtered.filter(coupon => !redeemedCoupons.find(rc => rc._id === coupon._id));
+    }
+
     setFilteredCoupons(filtered);
   };
 
@@ -87,6 +96,7 @@ const MarketplacePage = () => {
     setSearchTerm(tempSearchTerm);
     setSelectedCategory(tempCategory);
     setSelectedStatus(tempStatus);
+    setSelectedRedemption(tempRedemption);
     setShowFilterModal(false);
   };
 
@@ -94,9 +104,11 @@ const MarketplacePage = () => {
     setTempSearchTerm('');
     setTempCategory('All');
     setTempStatus('All');
+    setTempRedemption('All');
     setSearchTerm('');
     setSelectedCategory('All');
     setSelectedStatus('All');
+    setSelectedRedemption('All');
     setShowFilterModal(false);
   };
 
@@ -181,6 +193,17 @@ const MarketplacePage = () => {
                 </button>
               </span>
             )}
+            {selectedRedemption !== 'All' && (
+              <span className="px-3 py-1 bg-neon-purple bg-opacity-20 text-neon-purple rounded-full text-sm">
+                Redemption: {selectedRedemption === 'redeemed' ? 'Redeemed' : 'Not Redeemed'}
+                <button
+                  onClick={() => setSelectedRedemption('All')}
+                  className="ml-2 hover:text-white"
+                >
+                  ×
+                </button>
+              </span>
+            )}
           </div>
         )}
 
@@ -199,32 +222,134 @@ const MarketplacePage = () => {
                 <p className="text-gray-500 text-sm mt-2">Try adjusting your search or filters</p>
               </div>
             ) : (
-              filteredCoupons.map((coupon) => (
+              filteredCoupons.map((coupon) => {
+                const isRedeemed = redeemedCoupons.find(rc => rc._id === coupon._id);
+                return (
                 <motion.div
                   key={coupon._id}
                   whileHover={{ scale: 1.05, y: -5 }}
                   transition={{ duration: 0.2 }}
                   onClick={() => handleCouponClick(coupon)}
-                  className="bg-gaming-card border border-gaming-border rounded-xl overflow-hidden cursor-pointer hover:border-neon-purple transition-all duration-200"
+                  className="bg-gaming-card border border-gaming-border rounded-xl overflow-hidden cursor-pointer hover:border-neon-purple transition-all duration-200 relative"
                 >
                   {/* Rarity Badge */}
                   <div className="relative">
-                    <div className={`absolute top-3 left-3 px-2 py-1 ${getRarityColor(coupon.type)} text-white text-xs font-semibold rounded-md`}>
+                    <div className={`absolute top-3 left-3 px-2 py-1 ${getRarityColor(coupon.type)} text-white text-xs font-semibold rounded-md z-10`}>
                       {coupon.type}
                     </div>
-                    <div className="absolute top-3 right-3 flex items-center space-x-1 bg-gaming-darker px-2 py-1 rounded-md">
+                    <div className="absolute top-3 right-3 flex items-center space-x-1 bg-gaming-darker px-2 py-1 rounded-md z-10">
                       <span className="text-yellow-400">🪙</span>
                       <span className="text-yellow-400 font-bold text-sm">{coupon.cost}</span>
                     </div>
-                    
+
                     {/* Image or Placeholder */}
                     {coupon.imageData ? (
-                      <div className="w-full h-48 bg-gray-800 flex items-center justify-center">
+                      <div className="w-full h-48 bg-gray-800 flex items-center justify-center relative">
                         <img src={`/api/company/coupons/${coupon._id}/image`} alt={coupon.couponName} className="w-full h-full object-cover" />
+                        {/* Redeemed Sash */}
+                        {isRedeemed && (
+                          <div className="absolute bottom-0 right-0 pointer-events-none z-10">
+                            <div className="relative w-44 h-8">
+                              {/* Single continuous ribbon */}
+                              <div className="absolute inset-0 rounded-2xl shadow-2xl transform -rotate-45 origin-bottom-right backdrop-blur-xl translate-y-0 translate-x-5">
+                                {/* Layer 1: Uniform bright ruby jelly base - single consistent color */}
+                                <div className="absolute inset-0 rounded-2xl" style={{ background: 'rgba(255, 48, 72, 0.35)' }}></div>
+                                
+                                {/* Layer 2: Uniform ruby tint - luminous color inside gel */}
+                                <div className="absolute inset-0 rounded-2xl" style={{ background: 'rgba(255, 48, 72, 0.18)' }}></div>
+                                
+                                {/* Layer 3: Large swollen glossy highlight - bulbous wet reflection */}
+                                <div className="absolute inset-0 rounded-2xl" style={{ background: 'radial-gradient(ellipse at 25% 15%, rgba(255, 255, 255, 0.28), transparent 60%)' }}></div>
+                                
+                                {/* Layer 4: Soft inflated depth - thick volumetric gel */}
+                                <div className="absolute inset-0 rounded-2xl" style={{ background: 'radial-gradient(ellipse at 75% 85%, rgba(255, 48, 72, 0.12), transparent 65%)' }}></div>
+                                
+                                {/* Layer 5: Curved wet highlight streak - flowing liquid reflection */}
+                                <div className="absolute inset-0 rounded-2xl" style={{ background: 'linear-gradient(50deg, transparent 15%, rgba(255, 179, 188, 0.10) 30%, rgba(255, 255, 255, 0.16) 42%, rgba(255, 179, 188, 0.10) 54%, transparent 85%)' }}></div>
+                                
+                                {/* Layer 6: Internal ruby glow - glowing inside gel material */}
+                                <div className="absolute inset-0 rounded-2xl" style={{ background: 'radial-gradient(circle at 50% 50%, rgba(255, 48, 72, 0.18), transparent 70%)' }}></div>
+                                
+                                {/* Layer 7: Soft edge glow - jelly-filled glowing edges */}
+                                <div className="absolute inset-0 rounded-2xl" style={{ background: 'linear-gradient(to bottom, rgba(255, 255, 255, 0.22), transparent 45%, transparent 55%, rgba(0, 0, 0, 0.02))' }}></div>
+                                
+                                {/* Layer 8: Inner shadow - thick gel depth */}
+                                <div className="absolute inset-0 rounded-2xl" style={{ boxShadow: 'inset 0 3px 6px rgba(0, 0, 0, 0.08), inset 0 -3px 6px rgba(255, 255, 255, 0.08)' }}></div>
+                                
+                                {/* Layer 9: Liquid shimmer - flowing wet internal light */}
+                                <div className="absolute inset-0 rounded-2xl" style={{ background: 'linear-gradient(105deg, transparent 10%, rgba(255, 255, 255, 0.05) 25%, rgba(255, 255, 255, 0.08) 40%, rgba(255, 255, 255, 0.05) 55%, transparent 90%)' }}></div>
+                                
+                                {/* Layer 10: Soft gel border - rounded inflated edges */}
+                                <div className="absolute inset-0 rounded-2xl" style={{ border: '1px solid rgba(255, 255, 255, 0.20)', boxShadow: 'inset 0 1px 3px rgba(255, 255, 255, 0.22), inset 0 -1px 3px rgba(0, 0, 0, 0.02)' }}></div>
+                                
+                                {/* Layer 11: Top highlight line - soft wet glossy */}
+                                <div className="absolute top-0 left-0 w-full h-[1px] bg-gradient-to-r from-transparent via-white/38 to-transparent"></div>
+                                
+                                {/* Layer 12: Bottom shadow line - soft */}
+                                <div className="absolute -bottom-1 left-0 w-full h-[1px] bg-black/08 rounded-b-2xl blur-[0.5px]"></div>
+                                
+                                {/* Text - inside sash, diagonal matching sash */}
+                                <div className="absolute inset-0 flex items-center justify-center">
+                                  <span className="text-white font-bold text-xs tracking-wider uppercase" style={{ textShadow: '0 0 16px rgba(255, 255, 255, 0.92), 0 0 32px rgba(255, 255, 255, 0.72), 0 1px 2px rgba(0, 0, 0, 0.18)' }}>Redeemed</span>
+                                </div>
+                              </div>
+                            </div>
+                          </div>
+                        )}
                       </div>
                     ) : (
-                      <div className="w-full h-48 bg-gradient-to-br from-gaming-darker to-gaming-card flex items-center justify-center">
+                      <div className="w-full h-48 bg-gradient-to-br from-gaming-darker to-gaming-card flex items-center justify-center relative">
                         <ShoppingBag size={48} className="text-gray-600" />
+                        {/* Redeemed Sash */}
+                        {isRedeemed && (
+                          <div className="absolute bottom-0 right-0 pointer-events-none z-10">
+                            <div className="relative w-44 h-8">
+                              {/* Single continuous ribbon */}
+                              <div className="absolute inset-0 rounded-2xl shadow-2xl transform -rotate-45 origin-bottom-right backdrop-blur-xl translate-y-0 translate-x-5">
+                                {/* Layer 1: Uniform bright ruby jelly base - single consistent color */}
+                                <div className="absolute inset-0 rounded-2xl" style={{ background: 'rgba(255, 48, 72, 0.35)' }}></div>
+                                
+                                {/* Layer 2: Uniform ruby tint - luminous color inside gel */}
+                                <div className="absolute inset-0 rounded-2xl" style={{ background: 'rgba(255, 48, 72, 0.18)' }}></div>
+                                
+                                {/* Layer 3: Large swollen glossy highlight - bulbous wet reflection */}
+                                <div className="absolute inset-0 rounded-2xl" style={{ background: 'radial-gradient(ellipse at 25% 15%, rgba(255, 255, 255, 0.28), transparent 60%)' }}></div>
+                                
+                                {/* Layer 4: Soft inflated depth - thick volumetric gel */}
+                                <div className="absolute inset-0 rounded-2xl" style={{ background: 'radial-gradient(ellipse at 75% 85%, rgba(255, 48, 72, 0.12), transparent 65%)' }}></div>
+                                
+                                {/* Layer 5: Curved wet highlight streak - flowing liquid reflection */}
+                                <div className="absolute inset-0 rounded-2xl" style={{ background: 'linear-gradient(50deg, transparent 15%, rgba(255, 179, 188, 0.10) 30%, rgba(255, 255, 255, 0.16) 42%, rgba(255, 179, 188, 0.10) 54%, transparent 85%)' }}></div>
+                                
+                                {/* Layer 6: Internal ruby glow - glowing inside gel material */}
+                                <div className="absolute inset-0 rounded-2xl" style={{ background: 'radial-gradient(circle at 50% 50%, rgba(255, 48, 72, 0.18), transparent 70%)' }}></div>
+                                
+                                {/* Layer 7: Soft edge glow - jelly-filled glowing edges */}
+                                <div className="absolute inset-0 rounded-2xl" style={{ background: 'linear-gradient(to bottom, rgba(255, 255, 255, 0.22), transparent 45%, transparent 55%, rgba(0, 0, 0, 0.02))' }}></div>
+                                
+                                {/* Layer 8: Inner shadow - thick gel depth */}
+                                <div className="absolute inset-0 rounded-2xl" style={{ boxShadow: 'inset 0 3px 6px rgba(0, 0, 0, 0.08), inset 0 -3px 6px rgba(255, 255, 255, 0.08)' }}></div>
+                                
+                                {/* Layer 9: Liquid shimmer - flowing wet internal light */}
+                                <div className="absolute inset-0 rounded-2xl" style={{ background: 'linear-gradient(105deg, transparent 10%, rgba(255, 255, 255, 0.05) 25%, rgba(255, 255, 255, 0.08) 40%, rgba(255, 255, 255, 0.05) 55%, transparent 90%)' }}></div>
+                                
+                                {/* Layer 10: Soft gel border - rounded inflated edges */}
+                                <div className="absolute inset-0 rounded-2xl" style={{ border: '1px solid rgba(255, 255, 255, 0.20)', boxShadow: 'inset 0 1px 3px rgba(255, 255, 255, 0.22), inset 0 -1px 3px rgba(0, 0, 0, 0.02)' }}></div>
+                                
+                                {/* Layer 11: Top highlight line - soft wet glossy */}
+                                <div className="absolute top-0 left-0 w-full h-[1px] bg-gradient-to-r from-transparent via-white/38 to-transparent"></div>
+                                
+                                {/* Layer 12: Bottom shadow line - soft */}
+                                <div className="absolute -bottom-1 left-0 w-full h-[1px] bg-black/08 rounded-b-2xl blur-[0.5px]"></div>
+                                
+                                {/* Text - inside sash, diagonal matching sash */}
+                                <div className="absolute inset-0 flex items-center justify-center">
+                                  <span className="text-white font-bold text-xs tracking-wider uppercase" style={{ textShadow: '0 0 16px rgba(255, 255, 255, 0.92), 0 0 32px rgba(255, 255, 255, 0.72), 0 1px 2px rgba(0, 0, 0, 0.18)' }}>Redeemed</span>
+                                </div>
+                              </div>
+                            </div>
+                          </div>
+                        )}
                       </div>
                     )}
                   </div>
@@ -241,7 +366,8 @@ const MarketplacePage = () => {
                     </div>
                   </div>
                 </motion.div>
-              ))
+                );
+              })
             )}
           </div>
         )}
@@ -280,6 +406,19 @@ const MarketplacePage = () => {
                 <option value="All">All</option>
                 <option value="active">Active</option>
                 <option value="expired">Expired</option>
+              </select>
+            </div>
+
+            <div className="mb-6">
+              <label className="block text-sm font-medium mb-2">Redemption Status</label>
+              <select
+                value={tempRedemption}
+                onChange={(e) => setTempRedemption(e.target.value)}
+                className="w-full px-4 py-2 bg-gaming-darker border border-gaming-border rounded-lg focus:outline-none focus:border-neon-purple text-white"
+              >
+                <option value="All">All</option>
+                <option value="redeemed">Redeemed</option>
+                <option value="not_redeemed">Not Redeemed</option>
               </select>
             </div>
 
@@ -448,7 +587,7 @@ const CouponDetailModal = ({ coupon, user, redeemedCoupons, onClose, onRedeem })
         </div>
 
         {redeemed ? (
-          <div className="bg-green-500 bg-opacity-20 border border-green-500 rounded-lg p-4 mb-4">
+          <div className="bg-gray-500 bg-opacity-20 border border-gray-500 rounded-lg p-4 mb-4">
             <div className="mb-4">
               <h3 className="font-semibold mb-2">Coupon Code</h3>
               <div className="bg-white bg-opacity-10 border-2 border-dashed border-neon-purple rounded-lg p-4 flex items-center justify-between">
