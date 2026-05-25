@@ -145,13 +145,13 @@ const CompanyDashboard = () => {
                   <Building2 className="text-yellow-400" size={32} />
                   <span className="text-3xl font-bold">{stats.totalRedemptions}</span>
                 </div>
-                <p className="text-gray-400">Total Redemptions</p>
+                <p className="text-gray-400">Total Purchases</p>
               </motion.div>
             </div>
 
             {/* Timeline Graph */}
             <div className="bg-gaming-card border border-gaming-border rounded-xl p-6">
-              <h3 className="text-xl font-bold mb-4">Redemption Timeline</h3>
+              <h3 className="text-xl font-bold mb-4">Purchase Timeline</h3>
               {stats.timeline.length > 0 ? (
                 <div className="h-64 flex items-end justify-between space-x-2">
                   {stats.timeline.map((item, index) => (
@@ -173,7 +173,7 @@ const CompanyDashboard = () => {
                 </div>
               ) : (
                 <div className="h-64 flex items-center justify-center text-gray-400">
-                  No redemption data available
+                  No purchase data available
                 </div>
               )}
             </div>

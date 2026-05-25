@@ -636,7 +636,7 @@ const CouponDetailModal = ({ coupon, onClose, onExpire, onDelete }) => {
         </div>
 
         <div className="mb-4">
-          <span className="text-sm text-gray-400">Redemptions: {coupon.redemptionCount}</span>
+          <span className="text-sm text-gray-400">Purchases: {coupon.redemptionCount}</span>
         </div>
 
         <div className="mb-6">

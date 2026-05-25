@@ -195,7 +195,7 @@ const MarketplacePage = () => {
             )}
             {selectedRedemption !== 'All' && (
               <span className="px-3 py-1 bg-neon-purple bg-opacity-20 text-neon-purple rounded-full text-sm">
-                Redemption: {selectedRedemption === 'redeemed' ? 'Redeemed' : 'Not Redeemed'}
+                Purchase: {selectedRedemption === 'redeemed' ? 'Purchased' : 'Not Purchased'}
                 <button
                   onClick={() => setSelectedRedemption('All')}
                   className="ml-2 hover:text-white"
@@ -290,7 +290,7 @@ const MarketplacePage = () => {
                                 
                                 {/* Text - inside sash, diagonal matching sash */}
                                 <div className="absolute inset-0 flex items-center justify-center">
-                                  <span className="text-white font-bold text-xs tracking-wider uppercase" style={{ textShadow: '0 0 16px rgba(255, 255, 255, 0.92), 0 0 32px rgba(255, 255, 255, 0.72), 0 1px 2px rgba(0, 0, 0, 0.18)' }}>Redeemed</span>
+                                  <span className="text-white font-bold text-xs tracking-wider uppercase" style={{ textShadow: '0 0 16px rgba(255, 255, 255, 0.92), 0 0 32px rgba(255, 255, 255, 0.72), 0 1px 2px rgba(0, 0, 0, 0.18)' }}>Purchased</span>
                                 </div>
                               </div>
                             </div>
@@ -344,7 +344,7 @@ const MarketplacePage = () => {
                                 
                                 {/* Text - inside sash, diagonal matching sash */}
                                 <div className="absolute inset-0 flex items-center justify-center">
-                                  <span className="text-white font-bold text-xs tracking-wider uppercase" style={{ textShadow: '0 0 16px rgba(255, 255, 255, 0.92), 0 0 32px rgba(255, 255, 255, 0.72), 0 1px 2px rgba(0, 0, 0, 0.18)' }}>Redeemed</span>
+                                  <span className="text-white font-bold text-xs tracking-wider uppercase" style={{ textShadow: '0 0 16px rgba(255, 255, 255, 0.92), 0 0 32px rgba(255, 255, 255, 0.72), 0 1px 2px rgba(0, 0, 0, 0.18)' }}>Purchased</span>
                                 </div>
                               </div>
                             </div>
@@ -410,15 +410,15 @@ const MarketplacePage = () => {
             </div>
 
             <div className="mb-6">
-              <label className="block text-sm font-medium mb-2">Redemption Status</label>
+              <label className="block text-sm font-medium mb-2">Purchase Status</label>
               <select
                 value={tempRedemption}
                 onChange={(e) => setTempRedemption(e.target.value)}
                 className="w-full px-4 py-2 bg-gaming-darker border border-gaming-border rounded-lg focus:outline-none focus:border-neon-purple text-white"
               >
                 <option value="All">All</option>
-                <option value="redeemed">Redeemed</option>
-                <option value="not_redeemed">Not Redeemed</option>
+                <option value="redeemed">Purchased</option>
+                <option value="not_redeemed">Not Purchased</option>
               </select>
             </div>
 
@@ -619,10 +619,10 @@ const CouponDetailModal = ({ coupon, user, redeemedCoupons, onClose, onRedeem })
             {!coupon.isActive
               ? 'Expired'
               : redeeming
-              ? 'Redeeming...'
+              ? 'Purchasing...'
               : !currentUser || currentUser.coins < coupon.cost
               ? `Insufficient Coins (Need ${coupon.cost})`
-              : `Redeem for ${coupon.cost} Coins`}
+              : `Purchase for ${coupon.cost} Coins`}
           </button>
         )}
       </motion.div>

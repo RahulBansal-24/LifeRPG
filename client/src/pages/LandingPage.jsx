@@ -48,7 +48,7 @@ const LandingPage = () => {
           <p className="text-lg text-gray-400 max-w-3xl mx-auto leading-relaxed">
             LifeRPG transforms productivity and personal growth into an epic adventure. 
             Complete quests, earn XP and coins, build skills, share chronicles, 
-            compete on leaderboards, and redeem exclusive rewards.
+            compete on leaderboards, and purchase exclusive rewards.
           </p>
         </motion.div>
 
@@ -101,7 +101,7 @@ const LandingPage = () => {
                 </div>
                 <div className="flex items-center space-x-3 text-gray-300">
                   <ShoppingBag className="text-neon-purple" size={20} />
-                  <span>Redeem rewards</span>
+                  <span>Purchase rewards</span>
                 </div>
               </div>
 
