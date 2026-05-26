@@ -24,6 +24,7 @@ const MarketplacePage = () => {
   const [tempStatus, setTempStatus] = useState('All');
   const [tempRedemption, setTempRedemption] = useState('All');
   const [redeemedCoupons, setRedeemedCoupons] = useState([]);
+  const [redeemedCouponsLoaded, setRedeemedCouponsLoaded] = useState(false);
 
   const categories = ['All', 'Books', 'Courses', 'Clothing', 'Sports', 'Food', 'Travel', 'Gaming', 'Electronics', 'Fitness', 'Lifestyle'];
 
@@ -54,6 +55,7 @@ const MarketplacePage = () => {
         headers: { Authorization: `Bearer ${token}` }
       });
       setRedeemedCoupons(response.data.data || []);
+      setRedeemedCouponsLoaded(true);
     } catch (error) {
       console.error('Error fetching redeemed coupons:', error);
     }
@@ -362,7 +364,7 @@ const MarketplacePage = () => {
                     <p className="text-sm text-gray-400 mb-2">{coupon.brandName}</p>
                     <div className="flex items-center justify-between">
                       <span className="text-xs text-gray-500">{coupon.category}</span>
-                      {!coupon.isActive && (
+                      {!coupon.isActive && redeemedCouponsLoaded && !redeemedCoupons.find(rc => rc._id === coupon._id) && (
                         <span className="text-xs text-red-400">Expired</span>
                       )}
                     </div>
@@ -619,7 +621,7 @@ const CouponDetailModal = ({ coupon, user, redeemedCoupons, onClose, onRedeem })
                 : 'bg-neon-purple hover:bg-neon-purple hover:bg-opacity-80 text-white'
             }`}
           >
-            {!coupon.isActive
+            {!coupon.isActive && redeemedCouponsLoaded && !redeemed
               ? 'Expired'
               : redeeming
               ? 'Purchasing...'
