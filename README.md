@@ -35,6 +35,26 @@ Turn boring routines into epic quests, track your progress with XP and levels, a
 - 🏆 **Real-time Leaderboard** - Compete with players globally and climb the ranks
 - ⚡ **Tiered Level Boosts** - Strategic stat bonuses based on level ranges (0% to 25%)
 
+### 🏪 Arcane Market System
+- 💰 **LifeRPG Coins Economy** - Earn coins by completing quests and posting chronicles
+- 🛒 **Coupon Marketplace** - Purchase exclusive rewards using earned coins
+- ✨ **Premium Rarity Tiers** - Six rarity levels from Basic to Ultimate Deal with unique visual styling
+- 🎨 **Animated UI System** - Premium glass/jelly effects, rarity animations, and shine sweep effects
+- 🔍 **Advanced Search & Filters** - Filter by category, status, and purchase status
+- 📱 **Interactive Modals** - Detailed coupon views with purchase confirmation
+- 🏷️ **Rarity Badge System** - Custom CSS classes for Ultra Premium (arcane crystal) and Ultimate Deal (legendary gold)
+- 🔄 **Purchase Persistence** - Track purchased coupons and access codes anytime
+
+### 🏢 Enterprise Portal
+- 🏢 **Merchant Authentication** - Separate enterprise login/signup system with company accounts
+- 📊 **Analytics Dashboard** - Real-time stats on coupon performance and customer engagement
+- 🎫 **Coupon Management** - Create, edit, expire, and delete coupons with image uploads
+- 📈 **Purchase Analytics** - Track redemptions, timeline data, and top-performing coupons
+- 🎨 **Fantasy Enterprise UI** - Premium gaming-themed interface for merchants
+- 🔐 **Secure Company Accounts** - JWT-based authentication with company-specific data isolation
+- 📊 **Interactive Graphs** - Multi-line charts for active/expired/purchase trends using Recharts
+- 🎯 **Role-Based Routing** - Separate navigation flows for personal users and enterprises
+
 ### 🎨 User Experience
 - 🌙 **Dark Gaming Theme** - Immersive neon/cyberpunk inspired design
 - ✨ **Smooth Animations** - Beautiful transitions and micro-interactions with Framer Motion
@@ -42,6 +62,10 @@ Turn boring routines into epic quests, track your progress with XP and levels, a
 - 🎯 **Intuitive Interface** - Easy-to-navigate design for all user levels
 - 🧙 **Mage Guide System** - Interactive companion that provides contextual tips and guidance throughout the user journey
 - 🔊 **Immersive Sound System** - Lightweight audio feedback for quest creation, completion, and UI interactions with volume control and mute toggle
+- 💎 **Premium Glass/Jelly UI** - Advanced glassmorphism effects with depth and reflections
+- 🌟 **Rarity Animations** - Dynamic shine sweeps, glows, and premium badge effects
+- 🎨 **Fantasy Aesthetics** - Consistent RPG-themed design across all interfaces
+- 📊 **Dashboard Visualizations** - Animated charts and stats with gaming-inspired styling
 
 ---
 
@@ -83,6 +107,9 @@ export const playSound = (type) => {
 - **Quest Creation** `create.mp3` - New quests, chronicles, successful submissions
 - **Quest Completion** `complete.mp3` - Achievement celebrations, level ups
 - **UI Interactions** `click.mp3` - Navigation, mage toggle, button clicks
+- **Marketplace Actions** `create.mp3` - Coupon purchases, marketplace interactions
+- **Enterprise Actions** `click.mp3` - Dashboard navigation, coupon management
+- **Purchase Success** `complete.mp3` - Successful coupon redemption
 
 #### **Browser Compatibility** 
 - **HTML5 Audio API**: Native browser audio playback
@@ -104,7 +131,119 @@ export const playSound = (type) => {
 
 ---
 
-## 🔒 Authentication & Security
+## � LifeRPG Coins Economy
+
+### 🎮 Coin Earning System
+LifeRPG features a **reward-based coin economy** that incentivizes meaningful gameplay and community engagement:
+
+#### **Coin Acquisition Rules**
+- **Quest Completion + Chronicle Post**: Users earn coins ONLY after completing a quest AND posting a chronicle about it
+- **One-Time Reward**: Coins are awarded once per quest only to prevent farming abuse
+- **No Farming**: Cannot repeatedly earn coins for the same quest
+- **Encourages Sharing**: Rewards users for documenting and sharing their achievements
+
+#### **Coin Usage**
+- **Arcane Market Purchases**: Spend earned coins to purchase exclusive coupons and rewards
+- **Premium Rewards**: Access higher-tier coupons with better value propositions
+- **Real-World Value**: Coupons provide actual discounts and offers from participating merchants
+
+#### **Economy Progression**
+- **Integrated Stats**: Coin balance displayed in navbar for easy access
+- **Gameplay Loop**: Complete quests → Post chronicles → Earn coins → Purchase rewards
+- **Skill Development**: Encourages consistent quest completion and community participation
+- **Merchant Engagement**: Connects users with real businesses through gamified rewards
+
+---
+
+## 🏢 Enterprise Portal
+
+### 🎯 Merchant Authentication System
+LifeRPG provides a **separate enterprise authentication system** for businesses and merchants:
+
+#### **Company Account Features**
+- **Secure Registration**: Company signup with name, email, and custom branding
+- **Independent Sessions**: Separate authentication from personal user accounts
+- **JWT-Based Security**: Token-based authentication with company-specific data isolation
+- **Account Management**: Full CRUD operations for company profiles and settings
+
+#### **Coupon Management System**
+- **Create Coupons**: Design exclusive offers with images, categories, and rarity tiers
+- **Image Uploads**: Advanced WYSIWYG image editor with 16:9 aspect ratio cropping
+- **Rarity Tiers**: Six levels from Basic (2000 coins) to Ultimate Deal (10000 coins)
+- **Category System**: Books, Courses, Clothing, Sports, Food, Travel, Gaming, Electronics, Fitness, Lifestyle
+- **Active/Expired Control**: Mark coupons as expired to disable new purchases
+- **Soft Delete**: Delete coupons while preserving access for users who already purchased them
+
+#### **Purchase Analytics**
+- **Redemption Tracking**: Monitor how many users have purchased each coupon
+- **Timeline Data**: View purchase activity over time with date-based aggregation
+- **Performance Metrics**: Identify top-performing coupons and optimize offerings
+
+---
+
+## 📊 Enterprise Analytics Dashboard
+
+### 🎨 Interactive Analytics System
+The enterprise dashboard features **advanced visualizations** for comprehensive business intelligence:
+
+#### **Real-Time Statistics**
+- **Total Coupons**: Overview of all created coupons
+- **Active/Expired Counts**: Current status of coupon inventory
+- **Total Redemptions**: Aggregate purchase data across all coupons
+- **Recent Activity**: Live feed of recent purchases and engagement
+
+#### **Animated Graphs & Visualizations**
+- **Purchase Timeline**: Area chart showing purchase activity over time with gradient fills
+- **Coupon Analytics**: Multi-line graph comparing active, expired, and purchase trends
+- **Interactive Filters**: Toggle visibility of different data series
+- **Responsive Design**: Charts adapt to different screen sizes and orientations
+
+#### **Performance Metrics**
+- **Top Performing Coupons**: Ranked list of coupons by purchase count
+- **Recent Purchases Feed**: Live updates on customer activity
+- **Date-Based Aggregation**: Daily, monthly, and yearly view options
+- **Recharts Integration**: Professional charting library with smooth animations
+
+#### **Fantasy Enterprise Theme**
+- **Gaming-Inspired UI**: Neon colors, glass effects, and premium aesthetics
+- **Animated Transitions**: Smooth state changes and micro-interactions
+- **Hover Effects**: Interactive elements with scale and glow animations
+- **Premium Visuals**: Consistent with LifeRPG's fantasy RPG theme
+
+---
+
+## 🏠 Landing Page System
+
+### 🎯 Dual-Role Entry Point
+LifeRPG features a **unified landing page** that serves as the entry point for both personal users and enterprise merchants:
+
+#### **Role-Based Navigation**
+- **Personal Realm**: Entry point for individual users seeking gamified productivity
+- **Merchant Portal**: Entry point for businesses wanting to engage with the LifeRPG community
+- **Clear Separation**: Distinct visual design and messaging for each role
+- **Seamless Routing**: Automatic navigation to appropriate authentication flows
+
+#### **Personal Realm Features**
+- **Adventure Theme**: RPG-inspired design with quest and progression highlights
+- **Feature Showcase**: Display of core gameplay features (quests, chronicles, marketplace)
+- **Call-to-Action**: Direct navigation to personal login/signup
+- **Animated Elements**: Smooth transitions and hover effects for engagement
+
+#### **Merchant Portal Features**
+- **Business Theme**: Professional design with analytics and engagement highlights
+- **Value Proposition**: Clear benefits for businesses (customer engagement, analytics)
+- **Feature Showcase**: Display of enterprise capabilities (coupon management, analytics)
+- **Call-to-Action**: Direct navigation to enterprise login/signup
+
+#### **Unified Branding**
+- **Consistent Aesthetics**: LifeRPG's fantasy theme maintained across both interfaces
+- **Shared Design Language**: Common color palette, typography, and visual elements
+- **Professional Polish**: High-quality animations and transitions
+- **GitHub Showcase Ready**: Premium presentation suitable for project portfolios
+
+---
+
+## �🔒 Authentication & Security
 
 ### 📧 Password Recovery System
 LifeRPG includes a comprehensive password recovery feature:
@@ -184,18 +323,38 @@ LifeRPG features an extensive 50-level progression system with unique titles:
 
 ## 🎯 Website Flow & Pages
 
-### 📱 User Journey
+### 🚀 Platform Architecture
+LifeRPG features a **dual-role platform architecture** with separate interfaces for personal users and enterprise merchants:
+
+#### 📱 Personal User Journey
 ```
-🔐 Login/Signup → 🎮 Dashboard → 📋 Quests → 📜 Chronicles → 🏆 Leaderboard
+🏠 Landing Page → 🔐 Login/Signup → 🎮 Dashboard → 📋 Quests → 📜 Chronicles → 💰 Earn Coins → 🏪 Arcane Market → 🛒 Purchase Coupons
+```
+
+#### 🏢 Enterprise Journey
+```
+🏠 Landing Page → 🏢 Enterprise Login/Signup → 📊 Enterprise Dashboard → 🎫 Coupon Management → 📈 Analytics Dashboard
 ```
 
 ### 📄 Page Structure
+
+#### 🎮 Personal Interface
+- **🏠 Landing Page** - Dual-role entry point with Personal Realm and Merchant Portal options
 - **🔐 Authentication Pages** - Login & Signup with avatar selection
-- **🎮 Dashboard** - Main hub with stats, XP, and recent quests
+- **🎮 Dashboard** - Main hub with stats, XP, coins, and recent quests
 - **📋 Quests Page** - Create, manage, and complete quests
 - **📜 Chronicles Page** - Create and view chronicles with image uploads, comments, and likes
+- **🏪 Arcane Market** - Coupon marketplace with search, filters, and purchasing
 - **🏆 Leaderboard** - Global rankings and achievements
 - **👤 Profile** - User stats and settings (coming soon)
+
+#### 🏢 Enterprise Interface
+- **🏠 Landing Page** - Shared entry point with enterprise portal access
+- **🏢 Enterprise Login** - Company-specific authentication
+- **🏢 Enterprise Signup** - Company registration with logo and details
+- **📊 Enterprise Dashboard** - Analytics hub with stats, graphs, and performance metrics
+- **🎫 Coupon Management** - Create, edit, expire, and delete coupons with image uploads
+- **📈 Analytics Dashboard** - Advanced visualizations for purchase tracking and trends
 
 ---
 
@@ -276,6 +435,28 @@ npm run dev
 - `DELETE /api/quests/:id` - 🗑️ Delete quest
 - `POST /api/quests/generate-daily` - 🌅 Generate daily quests
 
+### 🏪 Arcane Market (Coupons)
+- `GET /api/coupons` - 🛒 Get all available coupons
+- `GET /api/coupons/redeemed` - 🎫 Get user's purchased coupons
+- `GET /api/coupons/:id` - 📋 Get single coupon details
+- `POST /api/coupons/:id/redeem` - 💰 Purchase coupon with coins
+- `GET /api/coupons/meta/categories` - 📂 Get available categories
+
+### 🏢 Enterprise Authentication
+- `POST /api/company/signup` - 🏢 Register new company account
+- `POST /api/company/login` - 🔑 Company login
+- `DELETE /api/company/delete` - 🗑️ Delete enterprise account
+
+### 🎫 Enterprise Coupon Management
+- `GET /api/company/coupons` - 📋 Get company's coupons
+- `POST /api/company/coupons` - ➕ Create new coupon with image
+- `PUT /api/company/coupons/:id/expire` - ⏰ Mark coupon as expired
+- `DELETE /api/company/coupons/:id` - 🗑️ Delete coupon (soft delete)
+- `GET /api/company/coupons/:id/image` - 🖼️ Get coupon image
+
+### 📊 Enterprise Analytics
+- `GET /api/company/dashboard` - 📈 Get dashboard stats and analytics
+
 ### 📜 Chronicles System
 LifeRPG features a complete chronicles system for sharing achievements and experiences:
 
@@ -338,8 +519,17 @@ LifeRPG/
 │   │   └── sounds/         # Audio files for immersive feedback
 │   ├── 📁 src/
 │   │   ├── 📁 components/      # Reusable UI components
-│   │   ├── 📁 context/         # React Context (Auth, Mage)
+│   │   ├── 📁 context/         # React Context (Auth, Mage, CompanyAuth)
 │   │   ├── 📁 pages/           # Page components
+│   │   │   ├── 📁 enterprise/  # Enterprise portal pages
+│   │   │   │   ├── CompanyDashboard.jsx
+│   │   │   │   ├── CompanyCouponsPage.jsx
+│   │   │   │   ├── CompanyLoginPage.jsx
+│   │   │   │   └── CompanySignupPage.jsx
+│   │   │   ├── LandingPage.jsx
+│   │   │   ├── MarketplacePage.jsx
+│   │   │   ├── MarketplacePage.css
+│   │   │   └── ...
 │   │   ├── 📁 services/        # API services
 │   │   ├── 📁 utils/           # Helper functions (sounds, formatting)
 │   │   ├── 📄 App.jsx          # Main App component
@@ -349,8 +539,20 @@ LifeRPG/
 │   └── 📄 tailwind.config.js   # Tailwind CSS config
 ├── 📁 server/                  # Node.js Backend API
 │   ├── 📁 middleware/          # Express middleware
-│   ├── 📁 models/              # MongoDB models (User, Quest, Post)
+│   ├── 📁 models/              # MongoDB models
+│   │   ├── User.js
+│   │   ├── Quest.js
+│   │   ├── Post.js
+│   │   ├── Company.js
+│   │   ├── Coupon.js
+│   │   └── CouponRedemption.js
 │   ├── 📁 routes/              # API routes
+│   │   ├── auth.js
+│   │   ├── user.js
+│   │   ├── quests.js
+│   │   ├── posts.js
+│   │   ├── company.js
+│   │   └── coupons.js
 │   ├── 📁 utils/              # Utility functions
 │   ├── 📄 .env                 # Environment variables
 │   ├── 📄 .env.example         # Environment template
@@ -366,14 +568,28 @@ LifeRPG/
 
 ## 🎮 How to Play
 
-1. **🔐 Create Account** - Sign up with username, email, and choose your avatar
-2. **📧 Password Recovery** - Use forgot password feature if you lose access to your account
-3. **📊 Set Your Goals** - Create quests for daily tasks and main objectives with skill rewards
-4. **⚔️ Complete Quests** - Mark tasks as complete to earn XP, stat points, and stars
-5. **📈 Level Up** - Progress through 50 levels from Novice to Godlike with tiered stat boosts
-6. **🏆 Climb Leaderboard** - Compete with players worldwide using your accumulated XP
-7. **🔄 Daily Routine** - Generate new daily quests each day to build consistent habits
-8. **💪 Master Skills** - Develop your character stats to 100,000 with strategic level bonuses
+### 📱 Personal User Journey
+1. **🏠 Choose Your Path** - Select Personal Realm on the landing page
+2. **🔐 Create Account** - Sign up with username, email, and choose your avatar
+3. **📧 Password Recovery** - Use forgot password feature if you lose access to your account
+4. **📊 Set Your Goals** - Create quests for daily tasks and main objectives with skill rewards
+5. **⚔️ Complete Quests** - Mark tasks as complete to earn XP, stat points, and stars
+6. **📜 Post Chronicles** - Share your achievements with the community to earn LifeRPG coins
+7. **💰 Earn Coins** - Receive coins for each quest completion + chronicle post (one-time per quest)
+8. **🏪 Visit Arcane Market** - Browse exclusive coupons and rewards from participating merchants
+9. **🛒 Purchase Coupons** - Spend your earned coins to unlock real-world discounts and offers
+10. **📈 Level Up** - Progress through 50 levels from Novice to Godlike with tiered stat boosts
+11. **🏆 Climb Leaderboard** - Compete with players worldwide using your accumulated XP
+12. **🔄 Daily Routine** - Generate new daily quests each day to build consistent habits
+13. **💪 Master Skills** - Develop your character stats to 100,000 with strategic level bonuses
+
+### 🏢 Enterprise Journey
+1. **🏠 Choose Your Path** - Select Merchant Portal on the landing page
+2. **🏢 Create Company Account** - Register your business with company details and branding
+3. **🎫 Create Coupons** - Design exclusive offers with images, categories, and rarity tiers
+4. **📊 Monitor Analytics** - Track coupon performance, purchases, and customer engagement
+5. **🎯 Optimize Strategy** - Use data insights to improve your coupon offerings
+6. **📈 Grow Your Business** - Engage with the LifeRPG community to drive customer acquisition
 
 ---
 
@@ -383,6 +599,7 @@ LifeRPG/
 - 📚 Study motivation and progress tracking
 - 🎯 Assignment completion gamification
 - 📊 Learning habit formation
+- 🎓 Course platforms offering student discounts
 
 ### 💼 Professional Development
 - 💪 Skill acquisition tracking
@@ -394,10 +611,20 @@ LifeRPG/
 - 🧘‍♀️ Mindfulness and meditation practice
 - 📚 Reading and learning goals
 
+### 🏢 Enterprise & Business
+- 🏪 Local businesses offering customer rewards
+- 🏋️ Gyms and fitness centers with membership incentives
+- 🧘 Yoga studios and wellness centers
+- 📚 Educational platforms and course providers
+- 🛍️ E-commerce merchants and online stores
+- 🎭 Entertainment venues and event organizers
+- 🍕 Restaurants and food delivery services
+
 ### 👥 Social Features
 - 🏆 Friendly competition with friends
 - 👥 Team challenges and collaboration
 - 📊 Community achievements
+- 🤝 Community-driven coupon discovery
 
 ---
 
@@ -412,16 +639,26 @@ LifeRPG/
 - 🤖 Smart quest suggestions
 - 📊 Personalized recommendations
 - 🎯 Adaptive difficulty system
+- 🎯 AI-driven coupon recommendations
 
 ### 🌐 Social Features
 - 👥 Guilds and team quests
 - 💬 Chat and messaging
 - 🎪 Events and competitions
+- 🏰 Guild marketplaces and group rewards
 
 ### 🔗 Integrations
 - 📅 Calendar integration
 - 📊 Analytics dashboard
 - 🔗 Third-party app connections
+
+### 🏪 Marketplace Enhancements
+- 🎯 Achievement-based rewards
+- 📊 Real-time analytics for enterprises
+- 🎪 Enterprise campaigns and promotions
+- 🔮 Smart marketplace recommendations
+- 🌐 Multi-currency support
+- 📦 Wishlist and notification system
 
 ---
 
