@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { questAPI, userAPI, postAPI } from '../services/api';
 import XPBar from '../components/XPBar';
@@ -22,6 +23,7 @@ import toast from 'react-hot-toast';
 
 const DashboardPage = () => {
   const { user, updateUser, deleteAccount } = useAuth();
+  const navigate = useNavigate();
   const [recentQuests, setRecentQuests] = useState([]);
   const [stats, setStats] = useState({
     totalQuests: 0,
@@ -334,7 +336,7 @@ const DashboardPage = () => {
               <span>Recent Quests</span>
             </h3>
             <button
-              onClick={() => window.location.href = '/quests'}
+              onClick={() => navigate('/quests')}
               className="text-neon-pink hover:text-neon-purple transition-colors duration-200 text-sm font-semibold"
             >
               View All →

@@ -1,9 +1,11 @@
 import React, { useState, useEffect } from 'react';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import { Search, Filter, ShoppingBag, RefreshCw, Copy, Check } from 'lucide-react';
 import axios from 'axios';
 import { useAuth } from '../context/AuthContext';
 import toast from 'react-hot-toast';
+import { playSound } from '../utils/sounds';
+import './MarketplacePage.css';
 
 const MarketplacePage = () => {
   const { user, updateUser } = useAuth();
@@ -123,8 +125,8 @@ const MarketplacePage = () => {
       'Smart Save': 'bg-blue-500',
       'Hot Deal': 'bg-orange-500',
       'Premium': 'bg-purple-500',
-      'Ultra Premium': 'bg-pink-500',
-      'Ultimate Deal': 'bg-yellow-500'
+      'Ultra Premium': 'ultra-premium-tag',
+      'Ultimate Deal': 'ultimate-deal-tag'
     };
     return colors[type] || 'bg-gray-500';
   };
@@ -492,6 +494,7 @@ const CouponDetailModal = ({ coupon, user, redeemedCoupons, onClose, onRedeem })
         headers: { Authorization: `Bearer ${token}` }
       });
       if (response.data.success) {
+        playSound('complete');
         setRedeemed(true);
         setCouponCode(response.data.data.couponCode);
         
@@ -535,8 +538,8 @@ const CouponDetailModal = ({ coupon, user, redeemedCoupons, onClose, onRedeem })
       'Smart Save': 'bg-blue-500',
       'Hot Deal': 'bg-orange-500',
       'Premium': 'bg-purple-500',
-      'Ultra Premium': 'bg-pink-500',
-      'Ultimate Deal': 'bg-yellow-500'
+      'Ultra Premium': 'ultra-premium-tag',
+      'Ultimate Deal': 'ultimate-deal-tag'
     };
     return colors[type] || 'bg-gray-500';
   };

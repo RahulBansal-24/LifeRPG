@@ -148,7 +148,7 @@ const LandingPage = () => {
                 </div>
                 <div className="flex items-center space-x-3 text-gray-300">
                   <TrendingUp className="text-neon-pink" size={20} />
-                  <span>Track redemptions</span>
+                  <span>Track purchases</span>
                 </div>
                 <div className="flex items-center space-x-3 text-gray-300">
                   <Building2 className="text-neon-pink" size={20} />

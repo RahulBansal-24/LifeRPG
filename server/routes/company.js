@@ -214,6 +214,152 @@ router.get('/dashboard', companyAuth, async (req, res) => {
       { $limit: 30 }
     ]);
     
+    // Get top performing coupons (sorted by purchase count)
+    const topCoupons = await Coupon.aggregate([
+      { $match: { companyId, isDeleted: false } },
+      {
+        $lookup: {
+          from: 'couponredemptions',
+          localField: '_id',
+          foreignField: 'couponId',
+          as: 'redemptions'
+        }
+      },
+      {
+        $addFields: {
+          purchaseCount: { $size: '$redemptions' },
+          isActive: '$isActive'
+        }
+      },
+      { $sort: { purchaseCount: -1 } },
+      { $limit: 5 },
+      {
+        $project: {
+          _id: 1,
+          couponName: 1,
+          category: 1,
+          purchaseCount: 1,
+          isActive: 1
+        }
+      }
+    ]);
+    
+    // Get recent purchases
+    const recentPurchases = await CouponRedemption.aggregate([
+      { $match: { companyId } },
+      {
+        $lookup: {
+          from: 'coupons',
+          localField: 'couponId',
+          foreignField: '_id',
+          as: 'coupon'
+        }
+      },
+      { $unwind: '$coupon' },
+      {
+        $project: {
+          _id: 1,
+          couponName: '$coupon.couponName',
+          createdAt: 1
+        }
+      },
+      { $sort: { createdAt: -1 } },
+      { $limit: 10 }
+    ]);
+    
+    // Format recent purchases with timestamps
+    const formattedRecentPurchases = recentPurchases.map(purchase => ({
+      _id: purchase._id,
+      couponName: purchase.couponName,
+      timestamp: formatTimestamp(purchase.createdAt)
+    }));
+    
+    // Get all dates from purchases (for the timeline)
+    const purchaseDates = await CouponRedemption.aggregate([
+      { $match: { companyId } },
+      {
+        $group: {
+          _id: {
+            $dateToString: { format: '%Y-%m-%d', date: '$createdAt' }
+          },
+          purchases: { $sum: 1 }
+        }
+      },
+      { $sort: { _id: 1 } },
+      { $limit: 30 }
+    ]);
+    
+    // Get all coupon creation dates
+    const couponCreationDates = await Coupon.aggregate([
+      { $match: { companyId, isDeleted: false } },
+      {
+        $group: {
+          _id: {
+            $dateToString: { format: '%Y-%m-%d', date: '$createdAt' }
+          }
+        }
+      },
+      { $sort: { _id: 1 } },
+      { $limit: 30 }
+    ]);
+    
+    // Get all coupons with their current status
+    const allCoupons = await Coupon.find({ companyId, isDeleted: false })
+      .select('createdAt isActive')
+      .lean();
+    
+    // Combine all unique dates from purchases and coupon creation
+    const allDatesSet = new Set();
+    purchaseDates.forEach(pd => allDatesSet.add(pd._id));
+    couponCreationDates.forEach(cd => allDatesSet.add(cd._id));
+    
+    // Always include today's date if there are coupons
+    if (allCoupons.length > 0) {
+      const today = new Date().toISOString().split('T')[0];
+      allDatesSet.add(today);
+    }
+    
+    const allDates = Array.from(allDatesSet).sort();
+    
+    // Build time-series data for each date
+    const couponAnalytics = [];
+    for (const date of allDates) {
+      const dateObj = new Date(date);
+      const dateEndOfDay = new Date(date);
+      dateEndOfDay.setHours(23, 59, 59, 999);
+      
+      // Calculate active/expired counts on this date
+      let activeCount = 0;
+      let expiredCount = 0;
+      let purchasesCount = 0;
+      
+      // Find purchases for this date
+      const purchaseData = purchaseDates.find(pd => pd._id === date);
+      if (purchaseData) {
+        purchasesCount = purchaseData.purchases;
+      }
+      
+      for (const coupon of allCoupons) {
+        const createdDate = new Date(coupon.createdAt);
+        
+        if (createdDate <= dateEndOfDay) {
+          // Coupon existed on or before this date
+          if (coupon.isActive) {
+            activeCount++;
+          } else {
+            expiredCount++;
+          }
+        }
+      }
+      
+      couponAnalytics.push({
+        date: date,
+        active: activeCount,
+        expired: expiredCount,
+        purchases: purchasesCount
+      });
+    }
+    
     res.status(200).json({
       success: true,
       data: {
@@ -224,7 +370,10 @@ router.get('/dashboard', companyAuth, async (req, res) => {
         timeline: redemptionsByDate.map(item => ({
           date: item._id,
           count: item.count
-        }))
+        })),
+        topCoupons,
+        recentPurchases: formattedRecentPurchases,
+        couponAnalytics
       }
     });
   } catch (error) {
@@ -236,6 +385,21 @@ router.get('/dashboard', companyAuth, async (req, res) => {
     });
   }
 });
+
+// Helper function to format timestamp
+function formatTimestamp(date) {
+  const now = new Date();
+  const diff = now - new Date(date);
+  const minutes = Math.floor(diff / 60000);
+  const hours = Math.floor(diff / 3600000);
+  const days = Math.floor(diff / 86400000);
+  
+  if (minutes < 1) return 'Just now';
+  if (minutes < 60) return `${minutes} minute${minutes > 1 ? 's' : ''} ago`;
+  if (hours < 24) return `${hours} hour${hours > 1 ? 's' : ''} ago`;
+  if (days < 7) return `${days} day${days > 1 ? 's' : ''} ago`;
+  return new Date(date).toLocaleDateString();
+}
 
 // @route   GET /api/company/coupons
 // @desc    Get all coupons for company
@@ -456,6 +620,47 @@ router.delete('/coupons/:id', companyAuth, async (req, res) => {
     res.status(500).json({
       success: false,
       message: 'Server error while deleting coupon',
+      error: process.env.NODE_ENV === 'development' ? error.message : undefined
+    });
+  }
+});
+
+// @route   DELETE /api/company/delete
+// @desc    Delete company account and all data (except purchased coupons)
+// @access  Private (Company)
+router.delete('/delete', companyAuth, async (req, res) => {
+  try {
+    const companyId = req.company._id;
+    
+    // Find all coupons for this company
+    const coupons = await Coupon.find({ companyId });
+    
+    // For each coupon, check if it has been purchased
+    for (const coupon of coupons) {
+      const redemptionCount = await CouponRedemption.countDocuments({ couponId: coupon._id });
+      
+      if (redemptionCount > 0) {
+        // Coupon has been purchased - soft delete it (mark as deleted but keep for users who purchased it)
+        coupon.isDeleted = true;
+        await coupon.save();
+      } else {
+        // Coupon has never been purchased - hard delete it
+        await Coupon.findByIdAndDelete(coupon._id);
+      }
+    }
+    
+    // Delete the company account
+    await Company.findByIdAndDelete(companyId);
+    
+    res.status(200).json({
+      success: true,
+      message: 'Enterprise account deleted successfully. All data has been removed except purchased coupons which remain accessible to users.'
+    });
+  } catch (error) {
+    console.error('Delete company error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Server error while deleting enterprise account',
       error: process.env.NODE_ENV === 'development' ? error.message : undefined
     });
   }

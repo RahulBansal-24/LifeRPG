@@ -1,5 +1,6 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import axios from 'axios';
+import toast from 'react-hot-toast';
 
 const CompanyAuthContext = createContext();
 
@@ -56,8 +57,28 @@ export const CompanyAuthProvider = ({ children }) => {
     setIsLoggingOut(true);
   };
 
+  const deleteAccount = async () => {
+    try {
+      const token = localStorage.getItem('companyToken');
+      await axios.delete('/api/company/delete', {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      localStorage.removeItem('companyToken');
+      localStorage.removeItem('companyData');
+      setCompany(null);
+      setIsAuthenticated(false);
+      setIsLoggingOut(false);
+      toast.success('Enterprise account deleted successfully. All your data has been removed.');
+      return { success: true };
+    } catch (error) {
+      const errorMessage = error.response?.data?.message || 'Failed to delete account';
+      toast.error(errorMessage);
+      return { success: false, error: errorMessage };
+    }
+  };
+
   return (
-    <CompanyAuthContext.Provider value={{ company, isAuthenticated, isLoading, isLoggingOut, login, logout, startLogout }}>
+    <CompanyAuthContext.Provider value={{ company, isAuthenticated, isLoading, isLoggingOut, login, logout, startLogout, deleteAccount }}>
       {children}
     </CompanyAuthContext.Provider>
   );

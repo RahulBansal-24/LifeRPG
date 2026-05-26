@@ -7,6 +7,7 @@ import { useNavigate } from 'react-router-dom';
 import Cropper from 'react-easy-crop';
 import toast from 'react-hot-toast';
 import { playSound } from '../../utils/sounds';
+import '../MarketplacePage.css';
 
 const CompanyCouponsPage = () => {
   const { company } = useCompanyAuth();
@@ -95,8 +96,8 @@ const CompanyCouponsPage = () => {
       'Smart Save': 'bg-blue-500',
       'Hot Deal': 'bg-orange-500',
       'Premium': 'bg-purple-500',
-      'Ultra Premium': 'bg-pink-500',
-      'Ultimate Deal': 'bg-yellow-500'
+      'Ultra Premium': 'ultra-premium-tag',
+      'Ultimate Deal': 'ultimate-deal-tag'
     };
     return colors[type] || 'bg-gray-500';
   };
@@ -591,8 +592,8 @@ const CouponDetailModal = ({ coupon, onClose, onExpire, onDelete }) => {
       'Smart Save': 'bg-blue-500',
       'Hot Deal': 'bg-orange-500',
       'Premium': 'bg-purple-500',
-      'Ultra Premium': 'bg-pink-500',
-      'Ultimate Deal': 'bg-yellow-500'
+      'Ultra Premium': 'ultra-premium-tag',
+      'Ultimate Deal': 'ultimate-deal-tag'
     };
     return colors[type] || 'bg-gray-500';
   };
