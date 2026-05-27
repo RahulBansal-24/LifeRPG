@@ -71,7 +71,7 @@ Turn boring routines into epic quests, track your progress with XP and levels, a
 
 ## 🎵 Sound System Architecture
 
-### Core Features
+### 🎯 Core Features
 LifeRPG features a sophisticated yet lightweight audio system that enhances user experience without compromising performance:
 
 #### **Sound Library**
@@ -79,7 +79,7 @@ LifeRPG features a sophisticated yet lightweight audio system that enhances user
 - 📈 **Optimized Size**: Total ~157KB for all audio files
 - 📍 **Strategic Placement**: Sounds mapped to specific user actions
 
-#### **Volume Control System** 
+#### 🔊 **Volume Control System** 
 - **Dynamic Volume Levels**: Different volumes per sound type
   - `create.mp3`: 0.4 volume (subtle creation feedback)
   - `complete.mp3`: 0.4 volume (achievement celebration)
@@ -87,15 +87,15 @@ LifeRPG features a sophisticated yet lightweight audio system that enhances user
 - **User Control**: Global mute toggle with localStorage persistence
 - **Non-Intrusive**: Designed to enhance without overwhelming
 
-#### **Smart Sound Management** 
+#### 🧠 **Smart Sound Management** 
 - **Cooldown System**: 100ms between sounds prevents spam
 - **Error Handling**: Silent fail for browser autoplay restrictions
 - **Success-Only**: Sounds play only on successful actions, not errors
 - **Memory Efficient**: Audio objects created on-demand
 
-###  Technical Implementation
+### ⚙️ Technical Implementation
 
-#### **Centralized Sound Utility** 
+#### 🎛️ **Centralized Sound Utility** 
 ```javascript
 // Location: /src/utils/sounds.js
 export const playSound = (type) => {
@@ -103,7 +103,7 @@ export const playSound = (type) => {
 }
 ```
 
-#### **Sound Mapping Architecture** 
+#### 🗺️ **Sound Mapping Architecture** 
 - **Quest Creation** `create.mp3` - New quests, chronicles, successful submissions
 - **Quest Completion** `complete.mp3` - Achievement celebrations, level ups
 - **UI Interactions** `click.mp3` - Navigation, mage toggle, button clicks
@@ -111,43 +111,43 @@ export const playSound = (type) => {
 - **Enterprise Actions** `click.mp3` - Dashboard navigation, coupon management
 - **Purchase Success** `complete.mp3` - Successful coupon redemption
 
-#### **Browser Compatibility** 
+#### 🌐 **Browser Compatibility** 
 - **HTML5 Audio API**: Native browser audio playback
 - **Autoplay Safe**: Handles modern browser autoplay policies
 - **Cross-Platform**: Works on desktop, tablet, and mobile devices
 
-###  User Experience Integration
+### 🎧 User Experience Integration
 
-#### **Contextual Audio Feedback** 
+#### 🎼 **Contextual Audio Feedback** 
 - **Creation Actions**: Positive reinforcement for content creation
 - **Achievement Actions**: Celebratory sounds for accomplishments
 - **Navigation**: Subtle clicks for UI interactions
 - **Error Prevention**: No sound plays on failed actions
 
-#### **Accessibility Features** 
+#### ♿ **Accessibility Features** 
 - **Mute Persistence**: User preference saved across sessions
 - **Volume Balance**: Click sounds louder for visibility, others subtle
 - **Performance Optimized**: Minimal impact on page load and responsiveness
 
 ---
 
-## � LifeRPG Coins Economy
+## 💰 LifeRPG Coins Economy
 
-### 🎮 Coin Earning System
+### 🪙 Coin Earning System
 LifeRPG features a **reward-based coin economy** that incentivizes meaningful gameplay and community engagement:
 
-#### **Coin Acquisition Rules**
+#### 💵 **Coin Acquisition Rules**
 - **Quest Completion + Chronicle Post**: Users earn coins ONLY after completing a quest AND posting a chronicle about it
 - **One-Time Reward**: Coins are awarded once per quest only to prevent farming abuse
 - **No Farming**: Cannot repeatedly earn coins for the same quest
 - **Encourages Sharing**: Rewards users for documenting and sharing their achievements
 
-#### **Coin Usage**
+#### 🛍️ **Coin Usage**
 - **Arcane Market Purchases**: Spend earned coins to purchase exclusive coupons and rewards
 - **Premium Rewards**: Access higher-tier coupons with better value propositions
 - **Real-World Value**: Coupons provide actual discounts and offers from participating merchants
 
-#### **Economy Progression**
+#### 📈 **Economy Progression**
 - **Integrated Stats**: Coin balance displayed in navbar for easy access
 - **Gameplay Loop**: Complete quests → Post chronicles → Earn coins → Purchase rewards
 - **Skill Development**: Encourages consistent quest completion and community participation
@@ -160,13 +160,13 @@ LifeRPG features a **reward-based coin economy** that incentivizes meaningful ga
 ### 🎯 Merchant Authentication System
 LifeRPG provides a **separate enterprise authentication system** for businesses and merchants:
 
-#### **Company Account Features**
+#### 🏛️ **Company Account Features**
 - **Secure Registration**: Company signup with name, email, and custom branding
 - **Independent Sessions**: Separate authentication from personal user accounts
 - **JWT-Based Security**: Token-based authentication with company-specific data isolation
 - **Account Management**: Full CRUD operations for company profiles and settings
 
-#### **Coupon Management System**
+#### 🎫 **Coupon Management System**
 - **Create Coupons**: Design exclusive offers with images, categories, and rarity tiers
 - **Image Uploads**: Advanced WYSIWYG image editor with 16:9 aspect ratio cropping
 - **Rarity Tiers**: Six levels from Basic (2000 coins) to Ultimate Deal (10000 coins)
@@ -174,7 +174,7 @@ LifeRPG provides a **separate enterprise authentication system** for businesses 
 - **Active/Expired Control**: Mark coupons as expired to disable new purchases
 - **Soft Delete**: Delete coupons while preserving access for users who already purchased them
 
-#### **Purchase Analytics**
+#### 📊 **Purchase Analytics**
 - **Redemption Tracking**: Monitor how many users have purchased each coupon
 - **Timeline Data**: View purchase activity over time with date-based aggregation
 - **Performance Metrics**: Identify top-performing coupons and optimize offerings
@@ -186,25 +186,25 @@ LifeRPG provides a **separate enterprise authentication system** for businesses 
 ### 🎨 Interactive Analytics System
 The enterprise dashboard features **advanced visualizations** for comprehensive business intelligence:
 
-#### **Real-Time Statistics**
+#### ⚡ **Real-Time Statistics**
 - **Total Coupons**: Overview of all created coupons
 - **Active/Expired Counts**: Current status of coupon inventory
 - **Total Redemptions**: Aggregate purchase data across all coupons
 - **Recent Activity**: Live feed of recent purchases and engagement
 
-#### **Animated Graphs & Visualizations**
+#### 📉 **Animated Graphs & Visualizations**
 - **Purchase Timeline**: Area chart showing purchase activity over time with gradient fills
 - **Coupon Analytics**: Multi-line graph comparing active, expired, and purchase trends
 - **Interactive Filters**: Toggle visibility of different data series
 - **Responsive Design**: Charts adapt to different screen sizes and orientations
 
-#### **Performance Metrics**
+#### 🎯 **Performance Metrics**
 - **Top Performing Coupons**: Ranked list of coupons by purchase count
 - **Recent Purchases Feed**: Live updates on customer activity
 - **Date-Based Aggregation**: Daily, monthly, and yearly view options
 - **Recharts Integration**: Professional charting library with smooth animations
 
-#### **Fantasy Enterprise Theme**
+#### 🎨 **Fantasy Enterprise Theme**
 - **Gaming-Inspired UI**: Neon colors, glass effects, and premium aesthetics
 - **Animated Transitions**: Smooth state changes and micro-interactions
 - **Hover Effects**: Interactive elements with scale and glow animations
@@ -217,25 +217,25 @@ The enterprise dashboard features **advanced visualizations** for comprehensive 
 ### 🎯 Dual-Role Entry Point
 LifeRPG features a **unified landing page** that serves as the entry point for both personal users and enterprise merchants:
 
-#### **Role-Based Navigation**
+#### 🧭 **Role-Based Navigation**
 - **Personal Realm**: Entry point for individual users seeking gamified productivity
 - **Merchant Portal**: Entry point for businesses wanting to engage with the LifeRPG community
 - **Clear Separation**: Distinct visual design and messaging for each role
 - **Seamless Routing**: Automatic navigation to appropriate authentication flows
 
-#### **Personal Realm Features**
+#### 🏰 **Personal Realm Features**
 - **Adventure Theme**: RPG-inspired design with quest and progression highlights
 - **Feature Showcase**: Display of core gameplay features (quests, chronicles, marketplace)
 - **Call-to-Action**: Direct navigation to personal login/signup
 - **Animated Elements**: Smooth transitions and hover effects for engagement
 
-#### **Merchant Portal Features**
+#### 🏪 **Merchant Portal Features**
 - **Business Theme**: Professional design with analytics and engagement highlights
 - **Value Proposition**: Clear benefits for businesses (customer engagement, analytics)
 - **Feature Showcase**: Display of enterprise capabilities (coupon management, analytics)
 - **Call-to-Action**: Direct navigation to enterprise login/signup
 
-#### **Unified Branding**
+#### 🎨 **Unified Branding**
 - **Consistent Aesthetics**: LifeRPG's fantasy theme maintained across both interfaces
 - **Shared Design Language**: Common color palette, typography, and visual elements
 - **Professional Polish**: High-quality animations and transitions
@@ -243,24 +243,24 @@ LifeRPG features a **unified landing page** that serves as the entry point for b
 
 ---
 
-## �🔒 Authentication & Security
+## 🔒 Authentication & Security
 
 ### 📧 Password Recovery System
 LifeRPG includes a comprehensive password recovery feature:
 
-#### **Forgot Password Flow**
+#### 🔑 **Forgot Password Flow**
 - **Email Verification**: Users enter their registered email address
 - **Secure Delivery**: Original password sent via encrypted email
 - **Immediate Access**: No complex reset tokens or waiting periods
 - **User-Friendly**: Simple, one-step password recovery process
 
-#### **Email Service Integration**
+#### 📨 **Email Service Integration**
 - **Gmail Integration**: Secure SMTP delivery via Gmail App Passwords
 - **Professional Templates**: Beautiful, themed email templates
 - **Error Handling**: Comprehensive validation and error feedback
 - **Security**: Email validation and user existence verification
 
-#### **Security Features**
+#### 🛡️ **Security Features**
 - **Hashed Passwords**: All passwords stored with bcrypt encryption
 - **Dual Storage**: Both hashed and original passwords for recovery
 - **Access Control**: Password fields excluded from default queries
@@ -328,7 +328,7 @@ LifeRPG features a **dual-role platform architecture** with separate interfaces 
 
 #### 📱 Personal User Journey
 ```
-🏠 Landing Page → 🔐 Login/Signup → 🎮 Dashboard → 📋 Quests → 📜 Chronicles → 💰 Earn Coins → 🏪 Arcane Market → 🛒 Purchase Coupons
+🏠 Landing Page → 🔐 Login/Signup → 🎮 Dashboard → 📋 Quests → 🏆 Leaderboard → 📜 Chronicles → 💰 Earn Coins → 🏪 Arcane Market → 🛒 Purchase Coupons
 ```
 
 #### 🏢 Enterprise Journey
