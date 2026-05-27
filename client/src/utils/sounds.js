@@ -2,13 +2,13 @@
 // Only 3 sounds: create, complete, click
 
 // Sound state management
-let isMuted = false;
+let globalMuteState = false;
 let lastSoundTime = 0;
 const SOUND_COOLDOWN = 100; // Prevent sound spam
 
-// Initialize mute state from localStorage
+// Initialize global mute state from localStorage
 if (typeof window !== 'undefined') {
-  isMuted = localStorage.getItem('liferpg_muted') === 'true';
+  globalMuteState = localStorage.getItem('liferpg_muted') === 'true';
 }
 
 // Volume levels for different sound types
@@ -21,7 +21,7 @@ const VOLUME_LEVELS = {
 // Main sound function
 export const playSound = (type) => {
   // Only play if not muted and cooldown has passed
-  if (isMuted) return;
+  if (globalMuteState) return;
   
   const now = Date.now();
   if (now - lastSoundTime < SOUND_COOLDOWN) return;
@@ -40,12 +40,12 @@ export const playSound = (type) => {
 
 // Toggle mute function
 export const toggleMute = () => {
-  isMuted = !isMuted;
-  if (typeof window !== 'undefined') {
-    localStorage.setItem('liferpg_muted', isMuted.toString());
-  }
-  return isMuted;
+  globalMuteState = !globalMuteState;
+  localStorage.setItem('liferpg_muted', globalMuteState.toString());
+  return globalMuteState;
 };
 
 // Get mute state
-export const getMuteState = () => isMuted;
+export const getMuteState = () => {
+  return globalMuteState;
+};

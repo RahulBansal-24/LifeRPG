@@ -3,6 +3,7 @@ import { motion } from 'framer-motion';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import MageToggle from './MageToggle';
+import MuteButton from './MuteButton';
 import { 
   Sword, 
   Trophy, 
@@ -140,6 +141,8 @@ const Navbar = () => {
                 </div>
               </div>
               
+              <MuteButton />
+              
               <button
                 onClick={() => {
                   handleLogout();
@@ -206,6 +209,12 @@ const Navbar = () => {
                 <MageToggle />
               </div>
               
+              {/* Mute Button in Mobile Menu */}
+              <div className="flex items-center justify-between px-3 py-2 bg-gaming-darker rounded-lg border border-gaming-border">
+                <span className="text-sm font-medium text-gray-300">Sound</span>
+                <MuteButton />
+              </div>
+              
               {/* Marketplace Button in Mobile Menu */}
               <Link
                 to="/marketplace"
@@ -241,7 +250,10 @@ const Navbar = () => {
                 </div>
                 
                 <button
-                  onClick={handleLogout}
+                  onClick={() => {
+                    handleLogout();
+                    playSound('click');
+                  }}
                   className="w-full flex items-center justify-center space-x-2 px-3 py-2 text-red-400 hover:bg-red-400 hover:bg-opacity-10 rounded-lg transition-all duration-200"
                 >
                   <LogOut size={18} />

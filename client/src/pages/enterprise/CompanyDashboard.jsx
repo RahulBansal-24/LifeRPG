@@ -5,6 +5,7 @@ import axios from 'axios';
 import { useCompanyAuth } from '../../context/CompanyAuthContext';
 import { useNavigate } from 'react-router-dom';
 import { playSound } from '../../utils/sounds';
+import MuteButton from '../../components/MuteButton';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, AreaChart, Area } from 'recharts';
 
 const CompanyDashboard = () => {
@@ -98,6 +99,7 @@ const CompanyDashboard = () => {
               </div>
             </div>
             <div className="flex items-center space-x-3">
+              <MuteButton />
               <motion.button
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}

@@ -7,6 +7,7 @@ import { useNavigate } from 'react-router-dom';
 import Cropper from 'react-easy-crop';
 import toast from 'react-hot-toast';
 import { playSound } from '../../utils/sounds';
+import MuteButton from '../../components/MuteButton';
 import '../MarketplacePage.css';
 
 const CompanyCouponsPage = () => {
@@ -123,15 +124,18 @@ const CompanyCouponsPage = () => {
                 <p className="text-sm text-gray-400">{company?.companyName}</p>
               </div>
             </div>
-            <button
-              onClick={() => {
-                playSound('click');
-                navigate('/enterprise/dashboard');
-              }}
-              className="flex items-center space-x-2 px-4 py-2 text-gray-300 hover:text-white hover:bg-gaming-border rounded-lg transition-all duration-200"
-            >
-              Dashboard
-            </button>
+            <div className="flex items-center space-x-3">
+              <MuteButton />
+              <button
+                onClick={() => {
+                  playSound('click');
+                  navigate('/enterprise/dashboard');
+                }}
+                className="flex items-center space-x-2 px-4 py-2 text-gray-300 hover:text-white hover:bg-gaming-border rounded-lg transition-all duration-200"
+              >
+                Dashboard
+              </button>
+            </div>
           </div>
         </div>
       </div>

@@ -450,6 +450,7 @@ const MarketplacePage = () => {
           coupon={selectedCoupon}
           user={user}
           redeemedCoupons={redeemedCoupons}
+          redeemedCouponsLoaded={redeemedCouponsLoaded}
           onClose={() => setShowDetailModal(false)}
           onRedeem={() => {
             fetchCoupons();
@@ -461,7 +462,7 @@ const MarketplacePage = () => {
   );
 };
 
-const CouponDetailModal = ({ coupon, user, redeemedCoupons, onClose, onRedeem }) => {
+const CouponDetailModal = ({ coupon, user, redeemedCoupons, redeemedCouponsLoaded, onClose, onRedeem }) => {
   const [redeeming, setRedeeming] = useState(false);
   const [redeemed, setRedeemed] = useState(false);
   const [couponCode, setCouponCode] = useState('');
@@ -476,14 +477,20 @@ const CouponDetailModal = ({ coupon, user, redeemedCoupons, onClose, onRedeem })
 
   // Check if coupon is already redeemed when modal opens
   useEffect(() => {
-    const alreadyRedeemed = redeemedCoupons.find(rc => rc._id === coupon._id);
+    if (!coupon || !coupon._id) return;
+    const alreadyRedeemed = redeemedCoupons && redeemedCoupons.find(rc => rc._id === coupon._id);
     if (alreadyRedeemed) {
       setRedeemed(true);
       setCouponCode(alreadyRedeemed.couponCode);
     }
-  }, [coupon._id, redeemedCoupons]);
+  }, [coupon?._id, redeemedCoupons]);
 
   const handleRedeem = async () => {
+    if (!coupon || !coupon._id) {
+      alert('Invalid coupon data');
+      return;
+    }
+    
     if (!currentUser || currentUser.coins < coupon.cost) {
       alert('Insufficient coins!');
       return;
@@ -545,6 +552,10 @@ const CouponDetailModal = ({ coupon, user, redeemedCoupons, onClose, onRedeem })
     };
     return colors[type] || 'bg-gray-500';
   };
+
+  if (!coupon || !coupon._id) {
+    return null;
+  }
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
