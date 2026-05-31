@@ -32,7 +32,8 @@ router.get('/profile', async (req, res) => {
         coins: user.coins,
         stars: user.stars,
         xpProgress: xpProgress,
-        createdAt: user.createdAt
+        createdAt: user.createdAt,
+        dailyQuestGenerated: user.dailyQuestGenerated
       }
     });
   } catch (error) {

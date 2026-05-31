@@ -100,7 +100,8 @@ router.post('/signup', [
           avatar: avatar || '🎮',
           coins: user.coins,
           stars: user.stars,
-          createdAt: user.createdAt
+          createdAt: user.createdAt,
+          dailyQuestGenerated: user.dailyQuestGenerated
         }
       }
     });
@@ -204,7 +205,8 @@ router.post('/login', [
           stats: user.stats,
           avatar: user.avatar,
           coins: user.coins,
-          createdAt: user.createdAt
+          createdAt: user.createdAt,
+          dailyQuestGenerated: user.dailyQuestGenerated
         }
       }
     });
