@@ -39,6 +39,7 @@ const Navbar = () => {
 
   const navItems = [
     { path: '/dashboard', label: 'Dashboard', icon: Home },
+    { path: '/journey', label: 'Journey', icon: Map },
     { path: '/quests', label: 'Quests', icon: Target },
     { path: '/chronicles', label: 'Chronicles', icon: BookOpen },
     { path: '/leaderboard', label: 'Leaderboard', icon: Trophy },
