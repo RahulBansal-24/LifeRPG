@@ -24,6 +24,7 @@ Turn boring routines into epic quests, track your progress with XP and levels, a
 - 🔐 **Secure Authentication** - Sign up with custom avatars and personalized profiles
 - 📧 **Password Recovery** - Forgot password feature with email-based password recovery system
 - ⭐ **50-Level Progression System** - Epic journey from Novice to Godlike with exponential XP requirements
+- 🗺️ **Interactive Journey Map** - Visual progression tracker showing your path across 50 levels with level titles
 - 📋 **Quest Management** - Create and complete Daily & Main quests with skill rewards
 - 🎲 **Dynamic Daily Quest Pool** - System generates 5 daily quests from curated pool
 - 📝 **Main Quest Creation** - Create personalized main quests for long-term goals
@@ -178,6 +179,9 @@ LifeRPG provides a **separate enterprise authentication system** for businesses 
 - **Redemption Tracking**: Monitor how many users have purchased each coupon
 - **Timeline Data**: View purchase activity over time with date-based aggregation
 - **Performance Metrics**: Identify top-performing coupons and optimize offerings
+- **Advanced Timeline Filters**: Daily, monthly, and yearly views for purchase timeline
+- **Event-Based Metrics**: Accurate tracking of purchases, expirations, and active coupons
+- **Real-Time Updates**: Dynamic current period values based on actual events
 
 ---
 
@@ -195,7 +199,9 @@ The enterprise dashboard features **advanced visualizations** for comprehensive 
 #### 📉 **Animated Graphs & Visualizations**
 - **Purchase Timeline**: Area chart showing purchase activity over time with gradient fills
 - **Coupon Analytics**: Multi-line graph comparing active, expired, and purchase trends
-- **Interactive Filters**: Toggle visibility of different data series
+- **Interactive Filters**: Toggle visibility of different data series (Active, Expired, Purchases)
+- **Timeline Filters**: Daily, monthly, and yearly view options for both purchase and coupon timelines
+- **Event-Based Aggregation**: Accurate metrics based on actual events in each time period
 - **Responsive Design**: Charts adapt to different screen sizes and orientations
 
 #### 🎯 **Performance Metrics**
@@ -328,7 +334,7 @@ LifeRPG features a **dual-role platform architecture** with separate interfaces 
 
 #### 📱 Personal User Journey
 ```
-🏠 Landing Page → 🔐 Login/Signup → 🎮 Dashboard → 📋 Quests → 🏆 Leaderboard → 📜 Chronicles → 💰 Earn Coins → 🏪 Arcane Market → 🛒 Purchase Coupons
+🏠 Landing Page → 🔐 Login/Signup → 🎮 Dashboard → 🗺️ Journey → 📋 Quests → 🏆 Leaderboard → 📜 Chronicles → 💰 Earn Coins → 🏪 Arcane Market → 🛒 Purchase Coupons
 ```
 
 #### 🏢 Enterprise Journey
@@ -343,6 +349,7 @@ LifeRPG features a **dual-role platform architecture** with separate interfaces 
 - **🔐 Authentication Pages** - Login & Signup with avatar selection
 - **🎮 Dashboard** - Main hub with stats, XP, coins, and recent quests
 - **📋 Quests Page** - Create, manage, and complete quests
+- **🗺️ Journey Page** - Interactive visual progression tracker showing your path across 50 levels
 - **📜 Chronicles Page** - Create and view chronicles with image uploads, comments, and likes
 - **🏪 Arcane Market** - Coupon marketplace with search, filters, and purchasing
 - **🏆 Leaderboard** - Global rankings and achievements
@@ -527,6 +534,7 @@ LifeRPG/
 │   │   │   │   ├── CompanyLoginPage.jsx
 │   │   │   │   └── CompanySignupPage.jsx
 │   │   │   ├── LandingPage.jsx
+│   │   │   ├── Journey.jsx
 │   │   │   ├── MarketplacePage.jsx
 │   │   │   ├── MarketplacePage.css
 │   │   │   └── ...
@@ -572,16 +580,17 @@ LifeRPG/
 1. **🏠 Choose Your Path** - Select Personal Realm on the landing page
 2. **🔐 Create Account** - Sign up with username, email, and choose your avatar
 3. **📧 Password Recovery** - Use forgot password feature if you lose access to your account
-4. **📊 Set Your Goals** - Create quests for daily tasks and main objectives with skill rewards
-5. **⚔️ Complete Quests** - Mark tasks as complete to earn XP, stat points, and stars
-6. **📜 Post Chronicles** - Share your achievements with the community to earn LifeRPG coins
-7. **💰 Earn Coins** - Receive coins for each quest completion + chronicle post (one-time per quest)
-8. **🏪 Visit Arcane Market** - Browse exclusive coupons and rewards from participating merchants
-9. **🛒 Purchase Coupons** - Spend your earned coins to unlock real-world discounts and offers
-10. **📈 Level Up** - Progress through 50 levels from Novice to Godlike with tiered stat boosts
-11. **🏆 Climb Leaderboard** - Compete with players worldwide using your accumulated XP
-12. **🔄 Daily Routine** - Generate new daily quests each day to build consistent habits
-13. **💪 Master Skills** - Develop your character stats to 100,000 with strategic level bonuses
+4. **🗺️ View Your Journey** - Track your progression across 50 levels with the interactive journey map
+5. **📊 Set Your Goals** - Create quests for daily tasks and main objectives with skill rewards
+6. **⚔️ Complete Quests** - Mark tasks as complete to earn XP, stat points, and stars
+7. **📜 Post Chronicles** - Share your achievements with the community to earn LifeRPG coins
+8. **💰 Earn Coins** - Receive coins for each quest completion + chronicle post (one-time per quest)
+9. **🏪 Visit Arcane Market** - Browse exclusive coupons and rewards from participating merchants
+10. **🛒 Purchase Coupons** - Spend your earned coins to unlock real-world discounts and offers
+11. **📈 Level Up** - Progress through 50 levels from Novice to Godlike with tiered stat boosts
+12. **🏆 Climb Leaderboard** - Compete with players worldwide using your accumulated XP
+13. **🔄 Daily Routine** - Generate new daily quests each day to build consistent habits
+14. **💪 Master Skills** - Develop your character stats to 100,000 with strategic level bonuses
 
 ### 🏢 Enterprise Journey
 1. **🏠 Choose Your Path** - Select Merchant Portal on the landing page
