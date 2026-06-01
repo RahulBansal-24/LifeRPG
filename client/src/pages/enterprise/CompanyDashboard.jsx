@@ -23,6 +23,7 @@ const CompanyDashboard = () => {
   });
   const [loading, setLoading] = useState(true);
   const [timelineFilter, setTimelineFilter] = useState('daily');
+  const [couponFilter, setCouponFilter] = useState('daily');
   const [showActive, setShowActive] = useState(true);
   const [showExpired, setShowExpired] = useState(true);
   const [showPurchases, setShowPurchases] = useState(true);
@@ -30,13 +31,17 @@ const CompanyDashboard = () => {
 
   useEffect(() => {
     fetchDashboardStats();
-  }, []);
+  }, [timelineFilter, couponFilter]);
 
   const fetchDashboardStats = async () => {
     try {
       const token = localStorage.getItem('companyToken');
       const response = await axios.get('/api/company/dashboard', {
-        headers: { Authorization: `Bearer ${token}` }
+        headers: { Authorization: `Bearer ${token}` },
+        params: {
+          timelineFilter,
+          couponFilter
+        }
       });
       setStats(response.data.data);
       setLoading(false);
@@ -331,6 +336,19 @@ const CompanyDashboard = () => {
                   <p className="text-gray-400 text-sm">Compare active, expired, and purchase trends</p>
                 </div>
                 <div className="flex items-center space-x-4">
+                  <div className="flex items-center space-x-2">
+                    <Filter size={18} className="text-gray-400" />
+                    <select
+                      value={couponFilter}
+                      onChange={(e) => setCouponFilter(e.target.value)}
+                      className="bg-gaming-darker border border-gaming-border rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-neon-purple"
+                    >
+                      <option value="daily">Daily</option>
+                      <option value="monthly">Monthly</option>
+                      <option value="yearly">Yearly</option>
+                    </select>
+                  </div>
+                  <div className="w-px h-6 bg-gaming-border"></div>
                   <label className="flex items-center space-x-2 cursor-pointer">
                     <input
                       type="checkbox"

@@ -184,12 +184,353 @@ router.post('/login', [
   }
 });
 
+// Helper function to generate purchase timeline based on filter
+async function generatePurchaseTimeline(companyId, filter, companyCreatedAt) {
+  const now = new Date();
+  const currentYear = now.getFullYear();
+  const currentMonth = now.getMonth();
+  const currentDate = now.getDate();
+  
+  let timelineData = [];
+  
+  if (filter === 'daily') {
+    // Daily view: Current month only, days 1 to current date
+    const startDate = new Date(currentYear, currentMonth, 1);
+    const endDate = new Date(currentYear, currentMonth, currentDate);
+    
+    // Get actual purchase data for current month
+    const purchaseData = await CouponRedemption.aggregate([
+      { 
+        $match: { 
+          companyId,
+          createdAt: { $gte: startDate, $lte: endDate }
+        } 
+      },
+      {
+        $group: {
+          _id: {
+            $dateToString: { format: '%Y-%m-%d', date: '$createdAt' }
+          },
+          count: { $sum: 1 }
+        }
+      },
+      { $sort: { _id: 1 } }
+    ]);
+    
+    const purchaseMap = new Map(purchaseData.map(p => [p._id, p.count]));
+    
+    // Generate timeline for days 1 to current date
+    for (let day = 1; day <= currentDate; day++) {
+      const dateStr = `${currentYear}-${String(currentMonth + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+      const value = purchaseMap.get(dateStr) ?? 0; // Use 0 for no events, no forward-fill
+      timelineData.push({ date: dateStr, count: value });
+    }
+    
+  } else if (filter === 'monthly') {
+    // Monthly view: January to current month
+    const startDate = new Date(currentYear, 0, 1);
+    const endDate = new Date(currentYear, currentMonth, currentDate);
+    
+    // Get actual purchase data for all months
+    const purchaseData = await CouponRedemption.aggregate([
+      { 
+        $match: { 
+          companyId,
+          createdAt: { $gte: startDate, $lte: endDate }
+        } 
+      },
+      {
+        $group: {
+          _id: {
+            $dateToString: { format: '%Y-%m', date: '$createdAt' }
+          },
+          count: { $sum: 1 }
+        }
+      },
+      { $sort: { _id: 1 } }
+    ]);
+    
+    const purchaseMap = new Map(purchaseData.map(p => [p._id, p.count]));
+    
+    // Generate timeline for January to current month
+    for (let month = 0; month <= currentMonth; month++) {
+      const monthStr = `${currentYear}-${String(month + 1).padStart(2, '0')}`;
+      const value = purchaseMap.get(monthStr) ?? 0; // Use 0 for no events, no forward-fill
+      timelineData.push({ date: monthStr, count: value });
+    }
+    
+  } else if (filter === 'yearly') {
+    // Yearly view: Company creation year to current year
+    const startYear = companyCreatedAt.getFullYear();
+    const startDate = new Date(startYear, 0, 1);
+    const endDate = new Date(currentYear, currentMonth, currentDate);
+    
+    // Get actual purchase data for all years
+    const purchaseData = await CouponRedemption.aggregate([
+      { 
+        $match: { 
+          companyId,
+          createdAt: { $gte: startDate, $lte: endDate }
+        } 
+      },
+      {
+        $group: {
+          _id: {
+            $dateToString: { format: '%Y', date: '$createdAt' }
+          },
+          count: { $sum: 1 }
+        }
+      },
+      { $sort: { _id: 1 } }
+    ]);
+    
+    const purchaseMap = new Map(purchaseData.map(p => [p._id, p.count]));
+    
+    // Generate timeline from creation year to current year
+    for (let year = startYear; year <= currentYear; year++) {
+      const yearStr = year.toString();
+      const value = purchaseMap.get(yearStr) ?? 0; // Use 0 for no events, no forward-fill
+      timelineData.push({ date: yearStr, count: value });
+    }
+  }
+  
+  return timelineData;
+}
+
+// Helper function to generate coupon analytics based on filter
+async function generateCouponAnalytics(companyId, filter, companyCreatedAt) {
+  const now = new Date();
+  const currentYear = now.getFullYear();
+  const currentMonth = now.getMonth();
+  const currentDate = now.getDate();
+  
+  let analyticsData = [];
+  
+  // Get all coupons with their status and creation dates
+  const allCoupons = await Coupon.find({ companyId, isDeleted: false })
+    .select('createdAt isActive expiredAt')
+    .lean();
+  
+  if (filter === 'daily') {
+    // Daily view: Current month only, days 1 to current date
+    const startDate = new Date(currentYear, currentMonth, 1);
+    const endDate = new Date(currentYear, currentMonth, currentDate);
+    
+    // Aggregate purchases by day
+    const purchaseData = await CouponRedemption.aggregate([
+      { 
+        $match: { 
+          companyId,
+          createdAt: { $gte: startDate, $lte: endDate }
+        } 
+      },
+      {
+        $group: {
+          _id: {
+            $dateToString: { format: '%Y-%m-%d', date: '$createdAt' }
+          },
+          purchases: { $sum: 1 }
+        }
+      },
+      { $sort: { _id: 1 } }
+    ]);
+    
+    const purchaseMap = new Map(purchaseData.map(p => [p._id, p.purchases]));
+    
+    // Generate timeline for days 1 to current date
+    for (let day = 1; day <= currentDate; day++) {
+      const dateStr = `${currentYear}-${String(currentMonth + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+      const dateStartOfDay = new Date(currentYear, currentMonth, day, 0, 0, 0, 0);
+      const dateEndOfDay = new Date(currentYear, currentMonth, day, 23, 59, 59, 999);
+      
+      // Count active coupons on this day (coupons that were active during this day)
+      let activeCount = 0;
+      let expiredCount = 0;
+      
+      for (const coupon of allCoupons) {
+        const createdDate = new Date(coupon.createdAt);
+        
+        // Count expired coupons that expired on this day (event-based)
+        if (coupon.expiredAt) {
+          const expiredDate = new Date(coupon.expiredAt);
+          if (expiredDate >= dateStartOfDay && expiredDate <= dateEndOfDay) {
+            expiredCount++;
+          }
+        }
+        
+        // Count active coupons on this day (state-based)
+        // Coupon was active on this day if:
+        // - It was created before or on this day
+        // - AND (it's currently active OR it expired after this day)
+        if (createdDate <= dateEndOfDay) {
+          if (coupon.isActive || (coupon.expiredAt && new Date(coupon.expiredAt) > dateEndOfDay)) {
+            activeCount++;
+          }
+        }
+      }
+      
+      // Get purchases for this day (event-based, no forward-fill)
+      const purchases = purchaseMap.get(dateStr) ?? 0;
+      
+      analyticsData.push({
+        date: dateStr,
+        active: activeCount,
+        expired: expiredCount,
+        purchases: purchases
+      });
+    }
+    
+  } else if (filter === 'monthly') {
+    // Monthly view: January to current month
+    const startDate = new Date(currentYear, 0, 1);
+    const endDate = new Date(currentYear, currentMonth, currentDate);
+    
+    // Aggregate purchases by month
+    const purchaseData = await CouponRedemption.aggregate([
+      { 
+        $match: { 
+          companyId,
+          createdAt: { $gte: startDate, $lte: endDate }
+        } 
+      },
+      {
+        $group: {
+          _id: {
+            $dateToString: { format: '%Y-%m', date: '$createdAt' }
+          },
+          purchases: { $sum: 1 }
+        }
+      },
+      { $sort: { _id: 1 } }
+    ]);
+    
+    const purchaseMap = new Map(purchaseData.map(p => [p._id, p.purchases]));
+    
+    // Generate timeline for January to current month
+    for (let month = 0; month <= currentMonth; month++) {
+      const monthStr = `${currentYear}-${String(month + 1).padStart(2, '0')}`;
+      const monthStart = new Date(currentYear, month, 1, 0, 0, 0, 0);
+      const monthEnd = new Date(currentYear, month + 1, 0, 23, 59, 59, 999);
+      
+      // Count active and expired coupons during this month
+      let activeCount = 0;
+      let expiredCount = 0;
+      
+      for (const coupon of allCoupons) {
+        const createdDate = new Date(coupon.createdAt);
+        
+        // Count expired coupons that expired during this month (event-based)
+        if (coupon.expiredAt) {
+          const expiredDate = new Date(coupon.expiredAt);
+          if (expiredDate >= monthStart && expiredDate <= monthEnd) {
+            expiredCount++;
+          }
+        }
+        
+        // Count active coupons during this month (state-based)
+        // Coupon was active during this month if:
+        // - It was created before end of month
+        // - AND (it's currently active OR it expired after end of month)
+        if (createdDate <= monthEnd) {
+          if (coupon.isActive || (coupon.expiredAt && new Date(coupon.expiredAt) > monthEnd)) {
+            activeCount++;
+          }
+        }
+      }
+      
+      // Get purchases for this month (event-based, no forward-fill)
+      const purchases = purchaseMap.get(monthStr) ?? 0;
+      
+      analyticsData.push({
+        date: monthStr,
+        active: activeCount,
+        expired: expiredCount,
+        purchases: purchases
+      });
+    }
+    
+  } else if (filter === 'yearly') {
+    // Yearly view: Company creation year to current year
+    const startYear = companyCreatedAt.getFullYear();
+    const startDate = new Date(startYear, 0, 1);
+    const endDate = new Date(currentYear, currentMonth, currentDate);
+    
+    // Aggregate purchases by year
+    const purchaseData = await CouponRedemption.aggregate([
+      { 
+        $match: { 
+          companyId,
+          createdAt: { $gte: startDate, $lte: endDate }
+        } 
+      },
+      {
+        $group: {
+          _id: {
+            $dateToString: { format: '%Y', date: '$createdAt' }
+          },
+          purchases: { $sum: 1 }
+        }
+      },
+      { $sort: { _id: 1 } }
+    ]);
+    
+    const purchaseMap = new Map(purchaseData.map(p => [p._id, p.purchases]));
+    
+    // Generate timeline from creation year to current year
+    for (let year = startYear; year <= currentYear; year++) {
+      const yearStr = year.toString();
+      const yearStart = new Date(year, 0, 1, 0, 0, 0, 0);
+      const yearEnd = new Date(year, 11, 31, 23, 59, 59, 999);
+      
+      // Count active and expired coupons during this year
+      let activeCount = 0;
+      let expiredCount = 0;
+      
+      for (const coupon of allCoupons) {
+        const createdDate = new Date(coupon.createdAt);
+        
+        // Count expired coupons that expired during this year (event-based)
+        if (coupon.expiredAt) {
+          const expiredDate = new Date(coupon.expiredAt);
+          if (expiredDate >= yearStart && expiredDate <= yearEnd) {
+            expiredCount++;
+          }
+        }
+        
+        // Count active coupons during this year (state-based)
+        // Coupon was active during this year if:
+        // - It was created before end of year
+        // - AND (it's currently active OR it expired after end of year)
+        if (createdDate <= yearEnd) {
+          if (coupon.isActive || (coupon.expiredAt && new Date(coupon.expiredAt) > yearEnd)) {
+            activeCount++;
+          }
+        }
+      }
+      
+      // Get purchases for this year (event-based, no forward-fill)
+      const purchases = purchaseMap.get(yearStr) ?? 0;
+      
+      analyticsData.push({
+        date: yearStr,
+        active: activeCount,
+        expired: expiredCount,
+        purchases: purchases
+      });
+    }
+  }
+  
+  return analyticsData;
+}
+
 // @route   GET /api/company/dashboard
 // @desc    Get company dashboard stats
 // @access  Private (Company)
 router.get('/dashboard', companyAuth, async (req, res) => {
   try {
     const companyId = req.company._id;
+    const timelineFilter = req.query.timelineFilter || 'daily';
+    const couponFilter = req.query.couponFilter || 'daily';
     
     // Get coupon stats - exclude deleted coupons
     const totalCoupons = await Coupon.countDocuments({ companyId, isDeleted: false });
@@ -199,20 +540,15 @@ router.get('/dashboard', companyAuth, async (req, res) => {
     // Get total redemptions
     const totalRedemptions = await CouponRedemption.countDocuments({ companyId });
     
-    // Get redemption timeline data
-    const redemptionsByDate = await CouponRedemption.aggregate([
-      { $match: { companyId } },
-      {
-        $group: {
-          _id: {
-            $dateToString: { format: '%Y-%m-%d', date: '$createdAt' }
-          },
-          count: { $sum: 1 }
-        }
-      },
-      { $sort: { _id: 1 } },
-      { $limit: 30 }
-    ]);
+    // Get company creation date
+    const company = await Company.findById(companyId);
+    const companyCreatedAt = company.createdAt;
+    
+    // Get purchase timeline data based on filter
+    const timeline = await generatePurchaseTimeline(companyId, timelineFilter, companyCreatedAt);
+    
+    // Get coupon analytics data based on filter
+    const couponAnalytics = await generateCouponAnalytics(companyId, couponFilter, companyCreatedAt);
     
     // Get top performing coupons (sorted by purchase count)
     const topCoupons = await Coupon.aggregate([
@@ -274,92 +610,6 @@ router.get('/dashboard', companyAuth, async (req, res) => {
       timestamp: formatTimestamp(purchase.createdAt)
     }));
     
-    // Get all dates from purchases (for the timeline)
-    const purchaseDates = await CouponRedemption.aggregate([
-      { $match: { companyId } },
-      {
-        $group: {
-          _id: {
-            $dateToString: { format: '%Y-%m-%d', date: '$createdAt' }
-          },
-          purchases: { $sum: 1 }
-        }
-      },
-      { $sort: { _id: 1 } },
-      { $limit: 30 }
-    ]);
-    
-    // Get all coupon creation dates
-    const couponCreationDates = await Coupon.aggregate([
-      { $match: { companyId, isDeleted: false } },
-      {
-        $group: {
-          _id: {
-            $dateToString: { format: '%Y-%m-%d', date: '$createdAt' }
-          }
-        }
-      },
-      { $sort: { _id: 1 } },
-      { $limit: 30 }
-    ]);
-    
-    // Get all coupons with their current status
-    const allCoupons = await Coupon.find({ companyId, isDeleted: false })
-      .select('createdAt isActive')
-      .lean();
-    
-    // Combine all unique dates from purchases and coupon creation
-    const allDatesSet = new Set();
-    purchaseDates.forEach(pd => allDatesSet.add(pd._id));
-    couponCreationDates.forEach(cd => allDatesSet.add(cd._id));
-    
-    // Always include today's date if there are coupons
-    if (allCoupons.length > 0) {
-      const today = new Date().toISOString().split('T')[0];
-      allDatesSet.add(today);
-    }
-    
-    const allDates = Array.from(allDatesSet).sort();
-    
-    // Build time-series data for each date
-    const couponAnalytics = [];
-    for (const date of allDates) {
-      const dateObj = new Date(date);
-      const dateEndOfDay = new Date(date);
-      dateEndOfDay.setHours(23, 59, 59, 999);
-      
-      // Calculate active/expired counts on this date
-      let activeCount = 0;
-      let expiredCount = 0;
-      let purchasesCount = 0;
-      
-      // Find purchases for this date
-      const purchaseData = purchaseDates.find(pd => pd._id === date);
-      if (purchaseData) {
-        purchasesCount = purchaseData.purchases;
-      }
-      
-      for (const coupon of allCoupons) {
-        const createdDate = new Date(coupon.createdAt);
-        
-        if (createdDate <= dateEndOfDay) {
-          // Coupon existed on or before this date
-          if (coupon.isActive) {
-            activeCount++;
-          } else {
-            expiredCount++;
-          }
-        }
-      }
-      
-      couponAnalytics.push({
-        date: date,
-        active: activeCount,
-        expired: expiredCount,
-        purchases: purchasesCount
-      });
-    }
-    
     res.status(200).json({
       success: true,
       data: {
@@ -367,10 +617,7 @@ router.get('/dashboard', companyAuth, async (req, res) => {
         activeCoupons,
         expiredCoupons,
         totalRedemptions,
-        timeline: redemptionsByDate.map(item => ({
-          date: item._id,
-          count: item.count
-        })),
+        timeline,
         topCoupons,
         recentPurchases: formattedRecentPurchases,
         couponAnalytics
@@ -568,8 +815,9 @@ router.put('/coupons/:id/expire', companyAuth, async (req, res) => {
       });
     }
     
-    // Mark as expired
+    // Mark as expired and set expiration timestamp
     coupon.isActive = false;
+    coupon.expiredAt = new Date();
     await coupon.save();
     
     res.status(200).json({
