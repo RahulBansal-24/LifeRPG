@@ -196,7 +196,7 @@ async function generatePurchaseTimeline(companyId, filter, companyCreatedAt) {
   if (filter === 'daily') {
     // Daily view: Current month only, days 1 to current date
     const startDate = new Date(currentYear, currentMonth, 1);
-    const endDate = new Date(currentYear, currentMonth, currentDate);
+    const endDate = new Date(currentYear, currentMonth, currentDate, 23, 59, 59, 999);
     
     // Get actual purchase data for current month
     const purchaseData = await CouponRedemption.aggregate([
@@ -229,7 +229,7 @@ async function generatePurchaseTimeline(companyId, filter, companyCreatedAt) {
   } else if (filter === 'monthly') {
     // Monthly view: January to current month
     const startDate = new Date(currentYear, 0, 1);
-    const endDate = new Date(currentYear, currentMonth, currentDate);
+    const endDate = new Date(currentYear, currentMonth, currentDate, 23, 59, 59, 999);
     
     // Get actual purchase data for all months
     const purchaseData = await CouponRedemption.aggregate([
@@ -263,7 +263,7 @@ async function generatePurchaseTimeline(companyId, filter, companyCreatedAt) {
     // Yearly view: Company creation year to current year
     const startYear = companyCreatedAt.getFullYear();
     const startDate = new Date(startYear, 0, 1);
-    const endDate = new Date(currentYear, currentMonth, currentDate);
+    const endDate = new Date(currentYear, currentMonth, currentDate, 23, 59, 59, 999);
     
     // Get actual purchase data for all years
     const purchaseData = await CouponRedemption.aggregate([
@@ -314,7 +314,7 @@ async function generateCouponAnalytics(companyId, filter, companyCreatedAt) {
   if (filter === 'daily') {
     // Daily view: Current month only, days 1 to current date
     const startDate = new Date(currentYear, currentMonth, 1);
-    const endDate = new Date(currentYear, currentMonth, currentDate);
+    const endDate = new Date(currentYear, currentMonth, currentDate, 23, 59, 59, 999);
     
     // Aggregate purchases by day
     const purchaseData = await CouponRedemption.aggregate([
@@ -383,7 +383,7 @@ async function generateCouponAnalytics(companyId, filter, companyCreatedAt) {
   } else if (filter === 'monthly') {
     // Monthly view: January to current month
     const startDate = new Date(currentYear, 0, 1);
-    const endDate = new Date(currentYear, currentMonth, currentDate);
+    const endDate = new Date(currentYear, currentMonth, currentDate, 23, 59, 59, 999);
     
     // Aggregate purchases by month
     const purchaseData = await CouponRedemption.aggregate([
@@ -453,7 +453,7 @@ async function generateCouponAnalytics(companyId, filter, companyCreatedAt) {
     // Yearly view: Company creation year to current year
     const startYear = companyCreatedAt.getFullYear();
     const startDate = new Date(startYear, 0, 1);
-    const endDate = new Date(currentYear, currentMonth, currentDate);
+    const endDate = new Date(currentYear, currentMonth, currentDate, 23, 59, 59, 999);
     
     // Aggregate purchases by year
     const purchaseData = await CouponRedemption.aggregate([
